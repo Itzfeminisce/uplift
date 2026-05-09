@@ -1,26 +1,209 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">Uplift Open Graph image</title>
-  <desc id="desc">Dark Uplift brand image with a typed upload contract message.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img">
+  <title>Uplift — Type-safe file uploads for TypeScript</title>
+  <desc>Marketing OG image for Uplift, showing the logo, tagline, and a code snippet.</desc>
+
   <defs>
-    <linearGradient id="bg" x1="0" x2="1200" y1="0" y2="630" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#020617"/>
-      <stop offset=".55" stop-color="#071426"/>
-      <stop offset="1" stop-color="#111827"/>
-    </linearGradient>
-    <linearGradient id="mark" x1="836" x2="1095" y1="520" y2="178" gradientUnits="userSpaceOnUse">
+    <linearGradient id="logo-grad" x1="22" x2="106" y1="108" y2="20" gradientUnits="userSpaceOnUse">
       <stop stop-color="#14b8a6"/>
       <stop offset=".52" stop-color="#38bdf8"/>
       <stop offset="1" stop-color="#a78bfa"/>
     </linearGradient>
+    <linearGradient id="glow-teal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#14b8a6" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#14b8a6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="glow-violet" x1="1" y1="0" x2="0" y2="1">
+      <stop stop-color="#a78bfa" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="pill-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#14b8a6"/>
+      <stop offset=".5" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <clipPath id="logo-clip">
+      <rect width="72" height="72" rx="16"/>
+    </clipPath>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <path d="M80 92h1040v446H80z" fill="none" stroke="#1f3a5f" stroke-width="2"/>
-  <text x="102" y="160" fill="#5eead4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="800">Uplift</text>
-  <text x="102" y="260" fill="#f8fafc" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="74" font-weight="900">Typed file uploads</text>
-  <text x="102" y="342" fill="#cbd5e1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="600">Define routes once.</text>
-  <text x="102" y="394" fill="#cbd5e1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="600">Use them everywhere.</text>
-  <text x="102" y="486" fill="#94a3b8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700">Next.js · Hono · Express · S3 · R2 · UploadThing</text>
-  <rect x="836" y="120" width="240" height="240" rx="48" fill="#020617" stroke="#334155" stroke-width="4"/>
-  <path d="M896 172v112c0 67 41 106 92 106s92-39 92-106V172h-48v112c0 39-18 58-44 58s-44-19-44-58V172h-48Z" fill="url(#mark)" transform="scale(.72) translate(268 76)"/>
-  <path d="M956 150 884 222h46v116h52V222h46l-72-72Z" fill="#f8fafc"/>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#060c18"/>
+
+  <!-- Grid lines -->
+  <g stroke="#ffffff" stroke-opacity="0.032" stroke-width="1">
+    <!-- Vertical -->
+    <line x1="60"   y1="0" x2="60"   y2="630"/>
+    <line x1="120"  y1="0" x2="120"  y2="630"/>
+    <line x1="180"  y1="0" x2="180"  y2="630"/>
+    <line x1="240"  y1="0" x2="240"  y2="630"/>
+    <line x1="300"  y1="0" x2="300"  y2="630"/>
+    <line x1="360"  y1="0" x2="360"  y2="630"/>
+    <line x1="420"  y1="0" x2="420"  y2="630"/>
+    <line x1="480"  y1="0" x2="480"  y2="630"/>
+    <line x1="540"  y1="0" x2="540"  y2="630"/>
+    <line x1="600"  y1="0" x2="600"  y2="630"/>
+    <line x1="660"  y1="0" x2="660"  y2="630"/>
+    <line x1="720"  y1="0" x2="720"  y2="630"/>
+    <line x1="780"  y1="0" x2="780"  y2="630"/>
+    <line x1="840"  y1="0" x2="840"  y2="630"/>
+    <line x1="900"  y1="0" x2="900"  y2="630"/>
+    <line x1="960"  y1="0" x2="960"  y2="630"/>
+    <line x1="1020" y1="0" x2="1020" y2="630"/>
+    <line x1="1080" y1="0" x2="1080" y2="630"/>
+    <line x1="1140" y1="0" x2="1140" y2="630"/>
+    <!-- Horizontal -->
+    <line x1="0" y1="60"  x2="1200" y2="60"/>
+    <line x1="0" y1="120" x2="1200" y2="120"/>
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="240" x2="1200" y2="240"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="360" x2="1200" y2="360"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="480" x2="1200" y2="480"/>
+    <line x1="0" y1="540" x2="1200" y2="540"/>
+  </g>
+
+  <!-- Glow blobs -->
+  <ellipse cx="200" cy="160" rx="340" ry="260" fill="url(#glow-teal)"/>
+  <ellipse cx="1050" cy="480" rx="300" ry="240" fill="url(#glow-violet)"/>
+
+  <!-- Border frame -->
+  <rect x="1" y="1" width="1198" height="628" rx="0" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1"/>
+
+  <!-- ── LEFT HALF: branding + copy ── -->
+
+  <!-- Logo mark at 72×72 -->
+  <g transform="translate(80, 100)">
+    <rect width="72" height="72" rx="16" fill="#020617"/>
+    <path d="M18 21v21c0 12.7 7.7 19.8 17.6 19.8S53.2 54.7 53.2 42V21H44.2v21c0 7.7-3.3 11-8.8 11s-8.8-3.3-8.8-11V21H18Z" fill="url(#logo-grad)"/>
+    <path d="M36 10 21.5 24h8.8v22h9.9V24H49L36 10Z" fill="#f8fafc"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="168" y="149" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="42" font-weight="700" fill="#f1f5f9" letter-spacing="-1">Uplift</text>
+
+  <!-- Gradient underline accent under logo+wordmark -->
+  <rect x="80" y="192" width="320" height="2" rx="1" fill="url(#pill-grad)" opacity="0.5"/>
+
+  <!-- Tagline -->
+  <text x="80" y="260" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="48" font-weight="800" fill="#f1f5f9" letter-spacing="-2">File uploads as a</text>
+  <text x="80" y="322" font-family="'Georgia', 'Times New Roman', serif" font-size="52" font-weight="400" font-style="italic" fill="#2dd4bf" letter-spacing="-1">typed contract.</text>
+
+  <!-- Description -->
+  <text x="80" y="386" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="20" fill="#8fa3bb" letter-spacing="-0.2">Define routes once on the server.</text>
+  <text x="80" y="414" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="20" fill="#8fa3bb" letter-spacing="-0.2">Get a fully inferred typed client on the frontend.</text>
+
+  <!-- Stats row -->
+  <!-- Badge: 18.2kb gzip -->
+  <rect x="80" y="448" width="154" height="36" rx="8" fill="#0e1726" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+  <circle cx="104" cy="466" r="5" fill="#2dd4bf"/>
+  <text x="116" y="471" font-family="'Geist Mono', 'Courier New', monospace" font-size="13" font-weight="600" fill="#8fa3bb">18.2kb gzip</text>
+
+  <!-- Badge: MIT -->
+  <rect x="246" y="448" width="90" height="36" rx="8" fill="#0e1726" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+  <text x="291" y="471" font-family="'Geist Mono', 'Courier New', monospace" font-size="13" font-weight="600" fill="#8fa3bb" text-anchor="middle">MIT</text>
+
+  <!-- Badge: TypeScript -->
+  <rect x="348" y="448" width="126" height="36" rx="8" fill="#0e1726" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+  <text x="411" y="471" font-family="'Geist Mono', 'Courier New', monospace" font-size="13" font-weight="600" fill="#8fa3bb" text-anchor="middle">TypeScript</text>
+
+  <!-- Install command -->
+  <rect x="80" y="508" width="280" height="44" rx="10" fill="#04090f" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+  <text x="104" y="536" font-family="'Geist Mono', 'Courier New', monospace" font-size="17" fill="#3d556a">$</text>
+  <text x="124" y="536" font-family="'Geist Mono', 'Courier New', monospace" font-size="17" fill="#86efac">pnpm add uplift</text>
+
+  <!-- URL -->
+  <text x="80" y="596" font-family="'Geist Mono', 'Courier New', monospace" font-size="14" fill="#3d556a">itzfeminisce.github.io/uplift</text>
+
+  <!-- ── RIGHT HALF: code window ── -->
+
+  <!-- Code window card -->
+  <rect x="600" y="60" width="560" height="510" rx="16" fill="#04090f" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1"/>
+
+  <!-- Title bar -->
+  <rect x="600" y="60" width="560" height="48" rx="16" fill="#0a1422"/>
+  <rect x="600" y="84" width="560" height="24" fill="#0a1422"/>
+
+  <!-- Traffic lights -->
+  <circle cx="636" cy="84" r="6" fill="#ff5f57"/>
+  <circle cx="658" cy="84" r="6" fill="#febc2e"/>
+  <circle cx="680" cy="84" r="6" fill="#28c840"/>
+
+  <!-- File label -->
+  <text x="900" y="89" font-family="'Geist Mono', 'Courier New', monospace" font-size="12" fill="#3d556a" text-anchor="middle">upload.config.ts</text>
+
+  <!-- Separator -->
+  <line x1="600" y1="108" x2="1160" y2="108" stroke="#ffffff" stroke-opacity="0.05" stroke-width="1"/>
+
+  <!-- Code content — line by line, y starts at 140, spacing 28 -->
+  <!-- Line 1: comment -->
+  <text x="632" y="148" font-family="'Geist Mono', 'Courier New', monospace" font-size="14" fill="#3d556a">// server — define once</text>
+
+  <!-- Line 2: export const uploads = uplift({ -->
+  <text x="632" y="176" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#c084fc">export const </tspan><tspan fill="#e2e8f0">uploads </tspan><tspan fill="#f472b6">= </tspan><tspan fill="#60a5fa">uplift</tspan><tspan fill="#7a90a8">({</tspan>
+  </text>
+
+  <!-- Line 3: storage: s3(...) -->
+  <text x="632" y="204" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#7a90a8">  </tspan><tspan fill="#7dd3fc">storage</tspan><tspan fill="#7a90a8">: </tspan><tspan fill="#60a5fa">s3</tspan><tspan fill="#7a90a8">({ </tspan><tspan fill="#7dd3fc">bucket</tspan><tspan fill="#7a90a8">, </tspan><tspan fill="#7dd3fc">region</tspan><tspan fill="#7a90a8"> }),</tspan>
+  </text>
+
+  <!-- Line 4: routes: { -->
+  <text x="632" y="232" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#7a90a8">  </tspan><tspan fill="#7dd3fc">routes</tspan><tspan fill="#7a90a8">: {</tspan>
+  </text>
+
+  <!-- Line 5: avatar: image() -->
+  <text x="632" y="260" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#7a90a8">    </tspan><tspan fill="#7dd3fc">avatar</tspan><tspan fill="#7a90a8">: </tspan><tspan fill="#60a5fa">image</tspan><tspan fill="#7a90a8">()</tspan>
+  </text>
+
+  <!-- Line 6: .max("2mb").auth(...) -->
+  <text x="632" y="288" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#7a90a8">      .</tspan><tspan fill="#60a5fa">max</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#86efac">"2mb"</tspan><tspan fill="#7a90a8">).</tspan><tspan fill="#60a5fa">auth</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#c084fc">async </tspan><tspan fill="#7a90a8">({ </tspan><tspan fill="#7dd3fc">req</tspan><tspan fill="#7a90a8"> }) </tspan><tspan fill="#f472b6">=&gt; </tspan><tspan fill="#60a5fa">getUser</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#7dd3fc">req</tspan><tspan fill="#7a90a8">))</tspan>
+  </text>
+
+  <!-- Line 7: .key(...) -->
+  <text x="632" y="316" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#7a90a8">      .</tspan><tspan fill="#60a5fa">key</tspan><tspan fill="#7a90a8">(({ </tspan><tspan fill="#7dd3fc">user</tspan><tspan fill="#7a90a8"> }) </tspan><tspan fill="#f472b6">=&gt; </tspan><tspan fill="#86efac">`avatars/${</tspan><tspan fill="#7dd3fc">user</tspan><tspan fill="#86efac">.</tspan><tspan fill="#7dd3fc">id</tspan><tspan fill="#86efac">}.png`</tspan><tspan fill="#7a90a8">),</tspan>
+  </text>
+
+  <!-- Line 8: gallery -->
+  <text x="632" y="344" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#7a90a8">    </tspan><tspan fill="#7dd3fc">gallery</tspan><tspan fill="#7a90a8">: </tspan><tspan fill="#60a5fa">image</tspan><tspan fill="#7a90a8">().</tspan><tspan fill="#60a5fa">max</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#86efac">"8mb"</tspan><tspan fill="#7a90a8">).</tspan><tspan fill="#60a5fa">multiple</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#fb923c">10</tspan><tspan fill="#7a90a8">),</tspan>
+  </text>
+
+  <!-- Line 9: close routes + uplift -->
+  <text x="632" y="372" font-family="'Geist Mono', 'Courier New', monospace" font-size="14" fill="#7a90a8">  } });</text>
+
+  <!-- blank gap -->
+
+  <!-- Line 11: comment -->
+  <text x="632" y="414" font-family="'Geist Mono', 'Courier New', monospace" font-size="14" fill="#3d556a">// client — fully inferred</text>
+
+  <!-- Line 12: const upload = createUploadClient -->
+  <text x="632" y="442" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#c084fc">const </tspan><tspan fill="#e2e8f0">upload </tspan><tspan fill="#f472b6">= </tspan><tspan fill="#60a5fa">createUploadClient</tspan><tspan fill="#f472b6">&lt;</tspan><tspan fill="#c084fc">typeof </tspan><tspan fill="#e2e8f0">uploads</tspan><tspan fill="#f472b6">&gt;</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#86efac">"/api/upload"</tspan><tspan fill="#7a90a8">);</tspan>
+  </text>
+
+  <!-- Line 13: await upload.avatar -->
+  <text x="632" y="490" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#c084fc">await </tspan><tspan fill="#e2e8f0">upload</tspan><tspan fill="#7a90a8">.</tspan><tspan fill="#60a5fa">avatar</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#e2e8f0">file</tspan><tspan fill="#7a90a8">);   </tspan><tspan fill="#3d556a">// → UploadedFile</tspan>
+  </text>
+
+  <!-- Line 14: await upload.gallery -->
+  <text x="632" y="518" font-family="'Geist Mono', 'Courier New', monospace" font-size="14">
+    <tspan fill="#c084fc">await </tspan><tspan fill="#e2e8f0">upload</tspan><tspan fill="#7a90a8">.</tspan><tspan fill="#60a5fa">gallery</tspan><tspan fill="#7a90a8">(</tspan><tspan fill="#e2e8f0">files</tspan><tspan fill="#7a90a8">); </tspan><tspan fill="#3d556a">// → UploadedFile[]</tspan>
+  </text>
+
+  <!-- Bottom gradient fade on code window -->
+  <defs>
+    <linearGradient id="fade-bottom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#04090f" stop-opacity="0"/>
+      <stop offset="1" stop-color="#04090f" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect x="601" y="510" width="558" height="58" rx="0" fill="url(#fade-bottom)"/>
+  <rect x="601" y="553" width="558" height="16" rx="0" fill="#04090f"/>
 </svg>
