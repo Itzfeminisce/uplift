@@ -496,7 +496,7 @@
           <div class="cw">
             <div class="cw-bar">
               <div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div>
-              <span class="cw-lbl">upload.config.ts</span>
+              <span class="cw-lbl">upload.ts</span>
               <span style="width:60px"></span>
             </div>
             <div class="cw-body">
@@ -589,8 +589,8 @@
               <div class="cw">
                 <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">uploads.ts</span><span></span></div>
                 <div class="cw-body">
-<pre><span class="k">import</span> { <span class="n">image</span>, <span class="n">pdf</span>, <span class="n">uplift</span> } <span class="k">from</span> <span class="s">"uplift"</span>;
-<span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"uplift/storage/s3"</span>;
+<pre><span class="k">import</span> { <span class="n">image</span>, <span class="n">pdf</span>, <span class="n">uplift</span> } <span class="k">from</span> <span class="s">"uplift-io"</span>;
+<span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/s3"</span>;
 
 <span class="k">export const</span> <span class="n">uploads</span> <span class="o">=</span> <span class="f">uplift</span>({
   <span class="p">storage</span>: <span class="f">s3</span>({
@@ -621,12 +621,12 @@
                 <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">Next.js · Hono · Express</span><span></span></div>
                 <div class="cw-body">
 <pre><span class="c">// Next.js App Router — app/api/upload/route.ts</span>
-<span class="k">import</span> { <span class="n">createNextHandler</span> } <span class="k">from</span> <span class="s">"uplift/next"</span>;
+<span class="k">import</span> { <span class="n">createNextHandler</span> } <span class="k">from</span> <span class="s">"uplift-io/next"</span>;
 <span class="k">import</span> { <span class="n">uploads</span> } <span class="k">from</span> <span class="s">"@/uploads"</span>;
 <span class="k">export const</span> { <span class="n">GET</span>, <span class="n">POST</span> } <span class="o">=</span> <span class="f">createNextHandler</span>(<span class="n">uploads</span>);
 
 <span class="c">// Hono</span>
-<span class="k">import</span> { <span class="n">createHonoHandler</span> } <span class="k">from</span> <span class="s">"uplift/hono"</span>;
+<span class="k">import</span> { <span class="n">createHonoHandler</span> } <span class="k">from</span> <span class="s">"uplift-io/hono"</span>;
 <span class="n">app</span>.<span class="f">route</span>(<span class="s">"/upload"</span>, <span class="f">createHonoHandler</span>(<span class="n">uploads</span>));
 
 <span class="c">// Express</span>
@@ -639,7 +639,7 @@
               <div class="cw">
                 <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">upload-client.ts</span><span></span></div>
                 <div class="cw-body">
-<pre><span class="k">import</span> { <span class="n">createUploadClient</span> } <span class="k">from</span> <span class="s">"uplift/client"</span>;
+<pre><span class="k">import</span> { <span class="n">createUploadClient</span> } <span class="k">from</span> <span class="s">"uplift-io/client"</span>;
 <span class="k">import type</span> { <span class="n">Uploads</span> } <span class="k">from</span> <span class="s">"./uploads"</span>;
 
 <span class="k">export const</span> <span class="n">upload</span> <span class="o">=</span>
@@ -684,7 +684,7 @@
           <div class="cw">
             <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">AvatarUploader.tsx</span><span></span></div>
             <div class="cw-body">
-<pre><span class="k">import</span> { <span class="n">useUploads</span> } <span class="k">from</span> <span class="s">"uplift/react"</span>;
+<pre><span class="k">import</span> { <span class="n">useUploads</span> } <span class="k">from</span> <span class="s">"uplift-io/react"</span>;
 <span class="k">import type</span> { <span class="n">Uploads</span> } <span class="k">from</span> <span class="s">"./uploads"</span>;
 
 <span class="k">export function</span> <span class="f">AvatarUploader</span>() {
@@ -791,7 +791,7 @@
             <div class="cw">
               <div class="cw-bar">
                 <div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div>
-                <span class="cw-lbl" id="storage-label">uplift/storage/s3</span>
+                <span class="cw-lbl" id="storage-label">uplift-io/storage/s3</span>
                 <span></span>
               </div>
               <div class="cw-body" id="storage-code-body">
@@ -872,8 +872,8 @@
       // ── Storage provider switcher ──
       const storageSnippets = {
         s3: {
-          label: 'uplift/storage/s3',
-          code: `<pre><span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"uplift/storage/s3"</span>;
+          label: 'uplift-io/storage/s3',
+          code: `<pre><span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/s3"</span>;
 
 <span class="p">storage</span>: <span class="f">s3</span>({
   <span class="p">bucket</span>:          <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_BUCKET</span><span class="o">!</span>,
@@ -883,8 +883,8 @@
 }),</pre>`
         },
         r2: {
-          label: 'uplift/storage/r2',
-          code: `<pre><span class="k">import</span> { <span class="n">r2</span> } <span class="k">from</span> <span class="s">"uplift/storage/r2"</span>;
+          label: 'uplift-io/storage/r2',
+          code: `<pre><span class="k">import</span> { <span class="n">r2</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/r2"</span>;
 
 <span class="p">storage</span>: <span class="f">r2</span>({
   <span class="p">bucket</span>:          <span class="n">process</span>.<span class="p">env</span>.<span class="n">R2_BUCKET</span><span class="o">!</span>,
@@ -897,8 +897,8 @@
 <span class="c">// endpoint is auto-set to your Cloudflare R2 URL</span></pre>`
         },
         bunny: {
-          label: 'uplift/storage/bunny',
-          code: `<pre><span class="k">import</span> { <span class="n">bunny</span> } <span class="k">from</span> <span class="s">"uplift/storage/bunny"</span>;
+          label: 'uplift-io/storage/bunny',
+          code: `<pre><span class="k">import</span> { <span class="n">bunny</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/bunny"</span>;
 
 <span class="p">storage</span>: <span class="f">bunny</span>({
   <span class="p">apiKey</span>:      <span class="n">process</span>.<span class="p">env</span>.<span class="n">BUNNY_API_KEY</span><span class="o">!</span>,
@@ -910,8 +910,8 @@
 <span class="c">// uploads via Bunny Storage HTTP API (fetch, no extra SDK)</span></pre>`
         },
         cloudinary: {
-          label: 'uplift/storage/cloudinary',
-          code: `<pre><span class="k">import</span> { <span class="n">cloudinary</span> } <span class="k">from</span> <span class="s">"uplift/storage/cloudinary"</span>;
+          label: 'uplift-io/storage/cloudinary',
+          code: `<pre><span class="k">import</span> { <span class="n">cloudinary</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/cloudinary"</span>;
 
 <span class="p">storage</span>: <span class="f">cloudinary</span>({
   <span class="p">cloudName</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_CLOUD_NAME</span><span class="o">!</span>,
@@ -923,8 +923,8 @@
 <span class="c">// uploads via Cloudinary Upload API (fetch, no SDK)</span></pre>`
         },
         local: {
-          label: 'uplift/storage/local',
-          code: `<pre><span class="k">import</span> { <span class="n">local</span> } <span class="k">from</span> <span class="s">"uplift/storage/local"</span>;
+          label: 'uplift-io/storage/local',
+          code: `<pre><span class="k">import</span> { <span class="n">local</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/local"</span>;
 
 <span class="p">storage</span>: <span class="f">local</span>({
   <span class="p">dir</span>: <span class="s">"./uploads"</span>, <span class="c">// relative to cwd</span>
@@ -935,8 +935,8 @@
 <span class="c">// ideal for dev — swap for s3() in production</span></pre>`
         },
         memory: {
-          label: 'uplift/storage/memory',
-          code: `<pre><span class="k">import</span> { <span class="n">memory</span> } <span class="k">from</span> <span class="s">"uplift/storage/memory"</span>;
+          label: 'uplift-io/storage/memory',
+          code: `<pre><span class="k">import</span> { <span class="n">memory</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/memory"</span>;
 
 <span class="p">storage</span>: <span class="f">memory</span>(),
 
@@ -945,8 +945,8 @@
 <span class="c">// useful for tests and CI — zero config</span></pre>`
         },
         uploadthing: {
-          label: 'uplift/storage/uploadthing',
-          code: `<pre><span class="k">import</span> { <span class="n">uploadthing</span> } <span class="k">from</span> <span class="s">"uplift/storage/uploadthing"</span>;
+          label: 'uplift-io/storage/uploadthing',
+          code: `<pre><span class="k">import</span> { <span class="n">uploadthing</span> } <span class="k">from</span> <span class="s">"uplift-io/storage/uploadthing"</span>;
 <span class="k">import</span> { <span class="n">UTApi</span> } <span class="k">from</span> <span class="s">"uploadthing/server"</span>;
 
 <span class="k">const</span> <span class="n">utapi</span> <span class="o">=</span> <span class="k">new</span> <span class="f">UTApi</span>();

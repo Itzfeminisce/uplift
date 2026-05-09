@@ -9,13 +9,13 @@
   },
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter uplift build",
+    "build": "pnpm --filter uplift-io build",
     "bundle:size": "node scripts/measure-bundle-size.mjs",
     "docs:check": "tsc -p docs/snippets/tsconfig.json --noEmit",
     "examples:check": "pnpm --filter \"@uplift/example-*\" typecheck",
     "smoke:pack": "node scripts/smoke-pack.mjs",
-    "test": "pnpm --filter uplift test",
-    "typecheck": "pnpm --filter uplift typecheck",
+    "test": "pnpm --filter uplift-io test",
+    "typecheck": "pnpm --filter uplift-io typecheck",
     "check": "pnpm typecheck && pnpm test && pnpm build && pnpm docs:check && pnpm examples:check && pnpm bundle:size && pnpm smoke:pack"
   },
   "devDependencies": {
@@ -27,5 +27,5 @@
     "vitest": "^3.0.5"
   },
   "packageManager": "pnpm@10.0.0",
-  "version": "0.0.0"
+  "version": "0.1.0"
 }

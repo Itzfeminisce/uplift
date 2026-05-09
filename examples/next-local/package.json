@@ -6,7 +6,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "uplift": "workspace:*"
+    "uplift-io": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

@@ -1,5 +1,5 @@
-import { image, pdf, uplift } from "uplift";
-import { s3 } from "uplift/storage/s3";
+import { image, pdf, uplift } from "uplift-io";
+import { s3 } from "uplift-io/storage/s3";
 
 export const uploads = uplift({
   storage: s3({

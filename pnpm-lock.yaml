@@ -29,7 +29,7 @@ importers:
 
   examples/next-local:
     dependencies:
-      uplift:
+      uplift-io:
         specifier: workspace:*
         version: link:../../packages/uplift
     devDependencies:

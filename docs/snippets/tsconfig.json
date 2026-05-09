@@ -5,8 +5,8 @@
     "noEmit": true,
     "types": ["node", "react"],
     "paths": {
-      "uplift": ["packages/uplift/dist/index.d.ts"],
-      "uplift/*": ["packages/uplift/dist/*.d.ts"],
+      "uplift-io": ["packages/uplift/dist/index.d.ts"],
+      "uplift-io/*": ["packages/uplift/dist/*.d.ts"],
       "@/*": ["docs/snippets/*"]
     }
   },

@@ -1,4 +1,4 @@
-import { useUploads } from "uplift/react";
+import { useUploads } from "uplift-io/react";
 import type { Uploads } from "./quickstart";
 
 export function AvatarUploader() {
