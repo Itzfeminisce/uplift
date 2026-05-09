@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "noEmit": true,
+    "types": ["node", "react"],
+    "paths": {
+      "uplift": ["packages/uplift/dist/index.d.ts"],
+      "uplift/*": ["packages/uplift/dist/*.d.ts"],
+      "@/*": ["docs/snippets/*"]
+    }
+  },
+  "include": ["*.ts", "*.tsx"]
+}

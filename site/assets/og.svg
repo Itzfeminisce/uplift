@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Uplift Open Graph image</title>
+  <desc id="desc">Dark Uplift brand image with a typed upload contract message.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1200" y1="0" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020617"/>
+      <stop offset=".55" stop-color="#071426"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="836" x2="1095" y1="520" y2="178" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14b8a6"/>
+      <stop offset=".52" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <path d="M80 92h1040v446H80z" fill="none" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="102" y="160" fill="#5eead4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="800">Uplift</text>
+  <text x="102" y="260" fill="#f8fafc" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="74" font-weight="900">Typed file uploads</text>
+  <text x="102" y="342" fill="#cbd5e1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="600">Define routes once.</text>
+  <text x="102" y="394" fill="#cbd5e1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="600">Use them everywhere.</text>
+  <text x="102" y="486" fill="#94a3b8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700">Next.js · Hono · Express · S3 · R2 · UploadThing</text>
+  <rect x="836" y="120" width="240" height="240" rx="48" fill="#020617" stroke="#334155" stroke-width="4"/>
+  <path d="M896 172v112c0 67 41 106 92 106s92-39 92-106V172h-48v112c0 39-18 58-44 58s-44-19-44-58V172h-48Z" fill="url(#mark)" transform="scale(.72) translate(268 76)"/>
+  <path d="M956 150 884 222h46v116h52V222h46l-72-72Z" fill="#f8fafc"/>
+</svg>

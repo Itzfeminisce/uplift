@@ -1,0 +1,16 @@
+{
+  "name": "@uplift/example-next-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "uplift": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.8",
+    "typescript": "^5.7.3"
+  }
+}

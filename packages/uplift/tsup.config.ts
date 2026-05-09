@@ -13,7 +13,8 @@ export default defineConfig({
     "src/storage/r2.ts",
     "src/storage/bunny.ts",
     "src/storage/cloudinary.ts",
-    "src/storage/local.ts"
+    "src/storage/local.ts",
+    "src/storage/uploadthing.ts"
   ],
   format: ["esm", "cjs"],
   dts: true,

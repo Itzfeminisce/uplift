@@ -4,6 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/uplift?color=2563eb)](https://www.npmjs.com/package/uplift)
 [![npm downloads total](https://img.shields.io/npm/dt/uplift?color=7c3aed)](https://www.npmjs.com/package/uplift)
 [![CI](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml/badge.svg)](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml)
+[![bundle size](https://img.shields.io/badge/bundle-measured%20locally-14b8a6)](https://github.com/Itzfeminisce/uplift/blob/main/docs/BUNDLE_SIZE.md)
 [![license](https://img.shields.io/npm/l/uplift)](https://github.com/Itzfeminisce/uplift/blob/main/LICENSE)
 
 Dead-simple, type-safe file uploads for TypeScript applications.
@@ -62,5 +63,21 @@ const gallery = await upload.gallery(fileList);
 ## More
 
 - Full docs: [itzfeminisce.github.io/uplift](https://itzfeminisce.github.io/uplift/)
+- Bundle size report: [docs/BUNDLE_SIZE.md](https://github.com/Itzfeminisce/uplift/blob/main/docs/BUNDLE_SIZE.md)
+- Next local example: [examples/next-local](https://github.com/Itzfeminisce/uplift/tree/main/examples/next-local)
 - GitHub: [github.com/Itzfeminisce/uplift](https://github.com/Itzfeminisce/uplift)
 - License: MIT
+
+## Storage
+
+Uplift includes S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible adapters. The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()` and keeps UploadThing optional:
+
+```ts
+import { uploadthing } from "uplift/storage/uploadthing";
+import { UTApi } from "uploadthing/server";
+
+const utapi = new UTApi();
+const storage = uploadthing({
+  uploader: (file) => utapi.uploadFiles(file)
+});
+```
