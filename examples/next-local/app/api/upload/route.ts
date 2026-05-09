@@ -1,4 +1,4 @@
-import { createNextHandler } from "uplift/next";
+import { createNextHandler } from "uplift-io/next";
 import { uploads } from "../../../src/uploads";
 
 export const { GET, POST } = createNextHandler(uploads);

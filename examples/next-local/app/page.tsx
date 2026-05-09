@@ -1,4 +1,4 @@
-import { createUploadClient } from "uplift/client";
+import { createUploadClient } from "uplift-io/client";
 import type { Uploads } from "../src/uploads";
 
 const upload = createUploadClient<Uploads>("/api/upload");

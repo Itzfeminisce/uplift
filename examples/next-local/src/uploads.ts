@@ -1,7 +1,7 @@
-import { image, uplift } from "uplift";
-import { local } from "uplift/storage/local";
-import { r2 } from "uplift/storage/r2";
-import { s3 } from "uplift/storage/s3";
+import { image, uplift } from "uplift-io";
+import { local } from "uplift-io/storage/local";
+import { r2 } from "uplift-io/storage/r2";
+import { s3 } from "uplift-io/storage/s3";
 
 const storage = (() => {
   if (process.env.UPLIFT_STORAGE === "s3") {
@@ -26,12 +26,7 @@ const storage = (() => {
 })();
 
 export const uploads = uplift({
-  storage: s3({
-    bucket: process.env.S3_BUCKET!,
-    region: process.env.S3_REGION ?? "us-east-1",
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  }),
+  storage,
   routes: {
     avatar: image()
       .max("2mb")
