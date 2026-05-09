@@ -2,63 +2,77 @@
 
 This draft follows the `to-issues` tracer-bullet workflow. Each slice should be independently verifiable and preferably AFK unless a product or architecture decision needs human review.
 
+## Filed GitHub Issues
+
+- Parent PRD: #1 - https://github.com/Itzfeminisce/uplift/issues/1
+- #2 Type inference tracer bullet - https://github.com/Itzfeminisce/uplift/issues/2
+- #3 Core route config and validation runtime - https://github.com/Itzfeminisce/uplift/issues/3
+- #4 Framework-neutral multipart upload pipeline - https://github.com/Itzfeminisce/uplift/issues/4
+- #5 Typed vanilla upload client - https://github.com/Itzfeminisce/uplift/issues/5
+- #6 Next.js, Hono, and Express handler adapters - https://github.com/Itzfeminisce/uplift/issues/6
+- #7 React hook over vanilla client - https://github.com/Itzfeminisce/uplift/issues/7
+- #8 Storage adapter set - https://github.com/Itzfeminisce/uplift/issues/8
+- #9 Rich inspection package - https://github.com/Itzfeminisce/uplift/issues/9
+- #10 Package, release, and export setup - https://github.com/Itzfeminisce/uplift/issues/10
+- #11 Developer-facing examples and docs - https://github.com/Itzfeminisce/uplift/issues/11
+
 ## Proposed Slices
 
-1. **Type inference tracer bullet**
+1. **Type inference tracer bullet** (#2)
    - Type: AFK
    - Blocked by: None
    - User stories covered: 1, 2, 3, 4, 5, 6, 7, 12, 37, 42
    - What to build: Prove the fluent builder type model with single-file and multi-file routes, including `done()` context narrowing and route-to-client type inference.
 
-2. **Core route config and validation runtime**
+2. **Core route config and validation runtime** (#3)
    - Type: AFK
    - Blocked by: Type inference tracer bullet
    - User stories covered: 8, 9, 10, 11, 13, 16, 17, 18, 19, 21, 23, 24, 25, 26, 27
    - What to build: Materialize route definitions into runtime config and validate file size, type, schema, metadata, auth, and custom validation behavior.
 
-3. **Framework-neutral multipart upload pipeline**
+3. **Framework-neutral multipart upload pipeline** (#4)
    - Type: AFK
    - Blocked by: Core route config and validation runtime
    - User stories covered: 14, 15, 16, 17, 36
    - What to build: Accept multipart upload requests, parse files with busboy, run route validation, store files through a storage adapter contract, and invoke route/global completion hooks.
 
-4. **Typed vanilla upload client**
+4. **Typed vanilla upload client** (#5)
    - Type: AFK
    - Blocked by: Type inference tracer bullet, Framework-neutral multipart upload pipeline
    - User stories covered: 2, 3, 4, 5, 16, 17
    - What to build: Provide `createUploadClient()` that exposes route-named methods with typed inputs, typed results, upload errors, and progress support.
 
-5. **Next.js, Hono, and Express handler adapters**
+5. **Next.js, Hono, and Express handler adapters** (#6)
    - Type: AFK
    - Blocked by: Framework-neutral multipart upload pipeline
    - User stories covered: 28, 29, 30
    - What to build: Wrap the framework-neutral upload pipeline in adapters for Next.js, Hono, and Express with consistent request/response behavior.
 
-6. **React hook over vanilla client**
+6. **React hook over vanilla client** (#7)
    - Type: AFK
    - Blocked by: Typed vanilla upload client
    - User stories covered: 31, 32
    - What to build: Implement `useUploads()` as a thin typed state layer over the vanilla client, exposing route methods plus progress, loading, error, and last data state.
 
-7. **Storage adapter set**
+7. **Storage adapter set** (#8)
    - Type: AFK
    - Blocked by: Framework-neutral multipart upload pipeline
    - User stories covered: 33, 34, 35
    - What to build: Implement thin S3, R2, Bunny, Cloudinary, and local adapters behind the storage contract without leaking provider dependencies into core.
 
-8. **Rich inspection package**
+8. **Rich inspection package** (#9)
    - Type: AFK
    - Blocked by: Core route config and validation runtime
    - User stories covered: 20, 22
    - What to build: Add `uplift/rich` builders for PDF page/encryption checks and audio/video duration checks while keeping inspection dependencies out of core.
 
-9. **Package, release, and export setup**
+9. **Package, release, and export setup** (#10)
    - Type: AFK
    - Blocked by: Type inference tracer bullet
    - User stories covered: 38, 39, 40, 41
    - What to build: Set up workspace package boundaries, strict TS config, tsup builds, vitest commands, changesets, and public subpath exports.
 
-10. **Developer-facing examples and docs**
+10. **Developer-facing examples and docs** (#11)
     - Type: HITL
     - Blocked by: Typed vanilla upload client, Next.js/Hono/Express adapters, React hook over vanilla client, Storage adapter set
     - User stories covered: 28, 29, 30, 31, 33, 34, 42
