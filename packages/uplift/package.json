@@ -1,0 +1,99 @@
+{
+  "name": "uplift",
+  "version": "0.0.0",
+  "description": "Dead-simple, type-safe file handling for TypeScript applications.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./rich": {
+      "types": "./dist/rich.d.ts",
+      "import": "./dist/rich.js",
+      "require": "./dist/rich.cjs"
+    },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "import": "./dist/next.js",
+      "require": "./dist/next.cjs"
+    },
+    "./hono": {
+      "types": "./dist/hono.d.ts",
+      "import": "./dist/hono.js",
+      "require": "./dist/hono.cjs"
+    },
+    "./express": {
+      "types": "./dist/express.d.ts",
+      "import": "./dist/express.js",
+      "require": "./dist/express.cjs"
+    },
+    "./storage/s3": {
+      "types": "./dist/storage/s3.d.ts",
+      "import": "./dist/storage/s3.js",
+      "require": "./dist/storage/s3.cjs"
+    },
+    "./storage/r2": {
+      "types": "./dist/storage/r2.d.ts",
+      "import": "./dist/storage/r2.js",
+      "require": "./dist/storage/r2.cjs"
+    },
+    "./storage/bunny": {
+      "types": "./dist/storage/bunny.d.ts",
+      "import": "./dist/storage/bunny.js",
+      "require": "./dist/storage/bunny.cjs"
+    },
+    "./storage/cloudinary": {
+      "types": "./dist/storage/cloudinary.d.ts",
+      "import": "./dist/storage/cloudinary.js",
+      "require": "./dist/storage/cloudinary.cjs"
+    },
+    "./storage/local": {
+      "types": "./dist/storage/local.d.ts",
+      "import": "./dist/storage/local.js",
+      "require": "./dist/storage/local.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepack": "pnpm build",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "busboy": "^1.6.0",
+    "hono": "^4.12.18"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/busboy": "^1.5.4",
+    "react": "^19.0.0"
+  }
+}
