@@ -176,4 +176,71 @@ describe("uplift runtime", () => {
       error: { code: "VALIDATION_FAILED" }
     });
   });
+
+  it("does not run completion hooks when storage fails", async () => {
+    const completed: string[] = [];
+    const app = uplift({
+      storage: {
+        provider: "broken",
+        put: async () => {
+          throw new Error("storage offline");
+        }
+      },
+      onUploadComplete: async () => {
+        completed.push("app");
+      },
+      routes: {
+        avatar: image().done(() => {
+          completed.push("route");
+        })
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload?route=avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(500);
+    expect(completed).toEqual([]);
+  });
+
+  it("rejects unsafe storage keys before writing to the adapter", async () => {
+    const written: string[] = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => {
+          written.push(key);
+          return {
+            key,
+            url: `memory://${key}`,
+            provider: "memory",
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            extension: file.extension
+          };
+        }
+      },
+      routes: {
+        avatar: image().key(() => "../avatar.png")
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload?route=avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "VALIDATION_FAILED" }
+    });
+    expect(written).toEqual([]);
+  });
 });

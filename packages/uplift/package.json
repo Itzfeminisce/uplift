@@ -88,6 +88,11 @@
       "types": "./dist/storage/local.d.ts",
       "import": "./dist/storage/local.js",
       "require": "./dist/storage/local.cjs"
+    },
+    "./storage/uploadthing": {
+      "types": "./dist/storage/uploadthing.d.ts",
+      "import": "./dist/storage/uploadthing.js",
+      "require": "./dist/storage/uploadthing.cjs"
     }
   },
   "files": [

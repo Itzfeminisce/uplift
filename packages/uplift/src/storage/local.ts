@@ -10,7 +10,7 @@ export function local(directory: string, options: { publicBaseUrl?: string } = {
       await mkdir(dirname(path), { recursive: true });
       await writeFile(path, Buffer.from(await body.arrayBuffer()));
       return {
-        url: `${options.publicBaseUrl ?? ""}/${key}`.replace(/\/+/g, "/"),
+        url: joinUrl(options.publicBaseUrl, key),
         key,
         name: file.name,
         type: file.type,
@@ -20,4 +20,9 @@ export function local(directory: string, options: { publicBaseUrl?: string } = {
       };
     }
   };
+}
+
+function joinUrl(baseUrl: string | undefined, key: string): string {
+  if (!baseUrl) return `/${key}`;
+  return `${baseUrl.replace(/\/+$/, "")}/${key.replace(/^\/+/, "")}`;
 }

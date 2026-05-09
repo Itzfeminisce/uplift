@@ -38,6 +38,7 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
       const meta = await deriveMeta(route._def, req, item.input, user);
       await validateFile(route._def, req, item, user, meta);
       const key = route._def.key ? await route._def.key({ req, file: item.input, user, meta }) : defaultKey(item.input);
+      assertSafeStorageKey(key);
       stored.push({
         file: await app.storage.put({ key, file: item.input, body: item.body }),
         meta
@@ -63,6 +64,21 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
   } catch (error) {
     const uploadError = normalizeError(error);
     return json({ error: uploadError }, statusFor(uploadError));
+  }
+}
+
+function assertSafeStorageKey(key: string): void {
+  if (key.length === 0) {
+    throw new UploadError("VALIDATION_FAILED", "Storage key cannot be empty.");
+  }
+  if (
+    key.includes("\0") ||
+    key.includes("\\") ||
+    key.includes("://") ||
+    key.split("/").includes("..") ||
+    /^([a-zA-Z]:)?\//.test(key)
+  ) {
+    throw new UploadError("VALIDATION_FAILED", "Storage key must be a relative object key.");
   }
 }
 

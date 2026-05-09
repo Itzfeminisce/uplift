@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-05-09T10:03:24.219Z",
+  "package": "uplift",
+  "version": "0.0.0",
+  "entries": [
+    {
+      "file": "client.js",
+      "bytes": 2494,
+      "gzipBytes": 1027
+    },
+    {
+      "file": "express.js",
+      "bytes": 10410,
+      "gzipBytes": 3257
+    },
+    {
+      "file": "hono.js",
+      "bytes": 9683,
+      "gzipBytes": 2985
+    },
+    {
+      "file": "index.js",
+      "bytes": 6368,
+      "gzipBytes": 2125
+    },
+    {
+      "file": "next.js",
+      "bytes": 9495,
+      "gzipBytes": 2953
+    },
+    {
+      "file": "react.js",
+      "bytes": 4113,
+      "gzipBytes": 1417
+    },
+    {
+      "file": "rich.js",
+      "bytes": 3023,
+      "gzipBytes": 1001
+    },
+    {
+      "file": "storage/bunny.js",
+      "bytes": 1194,
+      "gzipBytes": 580
+    },
+    {
+      "file": "storage/cloudinary.js",
+      "bytes": 1525,
+      "gzipBytes": 658
+    },
+    {
+      "file": "storage/local.js",
+      "bytes": 815,
+      "gzipBytes": 428
+    },
+    {
+      "file": "storage/r2.js",
+      "bytes": 2036,
+      "gzipBytes": 867
+    },
+    {
+      "file": "storage/s3.js",
+      "bytes": 1672,
+      "gzipBytes": 751
+    },
+    {
+      "file": "storage/uploadthing.js",
+      "bytes": 1625,
+      "gzipBytes": 617
+    }
+  ],
+  "totalBytes": 54453,
+  "totalGzipBytes": 18666
+}

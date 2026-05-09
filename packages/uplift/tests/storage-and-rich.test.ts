@@ -1,3 +1,6 @@
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import { audio, pdf, video } from "../src/rich";
 import { bunny } from "../src/storage/bunny";
@@ -5,6 +8,7 @@ import { cloudinary } from "../src/storage/cloudinary";
 import { local } from "../src/storage/local";
 import { r2 } from "../src/storage/r2";
 import { s3 } from "../src/storage/s3";
+import { uploadthing } from "../src/storage/uploadthing";
 
 const body = new File(["hello"], "hello.txt", { type: "text/plain" });
 const file = {
@@ -44,6 +48,81 @@ describe("storage adapters", () => {
 
   it("creates a local storage adapter", () => {
     expect(local("./uploads").provider).toBe("local");
+  });
+
+  it("preserves absolute public base URLs for local storage", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "uplift-local-"));
+    try {
+      await expect(local(directory, { publicBaseUrl: "https://cdn.example.com/uploads" }).put({
+        key: "avatars/hello.txt",
+        file,
+        body
+      })).resolves.toMatchObject({
+        url: "https://cdn.example.com/uploads/avatars/hello.txt"
+      });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("uploads through an UploadThing-compatible server uploader", async () => {
+    const calls: unknown[] = [];
+    const adapter = uploadthing({
+      uploader: async (fileToUpload) => {
+        calls.push(fileToUpload);
+        return {
+          key: "utfs-key",
+          url: "https://utfs.io/f/utfs-key",
+          name: "hello.txt",
+          type: "text/plain",
+          size: 5
+        };
+      }
+    });
+
+    await expect(adapter.put({ key: "hello.txt", file, body }))
+      .resolves.toMatchObject({
+        provider: "uploadthing",
+        key: "utfs-key",
+        url: "https://utfs.io/f/utfs-key"
+      });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("normalizes UploadThing UTApi uploadFiles responses", async () => {
+    const adapter = uploadthing({
+      uploader: async () => ({
+        data: {
+          key: "utfs-key",
+          url: "https://utfs.io/f/utfs-key",
+          name: "hello.txt",
+          size: 5
+        },
+        error: null
+      })
+    });
+
+    await expect(adapter.put({ key: "hello.txt", file, body }))
+      .resolves.toMatchObject({
+        provider: "uploadthing",
+        key: "utfs-key",
+        url: "https://utfs.io/f/utfs-key"
+      });
+  });
+
+  it("turns UploadThing upload errors into upload failures", async () => {
+    const adapter = uploadthing({
+      uploader: async () => ({
+        data: null,
+        error: { code: "BAD_REQUEST", message: "Rejected by UploadThing", data: null }
+      })
+    });
+
+    await expect(adapter.put({ key: "hello.txt", file, body }))
+      .rejects.toMatchObject({
+        code: "UPLOAD_FAILED",
+        message: "Rejected by UploadThing"
+      });
   });
 });
 

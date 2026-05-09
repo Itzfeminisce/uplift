@@ -1,9 +1,14 @@
+<p align="center">
+  <img src="./site/assets/logo.svg" alt="Uplift logo" width="88" height="88" />
+</p>
+
 # Uplift
 
 [![npm version](https://img.shields.io/npm/v/uplift?color=0f766e)](https://www.npmjs.com/package/uplift)
 [![npm downloads](https://img.shields.io/npm/dm/uplift?color=2563eb)](https://www.npmjs.com/package/uplift)
 [![npm downloads total](https://img.shields.io/npm/dt/uplift?color=7c3aed)](https://www.npmjs.com/package/uplift)
 [![CI](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml/badge.svg)](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml)
+[![bundle size](https://img.shields.io/badge/bundle-measured%20locally-14b8a6)](./docs/BUNDLE_SIZE.md)
 [![license](https://img.shields.io/npm/l/uplift)](./LICENSE)
 
 Dead-simple, type-safe file uploads for TypeScript applications.
@@ -23,9 +28,10 @@ Uplift is for people who want file uploads to feel like a TypeScript contract in
 - **Fluent server API**: `image().max("2mb").auth(...).key(...).done(...)`.
 - **Single endpoint**: the client posts to one upload endpoint with a route query.
 - **Framework adapters**: Next.js, Hono, and Express entrypoints.
-- **Storage adapters**: S3, R2, Bunny, Cloudinary, local, and memory storage.
+- **Storage adapters**: S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible storage.
 - **No schema lock-in**: JSON validation accepts any `.parse()` schema.
 - **Small core**: React and rich inspection live behind subpath exports.
+- **Package hardening**: docs snippets, example app, bundle size, and install smoke checks run before publish.
 
 ## Install
 
@@ -227,9 +233,45 @@ import { cloudinary } from "uplift/storage/cloudinary";
 import { local } from "uplift/storage/local";
 import { r2 } from "uplift/storage/r2";
 import { s3 } from "uplift/storage/s3";
+import { uploadthing } from "uplift/storage/uploadthing";
 ```
 
-S3 and R2 use `@aws-sdk/client-s3`. Bunny and Cloudinary perform provider uploads with `fetch`. Local storage writes to disk.
+S3 and R2 use `@aws-sdk/client-s3`. Bunny and Cloudinary perform provider uploads with `fetch`. Local storage writes to disk. The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()`, keeping UploadThing as an optional integration rather than a core dependency.
+
+```ts
+import { uploadthing } from "uplift/storage/uploadthing";
+import { UTApi } from "uploadthing/server";
+
+const utapi = new UTApi();
+
+const storage = uploadthing({
+  uploader: (file) => utapi.uploadFiles(file)
+});
+```
+
+## Examples
+
+- [Next local example](./examples/next-local): local storage by default, with S3 and R2 configuration paths.
+- [Typed docs snippets](./docs/snippets): source samples checked by TypeScript.
+
+Run the dogfood checks:
+
+```bash
+pnpm docs:check
+pnpm examples:check
+pnpm smoke:pack
+```
+
+## Bundle Size
+
+Bundle size is generated from the built package, not a remote badge service:
+
+```bash
+pnpm build
+pnpm bundle:size
+```
+
+See [docs/BUNDLE_SIZE.md](./docs/BUNDLE_SIZE.md).
 
 ## Rich Inspection
 
@@ -250,6 +292,16 @@ Rich inspection methods currently fail closed until an inspector is wired for th
 - Docs site: [itzfeminisce.github.io/uplift](https://itzfeminisce.github.io/uplift/)
 - PRD: [docs/PRD.md](./docs/PRD.md)
 - Issue breakdown: [docs/ISSUE_BREAKDOWN.md](./docs/ISSUE_BREAKDOWN.md)
+- 0.1.0 checklist: [docs/releases/0.1.0-checklist.md](./docs/releases/0.1.0-checklist.md)
+
+## Comparison
+
+Uplift is not trying to replace every upload tool.
+
+- Choose **Uplift** when the upload contract should be typed from server route to client call, and storage should stay swappable.
+- Choose **UploadThing** when you want managed upload infrastructure and first-party UI helpers. Uplift can use it as a storage boundary.
+- Choose **Uppy** or **FilePond** when the browser upload widget is the product surface.
+- Choose **direct SDKs** when you need bespoke storage behavior and do not need route inference.
 
 ## Project Status
 

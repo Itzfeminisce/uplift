@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Uplift logo</title>
+  <desc id="desc">A bright upload arrow rising through a rounded U shape.</desc>
+  <defs>
+    <linearGradient id="mark" x1="22" x2="106" y1="108" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14b8a6"/>
+      <stop offset=".52" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#020617"/>
+  <path d="M32 38v38c0 23 14 36 32 36s32-13 32-36V38H80v38c0 14-6 20-16 20s-16-6-16-20V38H32Z" fill="url(#mark)"/>
+  <path d="M64 18 39 43h16v40h18V43h16L64 18Z" fill="#f8fafc"/>
+</svg>
