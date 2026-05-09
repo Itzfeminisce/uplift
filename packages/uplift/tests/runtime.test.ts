@@ -1,0 +1,131 @@
+import { describe, expect, it } from "vitest";
+import { any, createMemoryStorage, image, json, uplift } from "../src";
+import { handleUploadRequest } from "../src/server";
+
+function file(name: string, type: string, body = "content") {
+  return new File([body], name, { type });
+}
+
+describe("uplift runtime", () => {
+  it("uploads a single file through a typed route", async () => {
+    const completed: string[] = [];
+    const app = uplift({
+      storage: createMemoryStorage(),
+      middleware: async () => ({ id: "user_1" }),
+      routes: {
+        avatar: image()
+          .max("2mb")
+          .key(({ user, file }) => `avatars/${user.id}/${file.name}`)
+          .done(({ file }) => {
+            completed.push(file.key);
+          })
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.result).toMatchObject({
+      key: "avatars/user_1/avatar.png",
+      name: "avatar.png",
+      provider: "memory"
+    });
+    expect(completed).toEqual(["avatars/user_1/avatar.png"]);
+  });
+
+  it("uploads multiple files when the route opts into multiple", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        gallery: image().multiple(2).key(({ file }) => `gallery/${file.name}`)
+      }
+    });
+
+    const form = new FormData();
+    form.append("files", file("one.png", "image/png"));
+    form.append("files", file("two.jpg", "image/jpeg"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/gallery", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.result).toHaveLength(2);
+    expect(body.result[0].key).toBe("gallery/one.png");
+  });
+
+  it("returns stable upload errors for validation failures", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        avatar: image().max("1b")
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png", "too large"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "FILE_TOO_LARGE" }
+    });
+  });
+
+  it("supports public routes that override router middleware", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      middleware: async () => {
+        throw new Error("blocked");
+      },
+      routes: {
+        attachment: any().overrideAuth()
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("note.txt", "text/plain"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/attachment", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+  });
+
+  it("validates JSON uploads with any schema that has parse", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        import: json().schema({
+          parse(input: unknown) {
+            if (typeof input === "object" && input !== null && "ok" in input) return input;
+            throw new Error("missing ok");
+          }
+        })
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("data.json", "application/json", "{\"nope\":true}"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/import", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "VALIDATION_FAILED" }
+    });
+  });
+});
