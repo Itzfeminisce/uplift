@@ -89,6 +89,8 @@ upload.avatar.data;
 
 ## Framework Handlers
 
+The client posts to the configured endpoint with `?route=<routeName>`, so a single framework endpoint can host every upload route.
+
 ```ts
 import { createNextHandler } from "uplift/next";
 import { uploads } from "./uploads";
@@ -138,7 +140,7 @@ video().duration({ max: "2m" });
 audio().duration({ max: "5m" });
 ```
 
-Video duration checks are designed around ffprobe. Hosts using that feature must provide ffprobe and should verify availability in deployment.
+Rich inspection methods fail closed until an inspector is wired for the deployment. Video duration checks are designed around ffprobe; hosts using that feature must provide ffprobe and should verify availability in deployment.
 
 ## Validation
 

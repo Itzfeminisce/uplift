@@ -13,9 +13,9 @@ const app = uplift({
       provider: "test"
     })
   },
-  middleware: async () => ({ id: "user_1" }),
   routes: {
     avatar: image()
+      .auth(async () => ({ id: "user_1" }))
       .max("2mb")
       .meta(({ user }) => ({ owner: user.id }))
       .done(({ file, user, meta }) => {
@@ -24,12 +24,18 @@ const app = uplift({
         meta.owner satisfies string;
       }),
     gallery: image()
+      .auth(async () => ({ id: "user_1" }))
       .multiple(10)
-      .done(({ files, user }) => {
+      .meta(({ file }) => ({ name: file.name }))
+      .done(({ files, user, meta }) => {
         files satisfies UploadedFile[];
         user.id satisfies string;
+        meta[0]?.name satisfies string | undefined;
       }),
-    publicAttachment: any().overrideAuth()
+    publicAttachment: any().overrideAuth().done(({ user }) => {
+      // @ts-expect-error Public routes do not get an arbitrary typed user.
+      user.id;
+    })
   }
 });
 

@@ -17,19 +17,58 @@ export function createUploadClient<TApp extends UpliftApp>(
         const field = files.length === 1 ? "file" : "files";
         for (const file of files) form.append(field, file);
 
-        options.onProgress?.(property, 0);
-        const response = await fetcher(`${baseUrl.replace(/\/$/, "")}/${property}`, {
-          method: "POST",
-          body: form
-        });
-        options.onProgress?.(property, 100);
+        const url = routeUrl(baseUrl, property);
+        if (!options.fetch && typeof XMLHttpRequest !== "undefined") {
+          return uploadWithXhr(url, form, property, options.onProgress);
+        }
 
+        options.onProgress?.(property, 0);
+        const response = await fetcher(url, { method: "POST", body: form });
         const body = await response.json() as { result?: unknown; error?: { code: string; message: string } };
         if (!response.ok) {
           throw new UploadError((body.error?.code ?? "UNKNOWN") as never, body.error?.message ?? "Upload failed.");
         }
+        options.onProgress?.(property, 100);
         return body.result;
       };
     }
   }) as UploadClient<TApp>;
+}
+
+function routeUrl(baseUrl: string, route: string): string {
+  const url = new URL(baseUrl, globalThis.location?.href ?? "http://localhost");
+  url.searchParams.set("route", route);
+  const value = url.toString();
+  return baseUrl.startsWith("/") ? `${url.pathname}${url.search}` : value;
+}
+
+function uploadWithXhr(
+  url: string,
+  form: FormData,
+  route: string,
+  onProgress?: (route: string, progress: number) => void
+): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      onProgress?.(route, Math.round((event.loaded / event.total) * 100));
+    };
+    xhr.onload = () => {
+      const body = JSON.parse(xhr.responseText || "{}") as {
+        result?: unknown;
+        error?: { code: string; message: string };
+      };
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new UploadError((body.error?.code ?? "UNKNOWN") as never, body.error?.message ?? "Upload failed."));
+        return;
+      }
+      onProgress?.(route, 100);
+      resolve(body.result);
+    };
+    xhr.onerror = () => reject(new UploadError("UPLOAD_FAILED", "Upload request failed."));
+    onProgress?.(route, 0);
+    xhr.send(form);
+  });
 }

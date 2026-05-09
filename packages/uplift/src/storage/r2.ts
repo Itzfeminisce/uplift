@@ -8,7 +8,8 @@ export function r2(options: R2Options) {
   const adapter = s3({
     ...options,
     region: "auto",
-    endpoint: `https://${options.accountId}.r2.cloudflarestorage.com`
+    endpoint: `https://${options.accountId}.r2.cloudflarestorage.com`,
+    forcePathStyle: true
   });
   return {
     provider: "r2",

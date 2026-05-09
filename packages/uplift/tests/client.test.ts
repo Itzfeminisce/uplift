@@ -9,7 +9,7 @@ describe("upload clients and adapters", () => {
   it("posts route-named multipart requests and returns uploaded results", async () => {
     const upload = createUploadClient<typeof app>("https://app.test/upload", {
       fetch: async (url, init) => {
-        expect(String(url)).toBe("https://app.test/upload/attachment");
+        expect(String(url)).toBe("https://app.test/upload?route=attachment");
         expect(init?.method).toBe("POST");
         return Response.json({
           result: {
@@ -45,8 +45,8 @@ describe("upload clients and adapters", () => {
   it("adapts the framework-neutral handler to Next.js and Hono", async () => {
     const next = createNextHandler(app);
     const hono = createHonoHandler(app);
-    const nextResponse = await next.POST(uploadRequest("https://app.test/upload/attachment"));
-    const honoResponse = await hono.fetch(uploadRequest("https://app.test/upload/attachment"));
+    const nextResponse = await next.POST(uploadRequest("https://app.test/upload?route=attachment"));
+    const honoResponse = await hono.fetch(uploadRequest("https://app.test/upload?route=attachment"));
 
     expect(nextResponse.status).toBe(200);
     expect(honoResponse.status).toBe(200);
@@ -61,8 +61,8 @@ describe("upload clients and adapters", () => {
       {
         method: "POST",
         protocol: "https",
-        originalUrl: "/upload/attachment",
-        headers: { host: "app.test", "content-type": "multipart/form-data" },
+        originalUrl: "/upload?route=attachment",
+        headers: { host: "app.test", "content-type": "text/plain" },
         body: requestBody()
       },
       {

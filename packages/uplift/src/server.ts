@@ -1,9 +1,16 @@
+import { Readable } from "node:stream";
+import Busboy from "busboy";
 import { UploadError, type UpliftApp, type UploadedFile, type UploadInputFile } from "./types";
 import { defaultKey, readJsonFile, toInputFile } from "./utils";
 
 type FileWithInput = {
   input: UploadInputFile;
   body: File;
+};
+
+type StoredFile = {
+  file: UploadedFile;
+  meta: unknown;
 };
 
 export async function handleUploadRequest(app: UpliftApp, req: Request): Promise<Response> {
@@ -26,23 +33,28 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
       throw new UploadError("VALIDATION_FAILED", `This route accepts at most ${route._def.multipleLimit} files.`);
     }
 
-    const uploaded: UploadedFile[] = [];
+    const stored: StoredFile[] = [];
     for (const item of files) {
       const meta = await deriveMeta(route._def, req, item.input, user);
       await validateFile(route._def, req, item, user, meta);
       const key = route._def.key ? await route._def.key({ req, file: item.input, user, meta }) : defaultKey(item.input);
-      uploaded.push(await app.storage.put({ key, file: item.input, body: item.body }));
+      stored.push({
+        file: await app.storage.put({ key, file: item.input, body: item.body }),
+        meta
+      });
     }
 
+    const uploaded = stored.map((item) => item.file);
+    const metas = stored.map((item) => item.meta);
     const firstUpload = uploaded[0];
     if (!firstUpload) throw new UploadError("UPLOAD_FAILED", "Upload did not produce a result.");
     const result: UploadedFile | UploadedFile[] = route._def.multiple ? uploaded : firstUpload;
 
     if (route._def.done) {
       if (route._def.multiple) {
-        await route._def.done({ req, files: uploaded, user, meta: undefined });
+        await route._def.done({ req, files: uploaded, user, meta: metas });
       } else {
-        await route._def.done({ req, file: firstUpload, user, meta: undefined });
+        await route._def.done({ req, file: firstUpload, user, meta: metas[0] });
       }
     }
 
@@ -80,14 +92,46 @@ async function filesFromRequest(req: Request): Promise<FileWithInput[]> {
     throw new UploadError("VALIDATION_FAILED", "Upload requests must be multipart/form-data.");
   }
 
-  let form: FormData;
-  try {
-    form = await req.formData();
-  } catch {
-    throw new UploadError("VALIDATION_FAILED", "Upload request body could not be parsed as multipart/form-data.");
+  if (!req.body) {
+    throw new UploadError("VALIDATION_FAILED", "Upload request body is empty.");
   }
-  const files = [...form.values()].filter((value): value is File => value instanceof File);
-  return files.map((body) => ({ input: toInputFile(body), body }));
+
+  try {
+    return await filesFromBusboy(req, contentType);
+  } catch (error) {
+    if (error instanceof UploadError) throw error;
+    const message = error instanceof Error ? error.message : "Upload request body could not be parsed.";
+    throw new UploadError("VALIDATION_FAILED", message);
+  }
+}
+
+async function filesFromBusboy(req: Request, contentType: string): Promise<FileWithInput[]> {
+  return new Promise((resolve, reject) => {
+    const files: Promise<FileWithInput>[] = [];
+    const parser = Busboy({ headers: { "content-type": contentType } });
+
+    parser.on("file", (_fieldName, stream, info) => {
+      const chunks: Buffer[] = [];
+      stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+      files.push(new Promise((fileResolve, fileReject) => {
+        stream.on("error", fileReject);
+        stream.on("end", () => {
+          const bytes = Buffer.concat(chunks);
+          const body = new File([bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)], info.filename, {
+            type: info.mimeType
+          });
+          fileResolve({ input: toInputFile(body), body });
+        });
+      }));
+    });
+
+    parser.on("error", reject);
+    parser.on("close", () => {
+      Promise.all(files).then(resolve, reject);
+    });
+
+    Readable.fromWeb(req.body as never).pipe(parser);
+  });
 }
 
 async function deriveMeta(
@@ -129,9 +173,33 @@ async function validateFile(
       throw new UploadError("VALIDATION_FAILED", message);
     }
   }
+  await validateConfiguredInspection(route, item.body);
   if (route.validate) {
     const result = await route.validate({ req, file: item.input, user, meta });
     if (result !== true) throw new UploadError("VALIDATION_FAILED", result);
+  }
+}
+
+async function validateConfiguredInspection(route: UpliftApp["routes"][string]["_def"], file: File): Promise<void> {
+  if (route.dimensionRule || route.requireSquare || route.aspectRatio) {
+    throw new UploadError("VALIDATION_FAILED", "Image dimension validation requires an image inspector and is not enabled in core.");
+  }
+  if (route.encoding) {
+    const text = await file.text();
+    if (route.encoding === "ascii" && /[^\x00-\x7F]/.test(text)) {
+      throw new UploadError("VALIDATION_FAILED", "Text file is not ASCII encoded.");
+    }
+  }
+  if (route.headers) {
+    const [headerLine = ""] = (await file.text()).split(/\r?\n/, 1);
+    const delimiter = route.delimiter ?? ",";
+    const actualHeaders = headerLine.split(delimiter).map((header) => header.trim());
+    if (route.headers.some((header, index) => actualHeaders[index] !== header)) {
+      throw new UploadError("VALIDATION_FAILED", "CSV headers do not match the route definition.");
+    }
+  }
+  if (route.pageRule || route.encrypted !== undefined || route.durationRule) {
+    throw new UploadError("VALIDATION_FAILED", "Rich inspection is configured but no runtime inspector has been installed for this route.");
   }
 }
 

@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { handleUploadRequest } from "./server";
 import type { UpliftApp } from "./types";
 
@@ -8,6 +9,7 @@ type ExpressRequest = {
   url?: string;
   headers: Record<string, string | string[] | undefined>;
   body?: BodyInit | null;
+  pipe?: unknown;
 };
 
 type ExpressResponse = {
@@ -20,11 +22,13 @@ export function createExpressHandler(app: UpliftApp) {
   return async (req: ExpressRequest, res: ExpressResponse) => {
     const host = Array.isArray(req.headers.host) ? req.headers.host[0] : req.headers.host;
     const url = `${req.protocol ?? "http"}://${host ?? "localhost"}${req.originalUrl ?? req.url ?? "/"}`;
+    const body = req.body ?? (typeof req.pipe === "function" ? Readable.toWeb(req as never) : null);
     const request = new Request(url, {
       method: req.method,
       headers: headersFromExpress(req.headers),
-      body: req.body ?? null
-    });
+      body,
+      duplex: "half"
+    } as RequestInit & { duplex: "half" });
     const response = await handleUploadRequest(app, request);
     res.status(response.status);
     response.headers.forEach((value, key) => res.setHeader(key, value));

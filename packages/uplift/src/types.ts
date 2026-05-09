@@ -61,7 +61,7 @@ export type DoneContext<
   TMeta = unknown,
   TMultiple extends boolean = false
 > = TMultiple extends true
-  ? { req: Request; files: UploadedFile[]; user: TAuth; meta: TMeta }
+  ? { req: Request; files: UploadedFile[]; user: TAuth; meta: TMeta[] }
   : { req: Request; file: UploadedFile; user: TAuth; meta: TMeta };
 
 export type StoragePutInput = {

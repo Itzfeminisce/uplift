@@ -35,7 +35,7 @@ export type DurationRule = {
 };
 
 export class UploadBuilder<
-  TAuth = any,
+  TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
   TKind extends UploadKind = UploadKind
@@ -182,39 +182,39 @@ export class UploadBuilder<
   }
 }
 
-export function any(): UploadBuilder<any, unknown, false, "any"> {
+export function any(): UploadBuilder<unknown, unknown, false, "any"> {
   return new UploadBuilder("any");
 }
 
-export function image(): UploadBuilder<any, unknown, false, "image"> {
+export function image(): UploadBuilder<unknown, unknown, false, "image"> {
   return new UploadBuilder("image", ["image/"], ["png", "jpg", "jpeg", "webp", "gif", "avif"]);
 }
 
-export function pdf(): UploadBuilder<any, unknown, false, "pdf"> {
+export function pdf(): UploadBuilder<unknown, unknown, false, "pdf"> {
   return new UploadBuilder("pdf", ["application/pdf"], ["pdf"]);
 }
 
-export function video(): UploadBuilder<any, unknown, false, "video"> {
+export function video(): UploadBuilder<unknown, unknown, false, "video"> {
   return new UploadBuilder("video", ["video/"], ["mp4", "webm", "mov", "avi", "mkv"]);
 }
 
-export function audio(): UploadBuilder<any, unknown, false, "audio"> {
+export function audio(): UploadBuilder<unknown, unknown, false, "audio"> {
   return new UploadBuilder("audio", ["audio/"], ["mp3", "wav", "ogg", "m4a", "aac", "flac"]);
 }
 
-export function text(): UploadBuilder<any, unknown, false, "text"> {
+export function text(): UploadBuilder<unknown, unknown, false, "text"> {
   return new UploadBuilder("text", ["text/"], ["txt", "md", "log"]);
 }
 
-export function json(): UploadBuilder<any, unknown, false, "json"> {
+export function json(): UploadBuilder<unknown, unknown, false, "json"> {
   return new UploadBuilder("json", ["application/json"], ["json"]);
 }
 
-export function csv(): UploadBuilder<any, unknown, false, "csv"> {
+export function csv(): UploadBuilder<unknown, unknown, false, "csv"> {
   return new UploadBuilder("csv", ["text/csv"], ["csv"]);
 }
 
-export function custom(type: string | string[]): UploadBuilder<any, unknown, false, "custom"> {
+export function custom(type: string | string[]): UploadBuilder<unknown, unknown, false, "custom"> {
   const mimeTypes = Array.isArray(type) ? type : [type];
   return new UploadBuilder("custom", mimeTypes);
 }

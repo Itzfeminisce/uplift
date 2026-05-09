@@ -1,3 +1,5 @@
+import { PutObjectCommand, S3Client, type S3ClientConfig } from "@aws-sdk/client-s3";
+import { UploadError } from "../types";
 import type { StorageAdapter } from "../types";
 
 export type S3Options = {
@@ -7,16 +9,24 @@ export type S3Options = {
   secretAccessKey?: string;
   endpoint?: string;
   publicBaseUrl?: string;
-  client?: { send(command: unknown): Promise<unknown> };
+  client?: Pick<S3Client, "send">;
+  forcePathStyle?: boolean;
 };
 
 export function s3(options: S3Options): StorageAdapter {
+  const client = options.client ?? new S3Client(clientConfig(options));
   return {
     provider: "s3",
-    async put({ key, file }) {
-      if (options.client) {
-        await options.client.send({ type: "PutObject", bucket: options.bucket, key, contentType: file.type });
-      }
+    async put({ key, file, body }) {
+      await client.send(new PutObjectCommand({
+        Bucket: options.bucket,
+        Key: key,
+        Body: new Uint8Array(await body.arrayBuffer()),
+        ContentType: file.type
+      })).catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "S3 upload failed.";
+        throw new UploadError("UPLOAD_FAILED", message);
+      });
       return {
         url: `${options.publicBaseUrl ?? `https://${options.bucket}.s3.${options.region}.amazonaws.com`}/${key}`,
         key,
@@ -28,4 +38,17 @@ export function s3(options: S3Options): StorageAdapter {
       };
     }
   };
+}
+
+function clientConfig(options: S3Options): S3ClientConfig {
+  const config: S3ClientConfig = { region: options.region };
+  if (options.endpoint) config.endpoint = options.endpoint;
+  if (options.forcePathStyle !== undefined) config.forcePathStyle = options.forcePathStyle;
+  if (options.accessKeyId && options.secretAccessKey) {
+    config.credentials = {
+      accessKeyId: options.accessKeyId,
+      secretAccessKey: options.secretAccessKey
+    };
+  }
+  return config;
 }

@@ -16,14 +16,30 @@ const file = {
 
 describe("storage adapters", () => {
   it("returns stable UploadedFile values from provider adapters", async () => {
-    await expect(s3({ bucket: "bucket", region: "us-east-1" }).put({ key: "hello.txt", file, body }))
+    const sent: unknown[] = [];
+    const okFetch: typeof fetch = async () => Response.json({ secure_url: "https://cdn.example.com/hello.txt", public_id: "hello.txt" });
+    await expect(s3({
+      bucket: "bucket",
+      region: "us-east-1",
+      client: { send: async (command) => { sent.push(command); } }
+    }).put({ key: "hello.txt", file, body }))
       .resolves.toMatchObject({ provider: "s3", key: "hello.txt" });
-    await expect(r2({ bucket: "bucket", accountId: "abc" }).put({ key: "hello.txt", file, body }))
+    expect(sent).toHaveLength(1);
+    await expect(r2({
+      bucket: "bucket",
+      accountId: "abc",
+      client: { send: async (command) => { sent.push(command); } }
+    }).put({ key: "hello.txt", file, body }))
       .resolves.toMatchObject({ provider: "r2", key: "hello.txt" });
-    await expect(bunny({ apiKey: "key", zone: "zone" }).put({ key: "hello.txt", file, body }))
+    await expect(bunny({ apiKey: "key", zone: "zone", fetch: async () => new Response(null, { status: 201 }) }).put({ key: "hello.txt", file, body }))
       .resolves.toMatchObject({ provider: "bunny", key: "hello.txt" });
-    await expect(cloudinary({ cloudName: "demo" }).put({ key: "hello.txt", file, body }))
+    await expect(cloudinary({ cloudName: "demo", uploadPreset: "unsigned", fetch: okFetch }).put({ key: "hello.txt", file, body }))
       .resolves.toMatchObject({ provider: "cloudinary", key: "hello.txt" });
+  });
+
+  it("does not fake Cloudinary success without upload configuration", async () => {
+    await expect(cloudinary({ cloudName: "demo" }).put({ key: "hello.txt", file, body }))
+      .rejects.toMatchObject({ code: "UPLOAD_FAILED" });
   });
 
   it("creates a local storage adapter", () => {

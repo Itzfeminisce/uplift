@@ -11,13 +11,14 @@ describe("uplift runtime", () => {
     const completed: string[] = [];
     const app = uplift({
       storage: createMemoryStorage(),
-      middleware: async () => ({ id: "user_1" }),
       routes: {
         avatar: image()
+          .auth(async () => ({ id: "user_1" }))
           .max("2mb")
+          .meta(({ user }) => ({ owner: user.id }))
           .key(({ user, file }) => `avatars/${user.id}/${file.name}`)
-          .done(({ file }) => {
-            completed.push(file.key);
+          .done(({ file, meta }) => {
+            completed.push(`${meta.owner}:${file.key}`);
           })
       }
     });
@@ -36,7 +37,7 @@ describe("uplift runtime", () => {
       name: "avatar.png",
       provider: "memory"
     });
-    expect(completed).toEqual(["avatars/user_1/avatar.png"]);
+    expect(completed).toEqual(["user_1:avatars/user_1/avatar.png"]);
   });
 
   it("uploads multiple files when the route opts into multiple", async () => {
@@ -119,6 +120,53 @@ describe("uplift runtime", () => {
     const form = new FormData();
     form.append("file", file("data.json", "application/json", "{\"nope\":true}"));
     const response = await handleUploadRequest(app, new Request("https://app.test/upload/import", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "VALIDATION_FAILED" }
+    });
+  });
+
+  it("passes per-file metadata arrays to multiple route completion handlers", async () => {
+    const completed: string[][] = [];
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        gallery: image()
+          .multiple(2)
+          .meta(({ file }) => ({ original: file.name }))
+          .done(({ meta }) => {
+            completed.push(meta.map((item) => item.original));
+          })
+      }
+    });
+
+    const form = new FormData();
+    form.append("files", file("one.png", "image/png"));
+    form.append("files", file("two.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload?route=gallery", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+    expect(completed).toEqual([["one.png", "two.png"]]);
+  });
+
+  it("fails closed for rich inspection validators that are configured without an inspector", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        avatar: image().dimensions({ maxWidth: 100 })
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload?route=avatar", {
       method: "POST",
       body: form
     }));
