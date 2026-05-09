@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,93 +8,162 @@
       name="description"
       content="Uplift is a dead-simple, type-safe file upload library for TypeScript applications."
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#0f172a",
+              mist: "#f6f8fb",
+              line: "#d9e2ec",
+              teal: "#0f766e",
+              blue: "#2563eb",
+              violet: "#7c3aed"
+            },
+            boxShadow: {
+              soft: "0 24px 80px rgba(15, 23, 42, 0.08)"
+            }
+          }
+        }
+      };
+    </script>
   </head>
-  <body>
-    <div class="shell">
-      <aside class="sidebar">
-        <a class="brand" href="#top">Uplift</a>
-        <p class="tagline">Type-safe file uploads for TypeScript.</p>
-        <nav class="nav" aria-label="Documentation">
-          <a href="#install">Install</a>
-          <a href="#quickstart">Quickstart</a>
-          <a href="#client">Client</a>
-          <a href="#react">React</a>
-          <a href="#storage">Storage</a>
-          <a href="#api">API</a>
-          <a href="#rich">Rich</a>
-          <a href="#oss">OSS</a>
-        </nav>
-      </aside>
+  <body class="bg-mist text-ink antialiased">
+    <div class="min-h-screen">
+      <header class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+          <a href="#top" class="flex items-center gap-3 font-black text-slate-950">
+            <span class="grid h-9 w-9 place-items-center rounded-lg bg-slate-950 text-sm text-white">Up</span>
+            <span class="text-xl tracking-normal">Uplift</span>
+          </a>
+          <nav class="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex" aria-label="Documentation">
+            <a class="hover:text-slate-950" href="#quickstart">Quickstart</a>
+            <a class="hover:text-slate-950" href="#client">Client</a>
+            <a class="hover:text-slate-950" href="#storage">Storage</a>
+            <a class="hover:text-slate-950" href="#api">API</a>
+            <a class="hover:text-slate-950" href="#oss">OSS</a>
+          </nav>
+          <a
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-950 shadow-sm hover:border-slate-400"
+            href="https://github.com/Itzfeminisce/uplift"
+          >
+            GitHub
+          </a>
+        </div>
+      </header>
 
-      <main id="top" class="content">
-        <section class="hero">
-          <div class="eyebrow">Open source TypeScript uploads</div>
-          <h1>Define upload routes once. Use them everywhere.</h1>
-          <p class="lead">
-            Uplift turns file uploads into a typed contract between your server and frontend.
-            Build route constraints, auth, storage keys, metadata, and completion hooks in one place,
-            then call route-named upload methods from the client.
-          </p>
-          <div class="actions">
-            <a class="button primary" href="#quickstart">Get started</a>
-            <a class="button" href="https://github.com/Itzfeminisce/uplift">GitHub</a>
-            <a class="button" href="https://www.npmjs.com/package/uplift">npm</a>
-          </div>
-          <div class="badges">
-            <img alt="npm version" src="https://img.shields.io/npm/v/uplift?color=0f766e" />
-            <img alt="npm downloads" src="https://img.shields.io/npm/dm/uplift?color=2563eb" />
-            <img alt="total npm downloads" src="https://img.shields.io/npm/dt/uplift?color=7c3aed" />
-            <img alt="bundle size" src="https://img.shields.io/bundlephobia/minzip/uplift?label=minzip" />
+      <main id="top">
+        <section class="relative overflow-hidden border-b border-slate-200 bg-white">
+          <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:44px_44px] opacity-40"></div>
+          <div class="relative mx-auto grid max-w-7xl gap-10 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
+            <div>
+              <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-sm font-bold text-teal-800">
+                Open source TypeScript uploads
+              </div>
+              <h1 class="max-w-4xl text-5xl font-black leading-none tracking-normal text-slate-950 md:text-7xl">
+                Define upload routes once. Use them everywhere.
+              </h1>
+              <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600 md:text-xl">
+                Uplift turns file uploads into a typed contract between your server and frontend.
+                Build route constraints, auth, storage keys, metadata, and completion hooks in one place,
+                then call route-named upload methods from the client.
+              </p>
+              <div class="mt-8 flex flex-wrap gap-3">
+                <a class="rounded-lg bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-soft hover:bg-slate-800" href="#quickstart">Get started</a>
+                <a class="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-950 hover:border-slate-400" href="https://github.com/Itzfeminisce/uplift">GitHub</a>
+                <a class="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-950 hover:border-slate-400" href="https://www.npmjs.com/package/uplift">npm</a>
+              </div>
+              <div class="mt-7 flex flex-wrap items-center gap-2">
+                <img alt="npm version" class="h-5" src="https://img.shields.io/npm/v/uplift?color=0f766e" />
+                <img alt="npm monthly downloads" class="h-5" src="https://img.shields.io/npm/dm/uplift?label=downloads%2Fmonth&color=2563eb" />
+                <img alt="total npm downloads" class="h-5" src="https://img.shields.io/npm/dt/uplift?label=downloads&color=7c3aed" />
+                <img alt="license" class="h-5" src="https://img.shields.io/npm/l/uplift" />
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-slate-950 p-4 shadow-soft">
+              <div class="mb-3 flex items-center gap-2 px-1">
+                <span class="h-3 w-3 rounded-full bg-rose-400"></span>
+                <span class="h-3 w-3 rounded-full bg-amber-400"></span>
+                <span class="h-3 w-3 rounded-full bg-emerald-400"></span>
+                <span class="ml-2 text-xs font-bold text-slate-400">uploads.ts</span>
+              </div>
+              <pre class="overflow-x-auto rounded-xl bg-slate-900 p-5 text-sm leading-6 text-slate-100"><code>export const uploads = uplift({
+  storage: s3({ bucket, region }),
+  routes: {
+    avatar: image()
+      .max("2mb")
+      .auth(requireUser)
+      .key(({ user }) =&gt; `avatars/${user.id}.png`)
+      .done(async ({ file, user }) =&gt; {
+        await db.user.update({
+          where: { id: user.id },
+          data: { avatarUrl: file.url }
+        });
+      }),
+
+    gallery: image().multiple(10)
+  }
+});</code></pre>
+            </div>
           </div>
         </section>
 
-        <section>
-          <h2>Why Uplift?</h2>
-          <div class="grid">
-            <div class="card">
-              <strong>Server-driven types</strong>
-              Client methods are inferred from the upload contract.
+        <section class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="mb-3 text-sm font-black uppercase text-teal-700">Typed contract</div>
+              <h2 class="text-xl font-black text-slate-950">Server-driven client methods</h2>
+              <p class="mt-3 text-slate-600">Route names, single vs multiple inputs, and output shapes are inferred from your upload contract.</p>
             </div>
-            <div class="card">
-              <strong>Small fluent API</strong>
-              Compose file type, limits, auth, keys, metadata, validation, and done hooks.
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="mb-3 text-sm font-black uppercase text-blue-700">One endpoint</div>
+              <h2 class="text-xl font-black text-slate-950">Simple framework wiring</h2>
+              <p class="mt-3 text-slate-600">The client posts to one handler with a route query, so Next.js, Hono, and Express stay boring.</p>
             </div>
-            <div class="card">
-              <strong>Adapter-friendly</strong>
-              Use Next.js, Hono, Express, S3, R2, Bunny, Cloudinary, or local storage.
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="mb-3 text-sm font-black uppercase text-violet-700">Adapters</div>
+              <h2 class="text-xl font-black text-slate-950">Storage without leakage</h2>
+              <p class="mt-3 text-slate-600">Use S3, R2, Bunny, Cloudinary, or local storage through the same route API.</p>
             </div>
           </div>
         </section>
 
-        <section id="install">
-          <h2>Install</h2>
-          <pre><code>pnpm add uplift</code></pre>
-          <pre><code>npm install uplift</code></pre>
-          <pre><code>yarn add uplift</code></pre>
+        <section id="install" class="border-y border-slate-200 bg-white">
+          <div class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+            <div class="max-w-2xl">
+              <div class="text-sm font-black uppercase text-teal-700">Install</div>
+              <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">Add Uplift to your app</h2>
+            </div>
+            <div class="mt-8 grid gap-4 md:grid-cols-3">
+              <pre class="overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm text-slate-100"><code>pnpm add uplift</code></pre>
+              <pre class="overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm text-slate-100"><code>npm install uplift</code></pre>
+              <pre class="overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm text-slate-100"><code>yarn add uplift</code></pre>
+            </div>
+          </div>
         </section>
 
-        <section id="quickstart">
-          <h2>Quickstart</h2>
-          <h3>Define routes</h3>
-          <pre><code>import { image, pdf, uplift } from "uplift";
+        <section id="quickstart" class="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[280px_1fr] lg:px-8">
+          <div>
+            <div class="text-sm font-black uppercase text-teal-700">Quickstart</div>
+            <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">Define routes</h2>
+            <p class="mt-4 text-slate-600">Single-file routes are the default. Calling <code class="rounded bg-slate-200 px-1.5 py-0.5">.multiple()</code> changes both server and client types.</p>
+          </div>
+          <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { image, pdf, uplift } from "uplift";
 import { s3 } from "uplift/storage/s3";
 
 export const uploads = uplift({
   storage: s3({
     bucket: process.env.S3_BUCKET!,
-    region: "us-east-1",
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!
+    region: "us-east-1"
   }),
   routes: {
     avatar: image()
       .max("2mb")
-      .auth(async ({ req }) => ({ id: req.headers.get("x-user-id")! }))
-      .key(({ user }) => `avatars/${user.id}.png`)
-      .done(async ({ file }) => {
-        console.log(file.url);
-      }),
+      .auth(async ({ req }) =&gt; ({ id: req.headers.get("x-user-id")! }))
+      .key(({ user }) =&gt; `avatars/${user.id}.png`)
+      .done(async ({ file }) =&gt; console.log(file.url)),
 
     resume: pdf().max("5mb"),
     gallery: image().max("8mb").multiple(10)
@@ -104,117 +173,123 @@ export const uploads = uplift({
 export type Uploads = typeof uploads;</code></pre>
         </section>
 
-        <section>
-          <h3>Mount a handler</h3>
-          <pre><code>import { createNextHandler } from "uplift/next";
+        <section class="mx-auto grid max-w-7xl gap-8 px-5 pb-16 lg:grid-cols-[280px_1fr] lg:px-8">
+          <div>
+            <h2 class="text-3xl font-black tracking-normal text-slate-950">Mount a handler</h2>
+            <p class="mt-4 rounded-xl border border-teal-200 bg-teal-50 p-4 text-sm font-semibold text-teal-900">
+              The client posts to one endpoint with <code>?route=&lt;routeName&gt;</code>.
+            </p>
+          </div>
+          <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { createNextHandler } from "uplift/next";
 import { uploads } from "@/uploads";
 
 export const { GET, POST } = createNextHandler(uploads);</code></pre>
-          <p class="note">
-            The client posts to one endpoint with <code>?route=&lt;routeName&gt;</code>, so one framework
-            endpoint can host every upload route.
-          </p>
         </section>
 
-        <section id="client">
-          <h2>Typed Client</h2>
-          <pre><code>import { createUploadClient } from "uplift/client";
+        <section id="client" class="border-y border-slate-200 bg-white">
+          <div class="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[280px_1fr] lg:px-8">
+            <div>
+              <div class="text-sm font-black uppercase text-blue-700">Client</div>
+              <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">Route-named uploads</h2>
+              <p class="mt-4 text-slate-600">Single routes accept <code class="rounded bg-slate-200 px-1.5 py-0.5">File</code>; multiple routes accept <code class="rounded bg-slate-200 px-1.5 py-0.5">File[] | FileList</code>.</p>
+            </div>
+            <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { createUploadClient } from "uplift/client";
 import type { Uploads } from "./uploads";
 
 export const upload = createUploadClient&lt;Uploads&gt;("/api/upload");
 
 const avatar = await upload.avatar(file);
 const gallery = await upload.gallery(fileList);</code></pre>
-          <p>
-            Single routes accept <code>File</code> and return <code>UploadedFile</code>.
-            Multiple routes accept <code>File[] | FileList</code> and return <code>UploadedFile[]</code>.
-          </p>
+          </div>
         </section>
 
-        <section id="react">
-          <h2>React</h2>
-          <pre><code>import { useUploads } from "uplift/react";
+        <section id="react" class="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[280px_1fr] lg:px-8">
+          <div>
+            <div class="text-sm font-black uppercase text-violet-700">React</div>
+            <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">State over the vanilla client</h2>
+            <p class="mt-4 text-slate-600">Each route exposes progress, upload state, error, and last successful data.</p>
+          </div>
+          <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { useUploads } from "uplift/react";
 import type { Uploads } from "./uploads";
 
-export function AvatarUploader() {
-  const upload = useUploads&lt;Uploads&gt;("/api/upload");
-  return (
-    &lt;input
-      type="file"
-      accept="image/*"
-      onChange={(event) =&gt; {
-        const file = event.currentTarget.files?.[0];
-        if (file) void upload.avatar(file);
-      }}
-    /&gt;
-  );
-}</code></pre>
-          <pre><code>upload.avatar.progress;
+const upload = useUploads&lt;Uploads&gt;("/api/upload");
+
+upload.avatar.progress;
 upload.avatar.isUploading;
 upload.avatar.error;
 upload.avatar.data;</code></pre>
         </section>
 
-        <section id="storage">
-          <h2>Storage</h2>
-          <pre><code>import { bunny } from "uplift/storage/bunny";
-import { cloudinary } from "uplift/storage/cloudinary";
-import { local } from "uplift/storage/local";
+        <section id="storage" class="border-y border-slate-200 bg-white">
+          <div class="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[280px_1fr] lg:px-8">
+            <div>
+              <div class="text-sm font-black uppercase text-teal-700">Storage</div>
+              <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">Provider adapters</h2>
+              <p class="mt-4 text-slate-600">Pick storage once. Route code stays the same.</p>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+              <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { s3 } from "uplift/storage/s3";
 import { r2 } from "uplift/storage/r2";
-import { s3 } from "uplift/storage/s3";</code></pre>
-          <p>
-            S3 and R2 use <code>@aws-sdk/client-s3</code>. Bunny and Cloudinary use provider upload APIs.
-            Local storage writes to disk for development and self-hosted deployments.
-          </p>
+import { bunny } from "uplift/storage/bunny";</code></pre>
+              <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { cloudinary } from "uplift/storage/cloudinary";
+import { local } from "uplift/storage/local";</code></pre>
+            </div>
+          </div>
         </section>
 
-        <section id="api">
-          <h2>Builder API</h2>
-          <pre><code>.max("2mb")
+        <section id="api" class="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[280px_1fr] lg:px-8">
+          <div>
+            <div class="text-sm font-black uppercase text-blue-700">API</div>
+            <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">The builder surface</h2>
+            <p class="mt-4 text-slate-600">No hard dependency on Zod, Axios, an ORM, or a database client.</p>
+          </div>
+          <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>.max("2mb")
 .min("10kb")
 .multiple(10)
 .auth(async ({ req }) =&gt; user)
 .overrideAuth()
 .key(({ user, file }) =&gt; `uploads/${file.name}`)
-.meta(({ user, file }) =&gt; ({ owner: user.id, name: file.name }))
+.meta(({ user, file }) =&gt; ({ owner: user.id }))
 .validate(({ file }) =&gt; true)
 .done(async ({ file, user, meta }) =&gt; {})</code></pre>
-          <p>
-            JSON validation accepts any schema with a <code>.parse()</code> method. Uplift does not force
-            Zod, Axios, an ORM, or a database client into your app.
-          </p>
         </section>
 
-        <section id="rich">
-          <h2>Rich Inspection</h2>
-          <pre><code>import { audio, pdf, video } from "uplift/rich";
+        <section id="rich" class="border-y border-slate-200 bg-white">
+          <div class="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[280px_1fr] lg:px-8">
+            <div>
+              <div class="text-sm font-black uppercase text-violet-700">Rich</div>
+              <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">Opt-in inspection</h2>
+              <p class="mt-4 text-slate-600">Inspection-heavy methods stay behind <code class="rounded bg-slate-200 px-1.5 py-0.5">uplift/rich</code>.</p>
+            </div>
+            <pre class="overflow-x-auto rounded-2xl bg-slate-950 p-6 text-sm leading-6 text-slate-100 shadow-soft"><code>import { audio, pdf, video } from "uplift/rich";
 
 pdf().pages({ max: 10 }).encrypted(false);
 video().duration({ max: "2m" });
 audio().duration({ max: "5m" });</code></pre>
-          <p>
-            Rich inspection is opt-in and currently fails closed until an inspector is wired for the
-            deployment. Video duration checks are designed around ffprobe.
-          </p>
-        </section>
-
-        <section id="oss">
-          <h2>Open Source</h2>
-          <p>
-            Uplift is early OSS. Issues and PRs are welcome, especially when they include a failing
-            behavior test and a focused fix.
-          </p>
-          <div class="actions">
-            <a class="button primary" href="https://github.com/Itzfeminisce/uplift/issues">Open an issue</a>
-            <a class="button" href="https://github.com/Itzfeminisce/uplift/pulls">Pull requests</a>
           </div>
         </section>
 
-        <footer>
-          MIT licensed. Built in public at
-          <a href="https://github.com/Itzfeminisce/uplift">github.com/Itzfeminisce/uplift</a>.
-        </footer>
+        <section id="oss" class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+          <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-soft md:p-10">
+            <div class="text-sm font-black uppercase text-teal-700">Open Source</div>
+            <h2 class="mt-2 text-3xl font-black tracking-normal text-slate-950">Built in public</h2>
+            <p class="mt-4 max-w-3xl text-slate-600">
+              Uplift is early OSS. Issues and PRs are welcome, especially when they include a failing behavior test and a focused fix.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a class="rounded-lg bg-slate-950 px-5 py-3 text-sm font-black text-white hover:bg-slate-800" href="https://github.com/Itzfeminisce/uplift/issues">Open an issue</a>
+              <a class="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-950 hover:border-slate-400" href="https://github.com/Itzfeminisce/uplift/pulls">Pull requests</a>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <footer class="border-t border-slate-200 bg-white">
+        <div class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 text-sm text-slate-600 md:flex-row md:items-center md:justify-between lg:px-8">
+          <span>MIT licensed. Built in public.</span>
+          <a class="font-bold text-slate-950" href="https://github.com/Itzfeminisce/uplift">github.com/Itzfeminisce/uplift</a>
+        </div>
+      </footer>
     </div>
   </body>
 </html>
