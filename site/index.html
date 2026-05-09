@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Uplift - Type-safe file uploads for TypeScript</title>
+    <meta
+      name="description"
+      content="Uplift is a dead-simple, type-safe file upload library for TypeScript applications."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="#top">Uplift</a>
+        <p class="tagline">Type-safe file uploads for TypeScript.</p>
+        <nav class="nav" aria-label="Documentation">
+          <a href="#install">Install</a>
+          <a href="#quickstart">Quickstart</a>
+          <a href="#client">Client</a>
+          <a href="#react">React</a>
+          <a href="#storage">Storage</a>
+          <a href="#api">API</a>
+          <a href="#rich">Rich</a>
+          <a href="#oss">OSS</a>
+        </nav>
+      </aside>
+
+      <main id="top" class="content">
+        <section class="hero">
+          <div class="eyebrow">Open source TypeScript uploads</div>
+          <h1>Define upload routes once. Use them everywhere.</h1>
+          <p class="lead">
+            Uplift turns file uploads into a typed contract between your server and frontend.
+            Build route constraints, auth, storage keys, metadata, and completion hooks in one place,
+            then call route-named upload methods from the client.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="#quickstart">Get started</a>
+            <a class="button" href="https://github.com/Itzfeminisce/uplift">GitHub</a>
+            <a class="button" href="https://www.npmjs.com/package/uplift">npm</a>
+          </div>
+          <div class="badges">
+            <img alt="npm version" src="https://img.shields.io/npm/v/uplift?color=0f766e" />
+            <img alt="npm downloads" src="https://img.shields.io/npm/dm/uplift?color=2563eb" />
+            <img alt="total npm downloads" src="https://img.shields.io/npm/dt/uplift?color=7c3aed" />
+            <img alt="bundle size" src="https://img.shields.io/bundlephobia/minzip/uplift?label=minzip" />
+          </div>
+        </section>
+
+        <section>
+          <h2>Why Uplift?</h2>
+          <div class="grid">
+            <div class="card">
+              <strong>Server-driven types</strong>
+              Client methods are inferred from the upload contract.
+            </div>
+            <div class="card">
+              <strong>Small fluent API</strong>
+              Compose file type, limits, auth, keys, metadata, validation, and done hooks.
+            </div>
+            <div class="card">
+              <strong>Adapter-friendly</strong>
+              Use Next.js, Hono, Express, S3, R2, Bunny, Cloudinary, or local storage.
+            </div>
+          </div>
+        </section>
+
+        <section id="install">
+          <h2>Install</h2>
+          <pre><code>pnpm add uplift</code></pre>
+          <pre><code>npm install uplift</code></pre>
+          <pre><code>yarn add uplift</code></pre>
+        </section>
+
+        <section id="quickstart">
+          <h2>Quickstart</h2>
+          <h3>Define routes</h3>
+          <pre><code>import { image, pdf, uplift } from "uplift";
+import { s3 } from "uplift/storage/s3";
+
+export const uploads = uplift({
+  storage: s3({
+    bucket: process.env.S3_BUCKET!,
+    region: "us-east-1",
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!
+  }),
+  routes: {
+    avatar: image()
+      .max("2mb")
+      .auth(async ({ req }) => ({ id: req.headers.get("x-user-id")! }))
+      .key(({ user }) => `avatars/${user.id}.png`)
+      .done(async ({ file }) => {
+        console.log(file.url);
+      }),
+
+    resume: pdf().max("5mb"),
+    gallery: image().max("8mb").multiple(10)
+  }
+});
+
+export type Uploads = typeof uploads;</code></pre>
+        </section>
+
+        <section>
+          <h3>Mount a handler</h3>
+          <pre><code>import { createNextHandler } from "uplift/next";
+import { uploads } from "@/uploads";
+
+export const { GET, POST } = createNextHandler(uploads);</code></pre>
+          <p class="note">
+            The client posts to one endpoint with <code>?route=&lt;routeName&gt;</code>, so one framework
+            endpoint can host every upload route.
+          </p>
+        </section>
+
+        <section id="client">
+          <h2>Typed Client</h2>
+          <pre><code>import { createUploadClient } from "uplift/client";
+import type { Uploads } from "./uploads";
+
+export const upload = createUploadClient&lt;Uploads&gt;("/api/upload");
+
+const avatar = await upload.avatar(file);
+const gallery = await upload.gallery(fileList);</code></pre>
+          <p>
+            Single routes accept <code>File</code> and return <code>UploadedFile</code>.
+            Multiple routes accept <code>File[] | FileList</code> and return <code>UploadedFile[]</code>.
+          </p>
+        </section>
+
+        <section id="react">
+          <h2>React</h2>
+          <pre><code>import { useUploads } from "uplift/react";
+import type { Uploads } from "./uploads";
+
+export function AvatarUploader() {
+  const upload = useUploads&lt;Uploads&gt;("/api/upload");
+  return (
+    &lt;input
+      type="file"
+      accept="image/*"
+      onChange={(event) =&gt; {
+        const file = event.currentTarget.files?.[0];
+        if (file) void upload.avatar(file);
+      }}
+    /&gt;
+  );
+}</code></pre>
+          <pre><code>upload.avatar.progress;
+upload.avatar.isUploading;
+upload.avatar.error;
+upload.avatar.data;</code></pre>
+        </section>
+
+        <section id="storage">
+          <h2>Storage</h2>
+          <pre><code>import { bunny } from "uplift/storage/bunny";
+import { cloudinary } from "uplift/storage/cloudinary";
+import { local } from "uplift/storage/local";
+import { r2 } from "uplift/storage/r2";
+import { s3 } from "uplift/storage/s3";</code></pre>
+          <p>
+            S3 and R2 use <code>@aws-sdk/client-s3</code>. Bunny and Cloudinary use provider upload APIs.
+            Local storage writes to disk for development and self-hosted deployments.
+          </p>
+        </section>
+
+        <section id="api">
+          <h2>Builder API</h2>
+          <pre><code>.max("2mb")
+.min("10kb")
+.multiple(10)
+.auth(async ({ req }) =&gt; user)
+.overrideAuth()
+.key(({ user, file }) =&gt; `uploads/${file.name}`)
+.meta(({ user, file }) =&gt; ({ owner: user.id, name: file.name }))
+.validate(({ file }) =&gt; true)
+.done(async ({ file, user, meta }) =&gt; {})</code></pre>
+          <p>
+            JSON validation accepts any schema with a <code>.parse()</code> method. Uplift does not force
+            Zod, Axios, an ORM, or a database client into your app.
+          </p>
+        </section>
+
+        <section id="rich">
+          <h2>Rich Inspection</h2>
+          <pre><code>import { audio, pdf, video } from "uplift/rich";
+
+pdf().pages({ max: 10 }).encrypted(false);
+video().duration({ max: "2m" });
+audio().duration({ max: "5m" });</code></pre>
+          <p>
+            Rich inspection is opt-in and currently fails closed until an inspector is wired for the
+            deployment. Video duration checks are designed around ffprobe.
+          </p>
+        </section>
+
+        <section id="oss">
+          <h2>Open Source</h2>
+          <p>
+            Uplift is early OSS. Issues and PRs are welcome, especially when they include a failing
+            behavior test and a focused fix.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/Itzfeminisce/uplift/issues">Open an issue</a>
+            <a class="button" href="https://github.com/Itzfeminisce/uplift/pulls">Pull requests</a>
+          </div>
+        </section>
+
+        <footer>
+          MIT licensed. Built in public at
+          <a href="https://github.com/Itzfeminisce/uplift">github.com/Itzfeminisce/uplift</a>.
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

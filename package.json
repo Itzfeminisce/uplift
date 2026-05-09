@@ -1,6 +1,12 @@
 {
   "name": "uplift-monorepo",
   "private": true,
+  "license": "MIT",
+  "homepage": "https://itzfeminisce.github.io/uplift/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Itzfeminisce/uplift.git"
+  },
   "type": "module",
   "scripts": {
     "build": "pnpm --filter uplift build",

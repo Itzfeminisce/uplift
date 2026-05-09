@@ -2,6 +2,28 @@
   "name": "uplift",
   "version": "0.0.0",
   "description": "Dead-simple, type-safe file handling for TypeScript applications.",
+  "license": "MIT",
+  "homepage": "https://itzfeminisce.github.io/uplift/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Itzfeminisce/uplift.git",
+    "directory": "packages/uplift"
+  },
+  "bugs": {
+    "url": "https://github.com/Itzfeminisce/uplift/issues"
+  },
+  "keywords": [
+    "upload",
+    "file-upload",
+    "typescript",
+    "multipart",
+    "s3",
+    "r2",
+    "nextjs",
+    "hono",
+    "express",
+    "react"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -70,7 +92,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup",
