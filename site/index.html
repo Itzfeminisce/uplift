@@ -3,12 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Uplift - Type-safe file uploads for TypeScript</title>
-    <meta name="description" content="Uplift is a small OSS library for typed TypeScript file upload contracts." />
-    <meta property="og:title" content="Uplift - Typed file uploads" />
-    <meta property="og:description" content="Define upload routes once. Use them everywhere." />
-    <meta property="og:image" content="https://itzfeminisce.github.io/uplift/assets/og.svg" />
-    <link rel="icon" href="./assets/logo.svg" />
+    <title>Uplift — Type-safe file uploads for TypeScript</title>
+    <meta name="description" content="Dead-simple, type-safe file uploads for TypeScript applications. Define routes once on the server. Get a fully inferred typed client on the frontend." />
+ <link rel="icon" href="./assets/logo.svg" />
+ 
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://itzfeminisce.github.io/uplift/" />
+    <meta property="og:title"       content="Uplift — Type-safe file uploads for TypeScript" />
+    <meta property="og:description" content="Dead-simple, type-safe file uploads for TypeScript. Define routes once. Get a fully inferred typed client. 18.2kb gzip, MIT licensed." />
+    <meta property="og:image"       content="https://itzfeminisce.github.io/uplift/assets/og.svg" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"   content="Uplift — file uploads as a typed contract. Code snippet showing uplift() route definition and createUploadClient usage." />
+    <meta property="og:site_name"   content="Uplift" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Uplift — Type-safe file uploads for TypeScript" />
+    <meta name="twitter:description" content="Dead-simple, type-safe file uploads for TypeScript. Define routes once. Get a fully inferred typed client. 18.2kb gzip, MIT licensed." />
+    <meta name="twitter:image"       content="https://itzfeminisce.github.io/uplift/assets/og.svg" />
+    <meta name="twitter:image:alt"   content="Uplift logo and code snippet showing typed upload routes." />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://itzfeminisce.github.io/uplift/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
@@ -17,529 +35,395 @@
       :root {
         --bg: #f8fafc;
         --bg2: #f1f5f9;
-        --bg3: #e2e8f0;
         --surface: #ffffff;
-        --surface2: #f8fafc;
-        --border: rgba(15,23,42,0.10);
-        --border-strong: rgba(15,23,42,0.18);
+        --surface2: #f4f7fb;
+        --border: rgba(15,23,42,0.09);
+        --border-strong: rgba(15,23,42,0.16);
         --text: #0f172a;
         --text2: #475569;
         --text3: #94a3b8;
         --accent: #0ea5e9;
-        --accent-dim: rgba(14,165,233,0.12);
-        --accent-green: #10b981;
-        --accent-violet: #8b5cf6;
-        --code-bg: #0f172a;
-        --code-text: #e2e8f0;
-        --grid-line: rgba(15,23,42,0.05);
-        --glow: rgba(14,165,233,0.15);
-        --header-bg: rgba(248,250,252,0.88);
-        --nav-text: #334155;
+        --accent-dim: rgba(14,165,233,0.10);
+        --accent-green: #0d9488;
+        --accent-green-dim: rgba(13,148,136,0.10);
+        --accent-violet: #7c3aed;
+        --accent-violet-dim: rgba(124,58,237,0.10);
+        --code-bg: #0c1220;
+        --code-border: rgba(255,255,255,0.07);
+        --grid-line: rgba(15,23,42,0.045);
+        --glow-teal: rgba(20,184,166,0.13);
+        --glow-sky: rgba(56,189,248,0.10);
+        --header-bg: rgba(248,250,252,0.9);
+        --nav-text: #64748b;
       }
 
       .dark {
-        --bg: #060b14;
-        --bg2: #0d1521;
-        --bg3: #162032;
-        --surface: #0d1521;
-        --surface2: #111c2d;
-        --border: rgba(255,255,255,0.08);
-        --border-strong: rgba(255,255,255,0.14);
+        --bg: #060c18;
+        --bg2: #0b1221;
+        --surface: #0e1726;
+        --surface2: #111d2e;
+        --border: rgba(255,255,255,0.07);
+        --border-strong: rgba(255,255,255,0.13);
         --text: #f1f5f9;
-        --text2: #94a3b8;
-        --text3: #475569;
+        --text2: #8fa3bb;
+        --text3: #3d5166;
         --accent: #38bdf8;
-        --accent-dim: rgba(56,189,248,0.10);
-        --accent-green: #34d399;
+        --accent-dim: rgba(56,189,248,0.09);
+        --accent-green: #2dd4bf;
+        --accent-green-dim: rgba(45,212,191,0.09);
         --accent-violet: #a78bfa;
-        --code-bg: #040912;
-        --code-text: #cbd5e1;
-        --grid-line: rgba(255,255,255,0.035);
-        --glow: rgba(56,189,248,0.12);
-        --header-bg: rgba(6,11,20,0.88);
-        --nav-text: #94a3b8;
+        --accent-violet-dim: rgba(167,139,250,0.09);
+        --code-bg: #04090f;
+        --code-border: rgba(255,255,255,0.06);
+        --grid-line: rgba(255,255,255,0.032);
+        --glow-teal: rgba(20,184,166,0.11);
+        --glow-sky: rgba(56,189,248,0.09);
+        --header-bg: rgba(6,12,24,0.9);
+        --nav-text: #637d96;
       }
 
-      html { scroll-behavior: smooth; }
-
+      html { scroll-behavior: smooth; overflow-x: hidden; }
       body {
         font-family: 'Geist', sans-serif;
         background: var(--bg);
         color: var(--text);
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
       }
 
-      /* HEADER */
+      /* ── HEADER ── */
       header {
-        position: sticky;
-        top: 0;
-        z-index: 50;
+        position: sticky; top: 0; z-index: 50;
         background: var(--header-bg);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-bottom: 1px solid var(--border);
       }
       .header-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 32px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
+        max-width: 1200px; margin: 0 auto;
+        padding: 0 32px; height: 60px;
+        display: flex; align-items: center; justify-content: space-between; gap: 24px;
       }
       .logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        color: var(--text);
-        font-weight: 700;
-        font-size: 17px;
-        letter-spacing: -0.3px;
-        flex-shrink: 0;
+        display: flex; align-items: center; gap: 10px;
+        text-decoration: none; color: var(--text);
+        font-weight: 700; font-size: 17px; letter-spacing: -0.4px; flex-shrink: 0;
       }
-      .logo-mark {
-        width: 32px;
-        height: 32px;
-        background: transparent; 
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        font-weight: 800;
-        color: white;
-        letter-spacing: -1px;
-        font-family: 'Geist Mono', monospace;
-        flex-shrink: 0;
-      }
-      nav {
-        display: flex;
-        align-items: center;
-        gap: 32px;
-      }
+      .logo-svg { width: 32px; height: 32px; border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+      nav { display: flex; align-items: center; gap: 28px; }
       nav a {
-        text-decoration: none;
-        color: var(--nav-text);
-        font-size: 14px;
-        font-weight: 500;
-        transition: color 0.15s;
+        text-decoration: none; color: var(--nav-text);
+        font-size: 14px; font-weight: 500; transition: color 0.15s;
       }
       nav a:hover { color: var(--text); }
-      .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
-      }
+      .hdr-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
       .btn-ghost {
-        background: transparent;
-        border: 1px solid var(--border-strong);
-        color: var(--text2);
-        padding: 6px 14px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        font-family: 'Geist', sans-serif;
-        cursor: pointer;
-        transition: all 0.15s;
+        background: transparent; border: 1px solid var(--border-strong);
+        color: var(--text2); padding: 6px 14px; border-radius: 8px;
+        font-size: 13px; font-weight: 500; font-family: 'Geist', sans-serif;
+        cursor: pointer; transition: all 0.15s;
       }
-      .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface2); }
-      .btn-primary {
-        background: var(--text);
-        color: var(--bg);
-        padding: 7px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        font-family: 'Geist', sans-serif;
-        cursor: pointer;
-        border: none;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
+      .btn-ghost:hover { color: var(--text); background: var(--surface2); }
+      .btn-dark {
+        background: var(--text); color: var(--bg);
+        padding: 7px 16px; border-radius: 8px;
+        font-size: 13px; font-weight: 600; font-family: 'Geist', sans-serif;
+        cursor: pointer; border: none; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
         transition: opacity 0.15s;
       }
-      .btn-primary:hover { opacity: 0.85; }
+      .btn-dark:hover { opacity: 0.83; }
 
-      /* HERO */
+      /* ── HERO ── */
       .hero {
-        position: relative;
-        overflow: hidden;
+        position: relative; overflow: hidden;
         border-bottom: 1px solid var(--border);
-        padding: 40px 32px 80px;
+        padding: 96px 32px 80px;
       }
       .hero-grid {
-        position: absolute;
-        inset: 0;
+        position: absolute; inset: 0;
         background-image:
           linear-gradient(var(--grid-line) 1px, transparent 1px),
           linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-        background-size: 48px 48px;
+        background-size: 52px 52px;
         pointer-events: none;
       }
-      .hero-glow {
-        position: absolute;
-        top: -120px;
-        right: -80px;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(ellipse, var(--glow) 0%, transparent 65%);
+      .glow-a {
+        position: absolute; top: -80px; right: 10%;
+        width: 480px; height: 480px;
+        background: radial-gradient(ellipse, var(--glow-teal) 0%, transparent 68%);
+        pointer-events: none;
+      }
+      .glow-b {
+        position: absolute; bottom: -60px; left: 5%;
+        width: 360px; height: 360px;
+        background: radial-gradient(ellipse, var(--glow-sky) 0%, transparent 65%);
         pointer-events: none;
       }
       .hero-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 1;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 64px;
-        align-items: center;
+        max-width: 1200px; margin: 0 auto;
+        position: relative; z-index: 1;
+        display: grid; grid-template-columns: 1.05fr 0.95fr;
+        gap: 56px; align-items: center;
       }
-      .hero-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--accent-dim);
-        border: 1px solid rgba(56,189,248,0.25);
-        border-radius: 100px;
-        padding: 5px 12px 5px 8px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--accent);
-        margin-bottom: 24px;
-        font-family: 'Geist Mono', monospace;
-        letter-spacing: 0.02em;
+      .hero-inner > * { min-width: 0; }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--accent-green-dim);
+        border: 1px solid rgba(45,212,191,0.2);
+        border-radius: 100px; padding: 4px 12px 4px 8px;
+        font-size: 11.5px; font-weight: 600; color: var(--accent-green);
+        margin-bottom: 22px; font-family: 'Geist Mono', monospace; letter-spacing: 0.03em;
       }
       .eyebrow-dot {
-        width: 6px;
-        height: 6px;
-        background: var(--accent);
-        border-radius: 50%;
-        animation: pulse 2s infinite;
+        width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%;
+        animation: blink 2.4s ease-in-out infinite;
       }
-      @keyframes pulse {
+      @keyframes blink {
         0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(0.8); }
+        50% { opacity: 0.35; transform: scale(0.72); }
       }
-      .hero h1 {
-        font-size: clamp(40px, 5vw, 64px);
-        font-weight: 800;
-        line-height: 1.05;
-        letter-spacing: -2px;
-        color: var(--text);
-        margin-bottom: 20px;
+      h1 {
+        font-size: clamp(38px, 4.8vw, 62px);
+        font-weight: 800; line-height: 1.04;
+        letter-spacing: -2.5px; color: var(--text); margin-bottom: 18px;
       }
-      .hero h1 em {
+      h1 em {
         font-family: 'Instrument Serif', serif;
-        font-style: italic;
-        font-weight: 400;
-        letter-spacing: -1px;
-        color: var(--accent);
+        font-style: italic; font-weight: 400;
+        letter-spacing: -1px; color: var(--accent-green);
       }
       .hero-desc {
-        font-size: 17px;
-        line-height: 1.7;
-        color: var(--text2);
-        margin-bottom: 36px;
-        max-width: 440px;
+        font-size: 16.5px; line-height: 1.72; color: var(--text2);
+        margin-bottom: 34px; max-width: 430px;
       }
-      .hero-ctas {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 36px;
-      }
+      .hero-ctas { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
       .cta-main {
-        background: var(--text);
-        color: var(--bg);
-        padding: 11px 22px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: opacity 0.15s;
-        letter-spacing: -0.2px;
+        background: var(--text); color: var(--bg);
+        padding: 11px 22px; border-radius: 10px;
+        font-size: 14px; font-weight: 700; text-decoration: none;
+        transition: opacity 0.15s; letter-spacing: -0.2px;
       }
-      .cta-main:hover { opacity: 0.85; }
-      .cta-secondary {
-        background: transparent;
-        color: var(--text2);
+      .cta-main:hover { opacity: 0.83; }
+      .cta-outline {
+        background: transparent; color: var(--text2);
         border: 1px solid var(--border-strong);
-        padding: 11px 18px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 7px;
+        padding: 10px 18px; border-radius: 10px;
+        font-size: 14px; font-weight: 500; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 7px;
         transition: all 0.15s;
       }
-      .cta-secondary:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface); }
-      .hero-meta {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 3px 9px;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--text2);
+      .cta-outline:hover { color: var(--text); background: var(--surface); }
+      .pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 6px; padding: 3px 9px;
+        font-size: 11.5px; font-weight: 500; color: var(--text2);
         font-family: 'Geist Mono', monospace;
       }
-      .badge-dot {
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--accent-green);
-      }
 
-      /* CODE WINDOW */
-      .code-window {
+      /* ── CODE WINDOW ── */
+      .cw {
         background: var(--code-bg);
         border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid var(--code-border);
         overflow: hidden;
-        box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+        box-shadow: 0 28px 72px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
       }
-      .code-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        background: rgba(255,255,255,0.02);
+      .cw-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 11px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        background: rgba(255,255,255,0.015);
       }
-      .traffic {
-        display: flex;
-        gap: 6px;
-      }
-      .traffic span {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-      }
-      .t-red { background: #ff5f57; }
-      .t-yellow { background: #febc2e; }
-      .t-green { background: #28c840; }
-      .code-filename {
-        font-size: 12px;
-        color: rgba(255,255,255,0.3);
-        font-family: 'Geist Mono', monospace;
-      }
-      .code-body {
-        padding: 20px 22px;
-        overflow-x: auto;
-      }
+      .dots { display: flex; gap: 6px; }
+      .dots span { width: 11px; height: 11px; border-radius: 50%; }
+      .dr { background: #ff5f57; } .dy { background: #febc2e; } .dg { background: #28c840; }
+      .cw-lbl { font-size: 11.5px; color: rgba(255,255,255,0.25); font-family: 'Geist Mono', monospace; }
+      .cw-body { padding: 20px 22px; overflow-x: auto; max-width: 100%; }
+      .cw { max-width: 100%; min-width: 0; }
       pre {
         font-family: 'Geist Mono', monospace;
-        font-size: 13px;
-        line-height: 1.75;
-        color: #94a3b8;
-        tab-size: 2;
+        font-size: 13px; line-height: 1.78; color: #7a90a8;
+        tab-size: 2; white-space: pre;
+        display: block;
       }
-      .t-kw { color: #c084fc; }
-      .t-fn { color: #60a5fa; }
-      .t-str { color: #86efac; }
-      .t-op { color: #f472b6; }
-      .t-cm { color: #475569; }
-      .t-num { color: #fb923c; }
-      .t-var { color: #e2e8f0; }
-      .t-prop { color: #7dd3fc; }
-      .t-dim { color: #64748b; }
+      .k { color: #c084fc; } .f { color: #60a5fa; } .s { color: #86efac; }
+      .o { color: #f472b6; } .n { color: #e2e8f0; } .p { color: #7dd3fc; }
+      .m { color: #fb923c; } .c { color: #3d556a; }
 
-      /* FEATURES */
-      .features {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 80px 32px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
+      /* ── FEATURES ── */
+      .feats {
+        max-width: 1200px; margin: 0 auto;
+        padding: 72px 32px;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
       }
-      .feature-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 28px;
+      .feat {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 14px; padding: 26px 26px 28px;
         transition: border-color 0.2s, transform 0.2s;
       }
-      .feature-card:hover {
-        border-color: var(--border-strong);
-        transform: translateY(-2px);
+      .feat:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+      .feat-icon {
+        width: 34px; height: 34px; border-radius: 9px;
+        display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
       }
-      .feature-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 9px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-        font-size: 17px;
-      }
-      .icon-blue { background: rgba(56,189,248,0.12); }
-      .icon-green { background: rgba(52,211,153,0.12); }
-      .icon-violet { background: rgba(167,139,250,0.12); }
-      .feature-card h3 {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 8px;
-        letter-spacing: -0.3px;
-      }
-      .feature-card p {
-        font-size: 14px;
-        line-height: 1.65;
-        color: var(--text2);
-      }
+      .ic-sky    { background: rgba(56,189,248,0.11); }
+      .ic-teal   { background: rgba(45,212,191,0.11); }
+      .ic-violet { background: rgba(167,139,250,0.11); }
+      .ic-amber  { background: rgba(251,191,36,0.11); }
+      .ic-rose   { background: rgba(251,113,133,0.11); }
+      .ic-green  { background: rgba(52,211,153,0.11); }
+      .feat h3 { font-size: 14.5px; font-weight: 700; color: var(--text); margin-bottom: 7px; letter-spacing: -0.2px; }
+      .feat p { font-size: 13.5px; line-height: 1.62; color: var(--text2); }
+      .ic { font-family: 'Geist Mono', monospace; font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; }
 
-      /* SECTION TEMPLATE */
-      .section {
-        border-top: 1px solid var(--border);
-        padding: 80px 32px;
+      /* ── SECTIONS ── */
+      .sec { border-top: 1px solid var(--border); padding: 80px 32px; }
+      .sec.sh { background: var(--surface2); }
+      .sec-in {
+        max-width: 1200px; margin: 0 auto;
+        display: grid; grid-template-columns: 260px 1fr;
+        gap: 64px; align-items: start;
       }
-      .section-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 64px;
-        align-items: start;
+      .sec-in > div { min-width: 0; }
+      .lbl {
+        font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+        text-transform: uppercase; font-family: 'Geist Mono', monospace; margin-bottom: 9px;
       }
-      .section-label {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+      .lt { color: var(--accent-green); }
+      .ls { color: var(--accent); }
+      .lv { color: var(--accent-violet); }
+      .lg { color: var(--text3); }
+      .sec-in h2 { font-size: 25px; font-weight: 800; color: var(--text); letter-spacing: -0.7px; line-height: 1.2; margin-bottom: 11px; }
+      .sec-in > div > p { font-size: 14px; line-height: 1.7; color: var(--text2); margin-bottom: 8px; }
+
+      /* ── TABS ── */
+      .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
+      .tab {
+        padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+        color: var(--text2); border: 1px solid transparent; cursor: pointer;
+        background: transparent; font-family: 'Geist', sans-serif; transition: all 0.15s;
+      }
+      .tab.on { color: var(--text); border-color: var(--border-strong); background: var(--surface); }
+      .tp { display: none; }
+      .tp.on { display: block; }
+
+      /* ── CHIPS ── */
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .chip {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 8px; padding: 7px 14px;
+        font-size: 12.5px; font-weight: 600; color: var(--text2);
         font-family: 'Geist Mono', monospace;
-        margin-bottom: 10px;
-      }
-      .label-teal { color: var(--accent-green); }
-      .label-blue { color: var(--accent); }
-      .label-violet { color: var(--accent-violet); }
-      .section h2 {
-        font-size: 26px;
-        font-weight: 800;
-        color: var(--text);
-        letter-spacing: -0.8px;
-        line-height: 1.2;
-        margin-bottom: 12px;
-      }
-      .section p {
-        font-size: 14px;
-        line-height: 1.7;
-        color: var(--text2);
-      }
-
-      /* COMPARE GRID */
-      .compare-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-      }
-      .compare-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 20px 22px;
-        font-size: 14px;
-        color: var(--text2);
-        line-height: 1.55;
-      }
-      .compare-card strong {
-        display: block;
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 6px;
-        letter-spacing: -0.2px;
-      }
-      .compare-card.featured {
-        border-color: rgba(56,189,248,0.35);
-        background: var(--accent-dim);
-      }
-      .compare-card.featured strong { color: var(--accent); }
-
-      /* FOOTER */
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 32px;
-      }
-      .footer-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .footer-inner span, .footer-inner a {
-        font-size: 13px;
-        color: var(--text3);
-        text-decoration: none;
-      }
-      .footer-inner a:hover { color: var(--text2); }
-
-      /* CODE PAIR */
-      .code-pair {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-      }
-
-      /* STORAGE LIST */
-      .adapter-list {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-top: 0;
-      }
-      .adapter-chip {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px 16px;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text2);
-        font-family: 'Geist Mono', monospace;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        display: inline-flex; align-items: center; gap: 7px;
         transition: border-color 0.15s, color 0.15s;
       }
-      .adapter-chip:hover { border-color: var(--border-strong); color: var(--text); }
-      .adapter-chip-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--text3);
-        flex-shrink: 0;
+      .chip:hover { border-color: var(--border-strong); color: var(--text); }
+      .cdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+      .chip-btn {
+        cursor: pointer; appearance: none;
+        font-family: 'Geist Mono', monospace;
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+      }
+      .active-chip {
+        border-color: var(--accent-green) !important;
+        color: var(--text) !important;
+        background: var(--accent-green-dim) !important;
+      }
+      .ic2 {
+        font-family: 'Geist Mono', monospace; font-size: 12px;
+        background: var(--surface2); border: 1px solid var(--border);
+        padding: 1px 5px; border-radius: 4px;
       }
 
+      /* ── HOOK CARDS ── */
+      .hook-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+      .hk {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 10px; padding: 14px 16px;
+      }
+      .hk-lbl {
+        font-size: 10px; font-weight: 700; color: var(--text3);
+        font-family: 'Geist Mono', monospace; letter-spacing: 0.08em;
+        text-transform: uppercase; margin-bottom: 8px;
+      }
+      .hk code {
+        display: block; font-family: 'Geist Mono', monospace; font-size: 12px;
+        color: var(--accent); padding: 2px 0;
+        overflow-x: auto; white-space: nowrap;
+      }
+
+      /* ── BUILDERS ── */
+      .btags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .btag {
+        background: var(--accent-violet-dim);
+        border: 1px solid rgba(167,139,250,0.18);
+        border-radius: 6px; padding: 4px 10px;
+        font-size: 12px; font-weight: 600; color: var(--accent-violet);
+        font-family: 'Geist Mono', monospace;
+      }
+
+      /* ── COMPARE ── */
+      .cmp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .cmp {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 12px; padding: 20px 22px;
+        font-size: 13.5px; color: var(--text2); line-height: 1.55;
+      }
+      .cmp strong { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.2px; }
+      .cmp.hi { border-color: rgba(45,212,191,0.28); background: var(--accent-green-dim); }
+      .cmp.hi strong { color: var(--accent-green); }
+
+      /* ── FOOTER ── */
+      footer { border-top: 1px solid var(--border); padding: 32px; }
+      .ft-in {
+        max-width: 1200px; margin: 0 auto;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 8px;
+      }
+      .ft-in span, .ft-in a { font-size: 13px; color: var(--text3); text-decoration: none; }
+      .ft-in a:hover { color: var(--text2); }
+
       @media (max-width: 900px) {
-        .hero-inner { grid-template-columns: 1fr; }
-        .features { grid-template-columns: 1fr; }
-        .section-inner { grid-template-columns: 1fr; gap: 32px; }
-        .compare-grid { grid-template-columns: 1fr; }
-        .code-pair { grid-template-columns: 1fr; }
-        .adapter-list { grid-template-columns: repeat(2, 1fr); }
+        .hero-inner, .sec-in, .cmp-grid, .hook-grid { grid-template-columns: 1fr; }
+        .feats { grid-template-columns: 1fr 1fr; }
         nav { display: none; }
+        h1 { letter-spacing: -1.5px; }
+        .hero { padding: 64px 24px 56px; }
+        .sec { padding: 56px 24px; }
+        .feats { padding: 56px 24px; }
+        header .header-inner { padding: 0 20px; }
+        .sec-in { gap: 36px; }
+        .hero-inner { gap: 40px; }
+      }
+      @media (max-width: 580px) {
+        .feats { grid-template-columns: 1fr; }
+        .hero { padding: 56px 16px 48px; }
+        .sec { padding: 48px 16px; }
+        .feats { padding: 48px 16px; }
+        footer { padding: 24px 16px; }
+        header .header-inner { padding: 0 16px; }
+        /* Shrink code font so it stays readable without blowing out */
+        pre { font-size: 11.5px; line-height: 1.7; }
+        .cw-body { padding: 14px 14px; }
+        .cw-bar { padding: 9px 12px; }
+        .cw-lbl { font-size: 10px; }
+        /* Tabs scroll horizontally rather than wrapping awkwardly */
+        .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+        .tab { white-space: nowrap; flex-shrink: 0; }
+        /* hero headline tighter */
+        h1 { font-size: clamp(30px, 8vw, 42px); letter-spacing: -1px; }
+        .hero-desc { font-size: 15px; }
+        /* hook grid single col */
+        .hook-grid { grid-template-columns: 1fr; }
+        /* compare single col */
+        .cmp-grid { grid-template-columns: 1fr; }
+        /* header: hide theme toggle label, keep github */
+        .btn-ghost { padding: 6px 10px; font-size: 12px; }
+        .btn-dark { padding: 6px 12px; font-size: 12px; }
       }
     </style>
   </head>
@@ -548,18 +432,30 @@
     <header>
       <div class="header-inner">
         <a href="#top" class="logo">
-            <img src="./assets/logo.svg" alt="" class="logo-mark" />
-          <span>Uplift</span>
+          <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Uplift logo">
+            <defs>
+              <linearGradient id="lgrad" x1="22" x2="106" y1="108" y2="20" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#14b8a6"/>
+                <stop offset=".52" stop-color="#38bdf8"/>
+                <stop offset="1" stop-color="#a78bfa"/>
+              </linearGradient>
+            </defs>
+            <rect width="128" height="128" rx="28" fill="#020617"/>
+            <path d="M32 38v38c0 23 14 36 32 36s32-13 32-36V38H80v38c0 14-6 20-16 20s-16-6-16-20V38H32Z" fill="url(#lgrad)"/>
+            <path d="M64 18 39 43h16v40h18V43h16L64 18Z" fill="#f8fafc"/>
+          </svg>
+          Uplift
         </a>
         <nav>
           <a href="#quickstart">Quickstart</a>
           <a href="#storage">Storage</a>
-          <a href="#examples">Examples</a>
+          <a href="#react">React</a>
+          <a href="#builders">Builders</a>
           <a href="#compare">Compare</a>
         </nav>
-        <div class="header-actions">
-          <button id="theme-toggle" class="btn-ghost">Light</button>
-          <a class="btn-primary" href="https://github.com/Itzfeminisce/uplift">
+        <div class="hdr-right">
+          <button id="thm" class="btn-ghost">Light</button>
+          <a class="btn-dark" href="https://github.com/Itzfeminisce/uplift">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
             GitHub
           </a>
@@ -572,208 +468,369 @@
       <!-- HERO -->
       <section class="hero">
         <div class="hero-grid"></div>
-        <div class="hero-glow"></div>
+        <div class="glow-a"></div>
+        <div class="glow-b"></div>
         <div class="hero-inner">
-          <div> 
-            <h1>File uploads<br>as a <em>typed</em><br>contract.</h1>
-            <p class="hero-desc">Define route constraints, auth, storage keys, metadata, and completion hooks on the server. Call route-named upload methods from the client — fully inferred.</p>
+          <div>
+            <div class="eyebrow">
+              <span class="eyebrow-dot"></span>
+              v0.0.1 &nbsp;·&nbsp; early OSS &nbsp;·&nbsp; pre-1.0
+            </div>
+            <h1>File uploads as a<br><em>typed contract.</em></h1>
+            <p class="hero-desc">Define route constraints, auth, storage keys, metadata, and completion hooks on the server. Call route-named upload methods from the client — fully inferred from your server type.</p>
             <div class="hero-ctas">
               <a class="cta-main" href="#quickstart">Get started →</a>
-              <a class="cta-secondary" href="https://www.npmjs.com/package/uplift">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color:#cb3837"><rect x="0" y="0" width="24" height="24" rx="3"/><rect x="4" y="4" width="16" height="16" fill="white"/><rect x="7" y="7" width="4" height="10" fill="#cb3837"/><rect x="13" y="7" width="4" height="7" fill="#cb3837"/></svg>
-                npm install uplift
+              <a class="cta-outline" href="https://www.npmjs.com/package/uplift">
+                <svg width="13" height="13" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="#cb3837"/><rect x="5" y="5" width="14" height="14" fill="white"/><rect x="8" y="8" width="3" height="9" fill="#cb3837"/><rect x="14" y="8" width="3" height="6" fill="#cb3837"/></svg>
+                pnpm add uplift
               </a>
-              <a class="cta-secondary" href="https://github.com/Itzfeminisce/uplift">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+              <a class="cta-outline" href="https://github.com/Itzfeminisce/uplift">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
                 Star on GitHub
               </a>
             </div>
-            <div class="hero-meta">
-              <span class="badge"><span class="badge-dot"></span> npm v0.0.1</span>
-              <span class="badge">225 downloads</span>
-              <span class="badge">MIT licensed</span>
+            <div class="pills">
+              <span class="pill" style="color:var(--accent-green)">18.2kb gzip</span>
+              <span class="pill">MIT licensed</span>
+              <span class="pill">TypeScript-first</span>
+              <span class="pill">Next · Hono · Express</span>
             </div>
           </div>
 
-          <div class="code-window">
-            <div class="code-toolbar">
-              <div class="traffic">
-                <span class="t-red"></span>
-                <span class="t-yellow"></span>
-                <span class="t-green"></span>
-              </div>
-              <span class="code-filename">upload.config.ts</span>
+          <div class="cw">
+            <div class="cw-bar">
+              <div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div>
+              <span class="cw-lbl">upload.config.ts</span>
               <span style="width:60px"></span>
             </div>
-            <div class="code-body">
-              <pre><span class="t-dim">// server</span>
-<span class="t-kw">const</span> <span class="t-var">uploads</span> <span class="t-op">=</span> <span class="t-fn">uplift</span>({
-  <span class="t-prop">storage</span>: <span class="t-fn">s3</span>({ <span class="t-prop">bucket</span>, <span class="t-prop">region</span> }),
-  <span class="t-prop">routes</span>: {
-    <span class="t-prop">avatar</span>: <span class="t-fn">image</span>()
-      .<span class="t-fn">max</span>(<span class="t-str">"2mb"</span>)
-      .<span class="t-fn">auth</span>(<span class="t-var">requireUser</span>)
-      .<span class="t-fn">key</span>(({ <span class="t-prop">user</span> }) <span class="t-op">=&gt;</span> <span class="t-str">`avatars/<span class="t-op">${</span><span class="t-prop">user</span>.<span class="t-prop">id</span><span class="t-op">}</span>.png`</span>),
+            <div class="cw-body">
+<pre><span class="c">// server — define once</span>
+<span class="k">export const</span> <span class="n">uploads</span> <span class="o">=</span> <span class="f">uplift</span>({
+  <span class="p">storage</span>: <span class="f">s3</span>({ <span class="p">bucket</span>, <span class="p">region</span> }),
+  <span class="p">routes</span>: {
+    <span class="p">avatar</span>: <span class="f">image</span>()
+      .<span class="f">max</span>(<span class="s">"2mb"</span>)
+      .<span class="f">auth</span>(<span class="k">async</span> ({ <span class="p">req</span> }) <span class="o">=&gt;</span> <span class="f">getUser</span>(<span class="p">req</span>))
+      .<span class="f">key</span>(({ <span class="p">user</span> }) <span class="o">=&gt;</span> <span class="s">`avatars/<span class="o">${</span><span class="p">user</span>.<span class="p">id</span><span class="o">}</span>.png`</span>)
+      .<span class="f">done</span>(<span class="k">async</span> ({ <span class="p">file</span>, <span class="p">user</span> }) <span class="o">=&gt;</span> <span class="f">saveToDb</span>(<span class="p">file</span>.<span class="p">url</span>)),
 
-    <span class="t-prop">gallery</span>: <span class="t-fn">image</span>().<span class="t-fn">multiple</span>(<span class="t-num">10</span>),
-    <span class="t-prop">resume</span>: <span class="t-fn">pdf</span>().<span class="t-fn">max</span>(<span class="t-str">"5mb"</span>),
+    <span class="p">gallery</span>: <span class="f">image</span>().<span class="f">max</span>(<span class="s">"8mb"</span>).<span class="f">multiple</span>(<span class="m">10</span>),
+    <span class="p">resume</span>:  <span class="f">pdf</span>().<span class="f">max</span>(<span class="s">"5mb"</span>),
   }
 });
 
-<span class="t-dim">// client — fully inferred</span>
-<span class="t-kw">const</span> <span class="t-var">upload</span> <span class="t-op">=</span> <span class="t-fn">createUploadClient</span><span class="t-op">&lt;</span><span class="t-kw">typeof</span> <span class="t-var">uploads</span><span class="t-op">&gt;</span>(<span class="t-str">"/api/upload"</span>);
-<span class="t-kw">await</span> <span class="t-var">upload</span>.<span class="t-fn">avatar</span>(<span class="t-var">file</span>); <span class="t-dim">// ✓ typed</span></pre>
+<span class="c">// client — fully inferred from server type</span>
+<span class="k">const</span> <span class="n">upload</span> <span class="o">=</span> <span class="f">createUploadClient</span><span class="o">&lt;</span><span class="k">typeof</span> <span class="n">uploads</span><span class="o">&gt;</span>(<span class="s">"/api/upload"</span>);
+
+<span class="k">const</span> <span class="n">avatar</span>  <span class="o">=</span> <span class="k">await</span> <span class="n">upload</span>.<span class="f">avatar</span>(<span class="n">file</span>);    <span class="c">// → UploadedFile</span>
+<span class="k">const</span> <span class="n">gallery</span> <span class="o">=</span> <span class="k">await</span> <span class="n">upload</span>.<span class="f">gallery</span>(<span class="n">files</span>);  <span class="c">// → UploadedFile[]</span></pre>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- FEATURES -->
-      <div class="features">
-        <div class="feature-card">
-          <div class="feature-icon icon-blue">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <!-- FEATURE CARDS -->
+      <div class="feats">
+        <div class="feat">
+          <div class="feat-icon ic-sky">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           </div>
-          <h3>Inferred client</h3>
-          <p>Route names, multiplicity, and return shapes are inferred directly from your server contract — zero manual types.</p>
+          <h3>End-to-end inference</h3>
+          <p>Route names, multiplicity, and return shapes flow from your server definition to the client — zero manual type duplication.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon icon-green">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <div class="feat">
+          <div class="feat-icon ic-teal">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
-          <h3>Provider adapters</h3>
-          <p>S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible storage — swap without touching route logic.</p>
+          <h3>Storage adapters</h3>
+          <p>S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible. Swap without touching route logic.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon icon-violet">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        <div class="feat">
+          <div class="feat-icon ic-violet">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <h3>Framework adapters</h3>
+          <p>First-class handlers for Next.js App Router, Hono, and Express. One endpoint, every route.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon ic-amber">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Typed auth flow</h3>
+          <p>Return any user shape from <span class="ic">.auth()</span> and it flows fully typed into <span class="ic">.key()</span>, <span class="ic">.meta()</span>, and <span class="ic">.done()</span>.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon ic-green">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
           </div>
           <h3>No lock-in</h3>
-          <p>No hard Zod, Axios, ORM, or database dependency in the core. Bring only what your project already uses.</p>
+          <p>No hard Zod, Axios, ORM, or database dependency in core. JSON validation accepts any <span class="ic">.parse()</span> schema.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon ic-rose">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Real upload progress</h3>
+          <p>XHR-backed progress in browsers. The React hook exposes <span class="ic">.progress</span>, <span class="ic">.isUploading</span>, <span class="ic">.error</span>, and <span class="ic">.data</span> per route.</p>
         </div>
       </div>
 
       <!-- QUICKSTART -->
-      <section id="quickstart" class="section" style="background: var(--surface2);">
-        <div class="section-inner">
+      <section id="quickstart" class="sec sh">
+        <div class="sec-in">
           <div>
-            <div class="section-label label-teal">Quickstart</div>
-            <h2>Define routes once.</h2>
-            <p>Single-file routes are the default. <code style="font-family:'Geist Mono',monospace;font-size:13px;background:var(--bg3);padding:2px 6px;border-radius:4px;">.multiple()</code> changes both server and client types automatically.</p>
+            <div class="lbl lt">Quickstart</div>
+            <h2>Three steps.</h2>
+            <p>Define routes on the server, mount a framework handler, create a typed client. That's the full API surface for the common case.</p>
           </div>
-          <div class="code-window">
-            <div class="code-toolbar">
-              <div class="traffic"><span class="t-red"></span><span class="t-yellow"></span><span class="t-green"></span></div>
-              <span class="code-filename">src/server/upload.ts</span>
-              <span></span>
+          <div>
+            <div class="tabs">
+              <button class="tab on" data-p="p1">1. Define routes</button>
+              <button class="tab" data-p="p2">2. Mount handler</button>
+              <button class="tab" data-p="p3">3. Client</button>
             </div>
-            <div class="code-body">
-              <pre><span class="t-kw">import</span> { <span class="t-var">image</span>, <span class="t-var">pdf</span>, <span class="t-var">uplift</span> } <span class="t-kw">from</span> <span class="t-str">"uplift"</span>;
-<span class="t-kw">import</span> { <span class="t-var">s3</span> } <span class="t-kw">from</span> <span class="t-str">"uplift/storage/s3"</span>;
+            <div class="tp on" id="p1">
+              <div class="cw">
+                <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">uploads.ts</span><span></span></div>
+                <div class="cw-body">
+<pre><span class="k">import</span> { <span class="n">image</span>, <span class="n">pdf</span>, <span class="n">uplift</span> } <span class="k">from</span> <span class="s">"uplift"</span>;
+<span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"uplift/storage/s3"</span>;
 
-<span class="t-kw">export const</span> <span class="t-var">uploads</span> <span class="t-op">=</span> <span class="t-fn">uplift</span>({
-  <span class="t-prop">storage</span>: <span class="t-fn">s3</span>({ <span class="t-prop">bucket</span>, <span class="t-prop">region</span> }),
-  <span class="t-prop">routes</span>: {
-    <span class="t-prop">avatar</span>: <span class="t-fn">image</span>().<span class="t-fn">max</span>(<span class="t-str">"2mb"</span>).<span class="t-fn">auth</span>(<span class="t-var">requireUser</span>),
-    <span class="t-prop">resume</span>: <span class="t-fn">pdf</span>().<span class="t-fn">max</span>(<span class="t-str">"5mb"</span>),
-    <span class="t-prop">gallery</span>: <span class="t-fn">image</span>().<span class="t-fn">max</span>(<span class="t-str">"8mb"</span>).<span class="t-fn">multiple</span>(<span class="t-num">10</span>),
+<span class="k">export const</span> <span class="n">uploads</span> <span class="o">=</span> <span class="f">uplift</span>({
+  <span class="p">storage</span>: <span class="f">s3</span>({
+    <span class="p">bucket</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_BUCKET</span><span class="o">!</span>,
+    <span class="p">region</span>: <span class="s">"us-east-1"</span>,
+    <span class="p">accessKeyId</span>:     <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_KEY</span><span class="o">!</span>,
+    <span class="p">secretAccessKey</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_SECRET</span><span class="o">!</span>,
+  }),
+  <span class="p">routes</span>: {
+    <span class="p">avatar</span>: <span class="f">image</span>()
+      .<span class="f">max</span>(<span class="s">"2mb"</span>)
+      .<span class="f">auth</span>(<span class="k">async</span> ({ <span class="p">req</span> }) <span class="o">=&gt;</span> ({ <span class="p">id</span>: <span class="n">req</span>.<span class="p">headers</span>.<span class="f">get</span>(<span class="s">"x-user-id"</span>)<span class="o">!</span> }))
+      .<span class="f">key</span>(({ <span class="p">user</span> }) <span class="o">=&gt;</span> <span class="s">`avatars/<span class="o">${</span><span class="p">user</span>.<span class="p">id</span><span class="o">}</span>.png`</span>)
+      .<span class="f">done</span>(<span class="k">async</span> ({ <span class="p">file</span>, <span class="p">user</span> }) <span class="o">=&gt;</span> {
+        <span class="n">console</span>.<span class="f">log</span>(<span class="s">"uploaded"</span>, <span class="p">user</span>.<span class="p">id</span>, <span class="p">file</span>.<span class="p">url</span>);
+      }),
+    <span class="p">resume</span>:  <span class="f">pdf</span>().<span class="f">max</span>(<span class="s">"5mb"</span>),
+    <span class="p">gallery</span>: <span class="f">image</span>().<span class="f">max</span>(<span class="s">"8mb"</span>).<span class="f">multiple</span>(<span class="m">10</span>),
   }
-});</pre>
+});
+
+<span class="k">export type</span> <span class="n">Uploads</span> <span class="o">=</span> <span class="k">typeof</span> <span class="n">uploads</span>;</pre>
+                </div>
+              </div>
+            </div>
+            <div class="tp" id="p2">
+              <div class="cw">
+                <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">Next.js · Hono · Express</span><span></span></div>
+                <div class="cw-body">
+<pre><span class="c">// Next.js App Router — app/api/upload/route.ts</span>
+<span class="k">import</span> { <span class="n">createNextHandler</span> } <span class="k">from</span> <span class="s">"uplift/next"</span>;
+<span class="k">import</span> { <span class="n">uploads</span> } <span class="k">from</span> <span class="s">"@/uploads"</span>;
+<span class="k">export const</span> { <span class="n">GET</span>, <span class="n">POST</span> } <span class="o">=</span> <span class="f">createNextHandler</span>(<span class="n">uploads</span>);
+
+<span class="c">// Hono</span>
+<span class="k">import</span> { <span class="n">createHonoHandler</span> } <span class="k">from</span> <span class="s">"uplift/hono"</span>;
+<span class="n">app</span>.<span class="f">route</span>(<span class="s">"/upload"</span>, <span class="f">createHonoHandler</span>(<span class="n">uploads</span>));
+
+<span class="c">// Express</span>
+<span class="k">import</span> { <span class="n">createExpressHandler</span> } <span class="k">from</span> <span class="s">"uplift/express"</span>;
+<span class="n">app</span>.<span class="f">use</span>(<span class="s">"/upload"</span>, <span class="f">createExpressHandler</span>(<span class="n">uploads</span>));</pre>
+                </div>
+              </div>
+            </div>
+            <div class="tp" id="p3">
+              <div class="cw">
+                <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">upload-client.ts</span><span></span></div>
+                <div class="cw-body">
+<pre><span class="k">import</span> { <span class="n">createUploadClient</span> } <span class="k">from</span> <span class="s">"uplift/client"</span>;
+<span class="k">import type</span> { <span class="n">Uploads</span> } <span class="k">from</span> <span class="s">"./uploads"</span>;
+
+<span class="k">export const</span> <span class="n">upload</span> <span class="o">=</span>
+  <span class="f">createUploadClient</span><span class="o">&lt;</span><span class="n">Uploads</span><span class="o">&gt;</span>(<span class="s">"/api/upload"</span>);
+
+<span class="c">// Single file → UploadedFile</span>
+<span class="k">const</span> <span class="n">avatar</span> <span class="o">=</span> <span class="k">await</span> <span class="n">upload</span>.<span class="f">avatar</span>(<span class="n">file</span>);
+<span class="n">avatar</span>.<span class="p">url</span>;  <span class="c">// string</span>
+<span class="n">avatar</span>.<span class="p">key</span>;  <span class="c">// string</span>
+
+<span class="c">// Multiple → UploadedFile[]</span>
+<span class="k">const</span> <span class="n">gallery</span> <span class="o">=</span> <span class="k">await</span> <span class="n">upload</span>.<span class="f">gallery</span>(<span class="n">fileList</span>);
+<span class="n">gallery</span>[<span class="m">0</span>].<span class="p">url</span>;</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REACT -->
+      <section id="react" class="sec">
+        <div class="sec-in">
+          <div>
+            <div class="lbl ls">React</div>
+            <h2>useUploads hook.</h2>
+            <p>Drop the hook anywhere. Each route method carries its own progress state — no shared progress bar to coordinate.</p>
+            <p>XHR-backed in browsers for real byte progress. Lifecycle-based in non-browser environments.</p>
+            <div class="hook-grid">
+              <div class="hk">
+                <div class="hk-lbl">Progress</div>
+                <code>upload.avatar.progress</code>
+                <code>upload.avatar.isUploading</code>
+              </div>
+              <div class="hk">
+                <div class="hk-lbl">Result</div>
+                <code>upload.avatar.data</code>
+                <code>upload.avatar.error</code>
+              </div>
+            </div>
+          </div>
+          <div class="cw">
+            <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">AvatarUploader.tsx</span><span></span></div>
+            <div class="cw-body">
+<pre><span class="k">import</span> { <span class="n">useUploads</span> } <span class="k">from</span> <span class="s">"uplift/react"</span>;
+<span class="k">import type</span> { <span class="n">Uploads</span> } <span class="k">from</span> <span class="s">"./uploads"</span>;
+
+<span class="k">export function</span> <span class="f">AvatarUploader</span>() {
+  <span class="k">const</span> <span class="n">upload</span> <span class="o">=</span> <span class="f">useUploads</span><span class="o">&lt;</span><span class="n">Uploads</span><span class="o">&gt;</span>(<span class="s">"/api/upload"</span>);
+
+  <span class="k">return</span> (
+    <span class="o">&lt;</span><span class="p">div</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="p">input</span>
+        <span class="p">type</span><span class="o">=</span><span class="s">"file"</span> <span class="p">accept</span><span class="o">=</span><span class="s">"image/*"</span>
+        <span class="p">onChange</span><span class="o">=</span>{(<span class="n">e</span>) <span class="o">=&gt;</span> {
+          <span class="k">const</span> <span class="n">f</span> <span class="o">=</span> <span class="n">e</span>.<span class="p">currentTarget</span>.<span class="p">files</span><span class="o">?.</span>[<span class="m">0</span>];
+          <span class="k">if</span> (<span class="n">f</span>) <span class="k">void</span> <span class="n">upload</span>.<span class="f">avatar</span>(<span class="n">f</span>);
+        }}
+      <span class="o">/&gt;</span>
+      {<span class="n">upload</span>.<span class="p">avatar</span>.<span class="p">isUploading</span> <span class="o">&amp;&amp;</span> (
+        <span class="o">&lt;</span><span class="p">progress</span>
+          <span class="p">value</span><span class="o">=</span>{<span class="n">upload</span>.<span class="p">avatar</span>.<span class="p">progress</span>}
+          <span class="p">max</span><span class="o">=</span>{<span class="m">100</span>}
+        <span class="o">/&gt;</span>
+      )}
+      {<span class="n">upload</span>.<span class="p">avatar</span>.<span class="p">data</span><span class="o">?.</span><span class="p">url</span> <span class="o">&amp;&amp;</span> (
+        <span class="o">&lt;</span><span class="p">img</span> <span class="p">src</span><span class="o">=</span>{<span class="n">upload</span>.<span class="p">avatar</span>.<span class="p">data</span>.<span class="p">url</span>} <span class="p">alt</span><span class="o">=</span><span class="s">"avatar"</span> <span class="o">/&gt;</span>
+      )}
+    <span class="o">&lt;/</span><span class="p">div</span><span class="o">&gt;</span>
+  );
+}</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUILDERS -->
+      <section id="builders" class="sec sh">
+        <div class="sec-in">
+          <div>
+            <div class="lbl lv">File builders</div>
+            <h2>Fluent builder API.</h2>
+            <p>Every builder shares the same chain. <span class="ic" style="font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface);border:1px solid var(--border);padding:1px 5px;border-radius:4px">.multiple(n)</span> changes both the server context and the client input type automatically — no separate overload to maintain.</p>
+            <p style="margin-top: 10px;">Rich inspection (<span class="ic" style="font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface);border:1px solid var(--border);padding:1px 5px;border-radius:4px">uplift/rich</span>) adds <span class="ic" style="font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface);border:1px solid var(--border);padding:1px 5px;border-radius:4px">.pages()</span>, <span class="ic" style="font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface);border:1px solid var(--border);padding:1px 5px;border-radius:4px">.duration()</span>, and <span class="ic" style="font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface);border:1px solid var(--border);padding:1px 5px;border-radius:4px">.encrypted()</span> for PDF, video, and audio — opt-in, fail-closed.</p>
+          </div>
+          <div>
+            <div class="btags">
+              <span class="btag">any</span><span class="btag">audio</span><span class="btag">csv</span>
+              <span class="btag">custom</span><span class="btag">image</span><span class="btag">json</span>
+              <span class="btag">pdf</span><span class="btag">text</span><span class="btag">video</span>
+            </div>
+            <div class="cw">
+              <div class="cw-bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><span class="cw-lbl">shared builder methods</span><span></span></div>
+              <div class="cw-body">
+<pre><span class="f">image</span>()
+  .<span class="f">max</span>(<span class="s">"2mb"</span>)          <span class="c">// max file size</span>
+  .<span class="f">min</span>(<span class="s">"10kb"</span>)         <span class="c">// min file size</span>
+  .<span class="f">multiple</span>(<span class="m">10</span>)        <span class="c">// up to 10 files</span>
+  .<span class="f">auth</span>(<span class="k">async</span> ({ <span class="p">req</span> }) <span class="o">=&gt;</span> <span class="n">user</span>)
+  .<span class="f">key</span>(({ <span class="p">user</span>, <span class="p">file</span> }) <span class="o">=&gt;</span> <span class="s">`uploads/<span class="o">${</span><span class="p">file</span>.<span class="p">name</span><span class="o">}</span>`</span>)
+  .<span class="f">meta</span>(({ <span class="p">user</span>, <span class="p">file</span> }) <span class="o">=&gt;</span> ({ <span class="p">owner</span>: <span class="p">user</span>.<span class="p">id</span> }))
+  .<span class="f">validate</span>(({ <span class="p">file</span> }) <span class="o">=&gt;</span> <span class="k">true</span>)
+  .<span class="f">done</span>(<span class="k">async</span> ({ <span class="p">file</span>, <span class="p">user</span>, <span class="p">meta</span> }) <span class="o">=&gt;</span> {})
+
+<span class="c">// JSON accepts any .parse() schema — no hard Zod dep</span>
+<span class="f">json</span>().<span class="f">schema</span>(<span class="n">zodSchema</span>);</pre>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <!-- STORAGE -->
-      <section id="storage" class="section">
-        <div class="section-inner">
+      <section id="storage" class="sec">
+        <div class="sec-in">
           <div>
-            <div class="section-label label-blue">Storage</div>
+            <div class="lbl lt">Storage</div>
             <h2>Adapters stay thin.</h2>
-            <p>Core routes don't care where the file lands. Drop in any adapter and your route types stay identical.</p>
+            <p>Core routes don't care where the file lands. S3 and R2 use <code class="ic2">@aws-sdk/client-s3</code>. Bunny and Cloudinary use <code class="ic2">fetch</code>. UploadThing stays optional.</p>
+            <p style="margin-top:10px">Click a provider to see its config.</p>
           </div>
           <div>
-            <div class="adapter-list" style="margin-bottom: 16px;">
-              <div class="adapter-chip"><span class="adapter-chip-dot" style="background:#f97316"></span>s3</div>
-              <div class="adapter-chip"><span class="adapter-chip-dot" style="background:#f59e0b"></span>r2</div>
-              <div class="adapter-chip"><span class="adapter-chip-dot" style="background:#8b5cf6"></span>bunny</div>
-              <div class="adapter-chip"><span class="adapter-chip-dot" style="background:#06b6d4"></span>cloudinary</div>
-              <div class="adapter-chip"><span class="adapter-chip-dot" style="background:#22c55e"></span>local</div>
-              <div class="adapter-chip"><span class="adapter-chip-dot" style="background:#64748b"></span>memory</div>
+            <!-- Provider chips — act as selector tabs -->
+            <div class="chips" id="storage-chips">
+              <button class="chip chip-btn active-chip" data-provider="s3">
+                <span class="cdot" style="background:#f97316"></span>s3
+              </button>
+              <button class="chip chip-btn" data-provider="r2">
+                <span class="cdot" style="background:#f59e0b"></span>r2
+              </button>
+              <button class="chip chip-btn" data-provider="bunny">
+                <span class="cdot" style="background:#ec4899"></span>bunny
+              </button>
+              <button class="chip chip-btn" data-provider="cloudinary">
+                <span class="cdot" style="background:#06b6d4"></span>cloudinary
+              </button>
+              <button class="chip chip-btn" data-provider="local">
+                <span class="cdot" style="background:#22c55e"></span>local
+              </button>
+              <button class="chip chip-btn" data-provider="memory">
+                <span class="cdot" style="background:#64748b"></span>memory
+              </button>
+              <button class="chip chip-btn" data-provider="uploadthing">
+                <span class="cdot" style="background:#a78bfa"></span>uploadthing
+              </button>
             </div>
-            <div class="code-window">
-              <div class="code-toolbar">
-                <div class="traffic"><span class="t-red"></span><span class="t-yellow"></span><span class="t-green"></span></div>
-                <span class="code-filename">UploadThing-compatible</span>
+
+            <!-- Code window — content swapped by JS -->
+            <div class="cw">
+              <div class="cw-bar">
+                <div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div>
+                <span class="cw-lbl" id="storage-label">uplift/storage/s3</span>
                 <span></span>
               </div>
-              <div class="code-body">
-                <pre><span class="t-kw">import</span> { <span class="t-var">uploadthing</span> } <span class="t-kw">from</span> <span class="t-str">"uplift/storage/uploadthing"</span>;
-
-<span class="t-prop">storage</span>: <span class="t-fn">uploadthing</span>({
-  <span class="t-prop">uploader</span>: (<span class="t-prop">file</span>) <span class="t-op">=&gt;</span> <span class="t-var">utapi</span>.<span class="t-fn">uploadFiles</span>(<span class="t-prop">file</span>)
-}),</pre>
+              <div class="cw-body" id="storage-code-body">
+                <!-- populated by JS on load -->
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- EXAMPLES -->
-      <section id="examples" class="section" style="background: var(--surface2);">
-        <div class="section-inner">
-          <div>
-            <div class="section-label label-violet">Examples</div>
-            <h2>Dogfooded before publish.</h2>
-            <p>The repo ships a Next-shaped local example with S3 and R2 configuration paths — ready to clone and run.</p>
-          </div>
-          <div class="code-window">
-            <div class="code-toolbar">
-              <div class="traffic"><span class="t-red"></span><span class="t-yellow"></span><span class="t-green"></span></div>
-              <span class="code-filename">shell</span>
-              <span></span>
-            </div>
-            <div class="code-body">
-              <pre><span class="t-dim"># typecheck the example</span>
-<span class="t-var">pnpm</span> --filter @uplift/example-next-local typecheck
-
-<span class="t-dim"># local storage</span>
-<span class="t-var">UPLIFT_STORAGE</span><span class="t-op">=</span><span class="t-str">local</span>
-<span class="t-var">UPLIFT_LOCAL_DIR</span><span class="t-op">=</span><span class="t-str">./uploads</span>
-
-<span class="t-dim"># s3 storage</span>
-<span class="t-var">UPLIFT_STORAGE</span><span class="t-op">=</span><span class="t-str">s3</span>
-<span class="t-var">AWS_BUCKET</span><span class="t-op">=</span><span class="t-str">my-bucket</span>
-<span class="t-var">AWS_REGION</span><span class="t-op">=</span><span class="t-str">us-east-1</span></pre>
             </div>
           </div>
         </div>
       </section>
 
       <!-- COMPARE -->
-      <section id="compare" class="section">
-        <div class="section-inner">
+      <section id="compare" class="sec sh">
+        <div class="sec-in">
           <div>
-            <div class="section-label label-teal">Positioning</div>
-            <h2>Why Uplift?</h2>
-            <p>UploadThing is great infrastructure. Uppy and FilePond are excellent client upload experiences. Uplift is for teams who want the upload contract itself to be typed, framework-light, and storage-swappable.</p>
+            <div class="lbl lg">Comparison</div>
+            <h2>Not trying to replace everything.</h2>
+            <p>Uplift is for teams who want the upload contract itself to be typed, framework-light, and storage-swappable.</p>
+            <p>It can even use UploadThing as a storage boundary rather than competing with it.</p>
           </div>
-          <div class="compare-grid">
-            <div class="compare-card featured">
+          <div class="cmp-grid">
+            <div class="cmp hi">
               <strong>↑ Uplift</strong>
-              Route contracts + inferred clients. Storage-swappable. No lock-in to a provider or framework.
+              Typed upload contracts server-to-client. Storage-swappable. No lock-in to a provider, framework, or schema library.
             </div>
-            <div class="compare-card">
+            <div class="cmp">
               <strong>UploadThing</strong>
-              Managed upload infrastructure with UI helpers. Great if you want the full hosted stack.
+              Managed upload infrastructure with first-party UI helpers. Great when you want the full hosted stack.
             </div>
-            <div class="compare-card">
+            <div class="cmp">
               <strong>Uppy / FilePond</strong>
-              Rich browser upload widgets. Best for polished drag-and-drop UI experiences.
+              Rich browser upload widgets. Best when the drag-and-drop UI experience is the primary product surface.
             </div>
-            <div class="compare-card">
+            <div class="cmp">
               <strong>Direct SDKs</strong>
-              Lowest-level escape hatch. Full control, but you wire everything yourself.
+              Lowest-level escape hatch. Full control, but you wire auth, key generation, and client types yourself.
             </div>
           </div>
         </div>
@@ -782,28 +839,148 @@
     </main>
 
     <footer>
-      <div class="footer-inner">
-        <span>MIT licensed · Built in public</span>
+      <div class="ft-in">
+        <span>MIT licensed &nbsp;·&nbsp; early OSS &nbsp;·&nbsp; <a href="https://github.com/Itzfeminisce/uplift/blob/main/CONTRIBUTING.md">Contributing</a></span>
         <a href="https://github.com/Itzfeminisce/uplift">github.com/Itzfeminisce/uplift</a>
       </div>
     </footer>
 
     <script>
-      const toggle = document.getElementById('theme-toggle');
+      // Theme toggle
+      const thm = document.getElementById('thm');
       const root = document.documentElement;
-      const saved = localStorage.getItem('uplift-theme');
-      if (saved === 'light') root.classList.remove('dark');
-
-      const setLabel = () => {
-        toggle.textContent = root.classList.contains('dark') ? 'Light' : 'Dark';
-      };
-      setLabel();
-
-      toggle.addEventListener('click', () => {
+      if (localStorage.getItem('uplift-theme') === 'light') root.classList.remove('dark');
+      const setLbl = () => { thm.textContent = root.classList.contains('dark') ? 'Light' : 'Dark'; };
+      setLbl();
+      thm.addEventListener('click', () => {
         root.classList.toggle('dark');
         localStorage.setItem('uplift-theme', root.classList.contains('dark') ? 'dark' : 'light');
-        setLabel();
+        setLbl();
       });
+
+      // Tabs
+      const allTabs = document.querySelectorAll('.tab');
+      allTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const group = tab.closest('.tabs');
+          group.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+          tab.classList.add('on');
+          const panelId = tab.dataset.p;
+          const container = group.parentElement;
+          container.querySelectorAll('.tp').forEach(p => p.classList.remove('on'));
+          const target = document.getElementById(panelId);
+          if (target) target.classList.add('on');
+        });
+      });
+
+      // ── Storage provider switcher ──
+      const storageSnippets = {
+        s3: {
+          label: 'uplift/storage/s3',
+          code: `<pre><span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"uplift/storage/s3"</span>;
+
+<span class="p">storage</span>: <span class="f">s3</span>({
+  <span class="p">bucket</span>:          <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_BUCKET</span><span class="o">!</span>,
+  <span class="p">region</span>:          <span class="s">"us-east-1"</span>,
+  <span class="p">accessKeyId</span>:     <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_ACCESS_KEY_ID</span><span class="o">!</span>,
+  <span class="p">secretAccessKey</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">S3_SECRET_ACCESS_KEY</span><span class="o">!</span>,
+}),</pre>`
+        },
+        r2: {
+          label: 'uplift/storage/r2',
+          code: `<pre><span class="k">import</span> { <span class="n">r2</span> } <span class="k">from</span> <span class="s">"uplift/storage/r2"</span>;
+
+<span class="p">storage</span>: <span class="f">r2</span>({
+  <span class="p">bucket</span>:          <span class="n">process</span>.<span class="p">env</span>.<span class="n">R2_BUCKET</span><span class="o">!</span>,
+  <span class="p">accountId</span>:       <span class="n">process</span>.<span class="p">env</span>.<span class="n">R2_ACCOUNT_ID</span><span class="o">!</span>,
+  <span class="p">accessKeyId</span>:     <span class="n">process</span>.<span class="p">env</span>.<span class="n">R2_ACCESS_KEY_ID</span><span class="o">!</span>,
+  <span class="p">secretAccessKey</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">R2_SECRET_ACCESS_KEY</span><span class="o">!</span>,
+}),
+
+<span class="c">// same @aws-sdk/client-s3 under the hood</span>
+<span class="c">// endpoint is auto-set to your Cloudflare R2 URL</span></pre>`
+        },
+        bunny: {
+          label: 'uplift/storage/bunny',
+          code: `<pre><span class="k">import</span> { <span class="n">bunny</span> } <span class="k">from</span> <span class="s">"uplift/storage/bunny"</span>;
+
+<span class="p">storage</span>: <span class="f">bunny</span>({
+  <span class="p">apiKey</span>:      <span class="n">process</span>.<span class="p">env</span>.<span class="n">BUNNY_API_KEY</span><span class="o">!</span>,
+  <span class="p">storageZone</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">BUNNY_STORAGE_ZONE</span><span class="o">!</span>,
+  <span class="p">region</span>:      <span class="s">"de"</span>, <span class="c">// de | uk | se | ny | la | sg | syd</span>
+  <span class="p">cdnBase</span>:     <span class="n">process</span>.<span class="p">env</span>.<span class="n">BUNNY_CDN_BASE</span><span class="o">!</span>,
+}),
+
+<span class="c">// uploads via Bunny Storage HTTP API (fetch, no extra SDK)</span></pre>`
+        },
+        cloudinary: {
+          label: 'uplift/storage/cloudinary',
+          code: `<pre><span class="k">import</span> { <span class="n">cloudinary</span> } <span class="k">from</span> <span class="s">"uplift/storage/cloudinary"</span>;
+
+<span class="p">storage</span>: <span class="f">cloudinary</span>({
+  <span class="p">cloudName</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_CLOUD_NAME</span><span class="o">!</span>,
+  <span class="p">apiKey</span>:    <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_API_KEY</span><span class="o">!</span>,
+  <span class="p">apiSecret</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_API_SECRET</span><span class="o">!</span>,
+  <span class="p">folder</span>:    <span class="s">"uploads"</span>, <span class="c">// optional</span>
+}),
+
+<span class="c">// uploads via Cloudinary Upload API (fetch, no SDK)</span></pre>`
+        },
+        local: {
+          label: 'uplift/storage/local',
+          code: `<pre><span class="k">import</span> { <span class="n">local</span> } <span class="k">from</span> <span class="s">"uplift/storage/local"</span>;
+
+<span class="p">storage</span>: <span class="f">local</span>({
+  <span class="p">dir</span>: <span class="s">"./uploads"</span>, <span class="c">// relative to cwd</span>
+  <span class="p">base</span>: <span class="s">"http://localhost:3000/uploads"</span>,
+}),
+
+<span class="c">// writes to disk, returns a localhost URL</span>
+<span class="c">// ideal for dev — swap for s3() in production</span></pre>`
+        },
+        memory: {
+          label: 'uplift/storage/memory',
+          code: `<pre><span class="k">import</span> { <span class="n">memory</span> } <span class="k">from</span> <span class="s">"uplift/storage/memory"</span>;
+
+<span class="p">storage</span>: <span class="f">memory</span>(),
+
+<span class="c">// stores files in-process as Buffers</span>
+<span class="c">// survives only for the lifetime of the server</span>
+<span class="c">// useful for tests and CI — zero config</span></pre>`
+        },
+        uploadthing: {
+          label: 'uplift/storage/uploadthing',
+          code: `<pre><span class="k">import</span> { <span class="n">uploadthing</span> } <span class="k">from</span> <span class="s">"uplift/storage/uploadthing"</span>;
+<span class="k">import</span> { <span class="n">UTApi</span> } <span class="k">from</span> <span class="s">"uploadthing/server"</span>;
+
+<span class="k">const</span> <span class="n">utapi</span> <span class="o">=</span> <span class="k">new</span> <span class="f">UTApi</span>();
+
+<span class="p">storage</span>: <span class="f">uploadthing</span>({
+  <span class="p">uploader</span>: (<span class="n">file</span>) <span class="o">=&gt;</span> <span class="n">utapi</span>.<span class="f">uploadFiles</span>(<span class="n">file</span>)
+}),
+
+<span class="c">// UploadThing stays optional — use it as a</span>
+<span class="c">// storage boundary while keeping Uplift's typed routes</span></pre>`
+        }
+      };
+
+      function activateProvider(provider) {
+        const snippet = storageSnippets[provider];
+        if (!snippet) return;
+        document.getElementById('storage-label').textContent = snippet.label;
+        document.getElementById('storage-code-body').innerHTML = snippet.code;
+        document.querySelectorAll('#storage-chips .chip-btn').forEach(btn => {
+          btn.classList.toggle('active-chip', btn.dataset.provider === provider);
+        });
+      }
+
+      // Wire up click handlers
+      document.querySelectorAll('#storage-chips .chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => activateProvider(btn.dataset.provider));
+      });
+
+      // Initialise with s3
+      activateProvider('s3');
     </script>
   </body>
 </html>
