@@ -36,15 +36,15 @@ Uplift is for people who want file uploads to feel like a TypeScript contract in
 ## Install
 
 ```bash
-pnpm add uplift
+pnpm add uplift-io
 ```
 
 ```bash
-npm install uplift
+npm install uplift-io
 ```
 
 ```bash
-yarn add uplift
+yarn add uplift-io
 ```
 
 ## Quick Start
@@ -53,8 +53,8 @@ yarn add uplift
 
 ```ts
 // uploads.ts
-import { image, pdf, uplift } from "uplift";
-import { s3 } from "uplift/storage/s3";
+import { image, pdf, uplift } from "uplift-io";
+import { s3 } from "uplift-io/storage/s3";
 
 export const uploads = uplift({
   storage: s3({
@@ -105,7 +105,7 @@ Next.js App Router:
 
 ```ts
 // app/api/upload/route.ts
-import { createNextHandler } from "uplift/next";
+import { createNextHandler } from "uplift-io/next";
 import { uploads } from "@/uploads";
 
 export const { GET, POST } = createNextHandler(uploads);
@@ -115,7 +115,7 @@ Hono:
 
 ```ts
 import { Hono } from "hono";
-import { createHonoHandler } from "uplift/hono";
+import { createHonoHandler } from "uplift-io/hono";
 import { uploads } from "./uploads";
 
 const app = new Hono();
@@ -126,7 +126,7 @@ Express:
 
 ```ts
 import express from "express";
-import { createExpressHandler } from "uplift/express";
+import { createExpressHandler } from "uplift-io/express";
 import { uploads } from "./uploads";
 
 const app = express();
@@ -137,7 +137,7 @@ app.use("/upload", createExpressHandler(uploads));
 
 ```ts
 // upload-client.ts
-import { createUploadClient } from "uplift/client";
+import { createUploadClient } from "uplift-io/client";
 import type { Uploads } from "./uploads";
 
 export const upload = createUploadClient<Uploads>("/api/upload");
@@ -157,7 +157,7 @@ The client posts to the configured endpoint with `?route=<routeName>`, so one en
 ## React
 
 ```tsx
-import { useUploads } from "uplift/react";
+import { useUploads } from "uplift-io/react";
 import type { Uploads } from "./uploads";
 
 export function AvatarUploader() {
@@ -200,7 +200,7 @@ import {
   pdf,
   text,
   video
-} from "uplift";
+} from "uplift-io";
 ```
 
 Shared methods:
@@ -228,18 +228,18 @@ There is no hard dependency on Zod, Axios, an ORM, or a database client.
 ## Storage
 
 ```ts
-import { bunny } from "uplift/storage/bunny";
-import { cloudinary } from "uplift/storage/cloudinary";
-import { local } from "uplift/storage/local";
-import { r2 } from "uplift/storage/r2";
-import { s3 } from "uplift/storage/s3";
-import { uploadthing } from "uplift/storage/uploadthing";
+import { bunny } from "uplift-io/storage/bunny";
+import { cloudinary } from "uplift-io/storage/cloudinary";
+import { local } from "uplift-io/storage/local";
+import { r2 } from "uplift-io/storage/r2";
+import { s3 } from "uplift-io/storage/s3";
+import { uploadthing } from "uplift-io/storage/uploadthing";
 ```
 
 S3 and R2 use `@aws-sdk/client-s3`. Bunny and Cloudinary perform provider uploads with `fetch`. Local storage writes to disk. The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()`, keeping UploadThing as an optional integration rather than a core dependency.
 
 ```ts
-import { uploadthing } from "uplift/storage/uploadthing";
+import { uploadthing } from "uplift-io/storage/uploadthing";
 import { UTApi } from "uploadthing/server";
 
 const utapi = new UTApi();
@@ -278,7 +278,7 @@ See [docs/BUNDLE_SIZE.md](./docs/BUNDLE_SIZE.md).
 Inspection-heavy routes are opt-in:
 
 ```ts
-import { audio, pdf, video } from "uplift/rich";
+import { audio, pdf, video } from "uplift-io/rich";
 
 pdf().pages({ max: 10 }).encrypted(false);
 video().duration({ max: "2m" });

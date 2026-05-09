@@ -1,6 +1,6 @@
 {
-  "name": "uplift",
-  "version": "0.0.0",
+  "name": "uplift-io",
+  "version": "0.1.0",
   "description": "Dead-simple, type-safe file handling for TypeScript applications.",
   "license": "MIT",
   "homepage": "https://itzfeminisce.github.io/uplift/",

@@ -1,8 +1,8 @@
 # Uplift
 
-[![npm version](https://img.shields.io/npm/v/uplift?color=0f766e)](https://www.npmjs.com/package/uplift)
-[![npm downloads](https://img.shields.io/npm/dm/uplift?color=2563eb)](https://www.npmjs.com/package/uplift)
-[![npm downloads total](https://img.shields.io/npm/dt/uplift?color=7c3aed)](https://www.npmjs.com/package/uplift)
+[![npm version](https://img.shields.io/npm/v/uplift-io?color=0f766e)](https://www.npmjs.com/package/uplift-io)
+[![npm downloads](https://img.shields.io/npm/dm/uplift-io?color=2563eb)](https://www.npmjs.com/package/uplift-io)
+[![npm downloads total](https://img.shields.io/npm/dt/uplift-io?color=7c3aed)](https://www.npmjs.com/package/uplift-io)
 [![CI](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml/badge.svg)](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml)
 [![bundle size](https://img.shields.io/badge/bundle-measured%20locally-14b8a6)](https://github.com/Itzfeminisce/uplift/blob/main/docs/BUNDLE_SIZE.md)
 [![license](https://img.shields.io/npm/l/uplift)](https://github.com/Itzfeminisce/uplift/blob/main/LICENSE)
@@ -19,7 +19,7 @@ await upload.gallery(files);
 ## Install
 
 ```bash
-pnpm add uplift
+pnpm add uplift-io
 ```
 
 ## Quick Start
