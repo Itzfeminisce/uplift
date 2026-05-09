@@ -6,65 +6,85 @@ This draft follows the `to-issues` tracer-bullet workflow. Each issue should del
 
 - #23 - https://github.com/Itzfeminisce/uplift/issues/23
 
+## Filed GitHub Issues
+
+- #24 Dogfood local example app - https://github.com/Itzfeminisce/uplift/issues/24
+- #25 Bundle-size reporting - https://github.com/Itzfeminisce/uplift/issues/25
+- #26 Example cloud configuration path - https://github.com/Itzfeminisce/uplift/issues/26
+- #27 Docs sample validation - https://github.com/Itzfeminisce/uplift/issues/27
+- #28 Dark-first docs site with light toggle - https://github.com/Itzfeminisce/uplift/issues/28
+- #29 UploadThing adapter - https://github.com/Itzfeminisce/uplift/issues/29
+- #30 Logo and OG image system - https://github.com/Itzfeminisce/uplift/issues/30
+- #31 Failure-mode test expansion - https://github.com/Itzfeminisce/uplift/issues/31
+- #32 Package install smoke test - https://github.com/Itzfeminisce/uplift/issues/32
+- #33 Comparison and positioning docs - https://github.com/Itzfeminisce/uplift/issues/33
+- #34 0.1.0 release checklist - https://github.com/Itzfeminisce/uplift/issues/34
+
 ## Proposed Slices
 
-1. **Dogfood local example app**
+1. **Dogfood local example app** (#24)
    - Type: AFK
    - Blocked by: None
    - User stories covered: 1, 2, 5, 6, 7, 8, 9, 30
    - What to build: Add a real example app that uses Uplift through the workspace package and demonstrates avatar, gallery, public, and authenticated upload flows with local storage.
 
-2. **Example cloud configuration path**
+2. **Example cloud configuration path** (#26)
    - Type: AFK
    - Blocked by: Dogfood local example app
    - User stories covered: 3, 4
    - What to build: Extend the example docs/configuration to show S3/R2 environment variables and storage setup without requiring cloud credentials for the default path.
 
-3. **Docs sample validation**
+3. **Docs sample validation** (#27)
    - Type: AFK
    - Blocked by: Dogfood local example app
    - User stories covered: 10, 11, 30
    - What to build: Add tooling that typechecks or lints README/site code samples by sourcing them from tested example files or validating extracted snippets.
 
-4. **Bundle-size reporting**
+4. **Bundle-size reporting** (#25)
    - Type: AFK
    - Blocked by: None
    - User stories covered: 12, 13
    - What to build: Add repo-owned bundle-size measurement and surface the result in README/docs without relying on Bundlephobia.
 
-5. **Dark-first docs site with light toggle**
+5. **Dark-first docs site with light toggle** (#28)
    - Type: HITL
    - Blocked by: Bundle-size reporting
    - User stories covered: 13, 14, 15, 16
    - What to build: Redesign the GitHub Pages docs site as dark-by-default, add a persistent light-mode toggle, and display package stats and bundle-size information cleanly.
 
-6. **Comparison and positioning docs**
+6. **Comparison and positioning docs** (#33)
    - Type: HITL
    - Blocked by: Dark-first docs site with light toggle
    - User stories covered: 17, 18, 29
    - What to build: Add an honest comparison page/section covering UploadThing, Uppy, FilePond, and direct storage SDK uploads, with Uplift's recommended use cases and non-goals.
 
-7. **UploadThing adapter**
+7. **UploadThing adapter** (#29)
    - Type: AFK
    - Blocked by: Dogfood local example app
    - User stories covered: 19, 20
-   - What to build: Add UploadThing as an isolated adapter/integration with tests and docs, without adding it as a core dependency.
+   - What to build: Add UploadThing as an isolated adapter/integration with tests and docs, without adding it as a core dependency. This must land before `0.1.0`.
 
-8. **Failure-mode test expansion**
+8. **Logo and OG image system** (#30)
+   - Type: HITL
+   - Blocked by: Dark-first docs site with light toggle
+   - User stories covered: 14, 16, 29, 30
+   - What to build: Generate and integrate the best Uplift logo and Open Graph image set for the README, docs site, social previews, and package identity.
+
+9. **Failure-mode test expansion** (#31)
    - Type: AFK
    - Blocked by: Dogfood local example app
    - User stories covered: 21, 22, 23, 24, 25, 26
    - What to build: Expand runtime/framework tests for malformed multipart, auth failures, storage failures, unsafe keys, multi-file failure semantics, and documented framework behavior.
 
-9. **Package install smoke test**
-   - Type: AFK
-   - Blocked by: Bundle-size reporting
-   - User stories covered: 27
-   - What to build: Add CI/script that packs Uplift, installs it into a clean temporary project, and imports the public subpaths.
+10. **Package install smoke test** (#32)
+    - Type: AFK
+    - Blocked by: Bundle-size reporting
+    - User stories covered: 27
+    - What to build: Add CI/script that packs Uplift, installs it into a clean temporary project, and imports the public subpaths.
 
-10. **0.1.0 release checklist**
+11. **0.1.0 release checklist** (#34)
     - Type: HITL
-    - Blocked by: Docs sample validation, Dark-first docs site with light toggle, Comparison and positioning docs, UploadThing adapter, Failure-mode test expansion, Package install smoke test
+    - Blocked by: Docs sample validation, Dark-first docs site with light toggle, Comparison and positioning docs, UploadThing adapter, Logo and OG image system, Failure-mode test expansion, Package install smoke test
     - User stories covered: 28, 29
     - What to build: Add a launch checklist and release notes draft for `0.1.0`, explicitly marking Uplift as early OSS and documenting what is stable versus experimental.
 
@@ -72,8 +92,7 @@ This draft follows the `to-issues` tracer-bullet workflow. Each issue should del
 
 1. Does this granularity feel right?
 2. Should the docs site redesign and comparison docs remain HITL, or should they be AFK?
-3. Should UploadThing adapter block `0.1.0`, or can it ship after the first npm publish?
-4. Should the first dogfood example be Next.js + local storage, or a smaller framework-neutral example?
+3. Should the first dogfood example be Next.js + local storage, or a smaller framework-neutral example?
 
 ## Draft Issue Bodies
 
@@ -201,6 +220,27 @@ Blocked by issue 1.
 
 ### 8. Failure-mode test expansion
 
+### 8. Logo and OG image system
+
+## What to build
+
+Generate and integrate a polished Uplift logo and Open Graph image set for OSS launch identity.
+
+## Acceptance criteria
+
+- [ ] Logo direction is generated and selected.
+- [ ] Logo assets are committed in web-appropriate formats.
+- [ ] Docs site uses the logo in header or hero.
+- [ ] Open Graph image exists for social previews.
+- [ ] README/docs reference the logo or OG assets where useful.
+- [ ] Metadata tags use the OG image.
+
+## Blocked by
+
+Blocked by issue 5.
+
+### 9. Failure-mode test expansion
+
 ## What to build
 
 Expand test coverage around the high-risk runtime and framework behavior.
@@ -218,7 +258,7 @@ Expand test coverage around the high-risk runtime and framework behavior.
 
 Blocked by issue 1.
 
-### 9. Package install smoke test
+### 10. Package install smoke test
 
 ## What to build
 
@@ -235,7 +275,7 @@ Add a clean-install smoke test for the packed package.
 
 Blocked by issue 4.
 
-### 10. 0.1.0 release checklist
+### 11. 0.1.0 release checklist
 
 ## What to build
 
@@ -247,8 +287,10 @@ Add a `0.1.0` release checklist and release-notes draft that describe launch rea
 - [ ] Checklist includes docs sample validation.
 - [ ] Checklist includes bundle-size verification.
 - [ ] Checklist includes package smoke test verification.
+- [ ] Checklist includes UploadThing adapter verification.
+- [ ] Checklist includes logo/OG asset verification.
 - [ ] Release notes label Uplift as early OSS/pre-1.0.
 
 ## Blocked by
 
-Blocked by issues 3, 5, 6, 7, 8, and 9.
+Blocked by issues 3, 5, 6, 7, 8, 9, and 10.
