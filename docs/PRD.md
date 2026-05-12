@@ -10,7 +10,7 @@ Uplift should make uploads feel like a typed contract: define route behavior onc
 
 Uplift is a TypeScript-first file handling library centered on a fluent builder API. Developers define upload routes with file type builders such as `image()`, `pdf()`, `video()`, `audio()`, `text()`, `json()`, `csv()`, `custom()`, and `any()`. Each route can declare size limits, file constraints, auth behavior, server-derived metadata, storage keys, custom validation, and completion callbacks.
 
-The server contract powers a typed client where single-file routes accept `File` and return `UploadedFile`, while `.multiple()` routes accept `File[] | FileList` and return `UploadedFile[]`. Framework handlers expose the contract in Next.js, Hono, and Express. Storage adapters keep provider concerns isolated, and inspection-heavy PDF/audio/video features live behind `uplift/rich` so the default install remains lean.
+The server contract powers a typed client where single-file routes accept `File` and return `UploadedFile`, while `.multiple()` routes accept `File[] | FileList` and return `UploadedFile[]`. Framework handlers expose the contract in Next.js, Hono, and Express. Storage adapters keep provider concerns isolated, and inspection-heavy PDF/audio/video features live behind `@uplift-io/rich` so the default install remains lean.
 
 ## User Stories
 
@@ -33,9 +33,9 @@ The server contract powers a typed client where single-file routes accept `File`
 17. As a developer, I want typed `UploadError` codes, so that UI and server behavior can distinguish common failure modes.
 18. As a developer, I want image-specific constraints, so that image uploads can enforce extensions, dimensions, square shape, and aspect ratio.
 19. As a developer, I want PDF routes, so that document uploads can be constrained without custom MIME logic.
-20. As a developer, I want rich PDF inspection behind `uplift/rich`, so that page count and encryption checks are available only when needed.
+20. As a developer, I want rich PDF inspection behind `@uplift-io/rich`, so that page count and encryption checks are available only when needed.
 21. As a developer, I want video and audio routes, so that media uploads can enforce supported extensions.
-22. As a developer, I want rich media duration checks behind `uplift/rich`, so that ffprobe-dependent features do not bloat core.
+22. As a developer, I want rich media duration checks behind `@uplift-io/rich`, so that ffprobe-dependent features do not bloat core.
 23. As a developer, I want text routes to validate extension and encoding, so that plain text uploads are explicit.
 24. As a developer, I want JSON routes to accept any schema with `.parse()`, so that Zod, Valibot, or other validators can be used without a hard dependency.
 25. As a developer, I want CSV routes to validate headers and delimiters, so that imports can fail early.
@@ -45,7 +45,7 @@ The server contract powers a typed client where single-file routes accept `File`
 29. As a Hono developer, I want `createHonoHandler()`, so that Uplift can mount cleanly in Hono apps.
 30. As an Express developer, I want `createExpressHandler()`, so that existing Express apps can adopt Uplift.
 31. As a React developer, I want `useUploads()`, so that upload progress, loading state, errors, and last data are easy to render.
-32. As a React developer, I want the hook to avoid heavy state dependencies, so that `uplift/react` stays thin and predictable.
+32. As a React developer, I want the hook to avoid heavy state dependencies, so that `@uplift-io/uplift/react` stays thin and predictable.
 33. As a library consumer, I want S3 and R2 storage adapters, so that AWS-compatible object storage works with one adapter shape.
 34. As a library consumer, I want Bunny, Cloudinary, and local storage adapters, so that common deployment targets are supported.
 35. As a library maintainer, I want each storage adapter isolated, so that provider dependencies do not leak into core installs.
@@ -73,13 +73,13 @@ The server contract powers a typed client where single-file routes accept `File`
 - Keep storage adapters thin and isolated from core.
 - Use `@aws-sdk/client-s3` for S3 and R2, with R2 using S3-compatible configuration.
 - Support Bunny, Cloudinary, and local storage as separate adapter packages.
-- Keep rich inspection methods behind `uplift/rich`.
+- Keep rich inspection methods behind `@uplift-io/rich`.
 - Use PDF tooling for page count and encryption checks in rich PDF routes.
 - Use audio metadata tooling for rich audio duration checks.
 - Use ffprobe-backed inspection for rich video duration checks and document the host requirement clearly.
 - Provide framework adapters for Next.js, Hono, and Express.
-- Expose typed client creation from `uplift/client`.
-- Expose React hook support from `uplift/react`.
+- Expose typed client creation from `@uplift-io/uplift/client`.
+- Expose React hook support from `@uplift-io/uplift/react`.
 - Keep the fluent builder API focused on file type, constraints, auth, key, metadata, validation, and completion.
 
 ## Testing Decisions

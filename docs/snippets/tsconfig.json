@@ -5,8 +5,11 @@
     "noEmit": true,
     "types": ["node", "react"],
     "paths": {
-      "uplift-io": ["packages/uplift/dist/index.d.ts"],
-      "uplift-io/*": ["packages/uplift/dist/*.d.ts"],
+      "@uplift-io/uplift": ["packages/uplift/src/index.ts"],
+      "@uplift-io/uplift/client": ["packages/uplift/src/client.ts"],
+      "@uplift-io/uplift/react": ["packages/uplift/src/react.ts"],
+      "@uplift-io/s3": ["packages/s3/src/index.ts"],
+      "@uplift-io/uploadthing": ["packages/uploadthing/src/index.ts"],
       "@/*": ["docs/snippets/*"]
     }
   },

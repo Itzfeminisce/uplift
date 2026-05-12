@@ -1,5 +1,5 @@
-import { image, uplift } from "uplift-io";
-import { uploadthing } from "uplift-io/storage/uploadthing";
+import { image, uplift } from "@uplift-io/uplift";
+import { uploadthing } from "@uplift-io/uploadthing";
 import { UTApi } from "uploadthing/server";
 
 const utapi = new UTApi();

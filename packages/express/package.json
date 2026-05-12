@@ -1,11 +1,35 @@
 {
   "name": "@uplift-io/express",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@uplift-io/uplift": "workspace:*"
+  },
+  "license": "MIT",
+  "homepage": "https://itzfeminisce.github.io/uplift/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Itzfeminisce/uplift.git",
+    "directory": "packages/express"
+  },
+  "bugs": {
+    "url": "https://github.com/Itzfeminisce/uplift/issues"
   }
 }

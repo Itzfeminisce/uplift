@@ -64,7 +64,7 @@ This draft follows the `to-issues` tracer-bullet workflow. Each slice should be 
    - Type: AFK
    - Blocked by: Core route config and validation runtime
    - User stories covered: 20, 22
-   - What to build: Add `uplift/rich` builders for PDF page/encryption checks and audio/video duration checks while keeping inspection dependencies out of core.
+   - What to build: Add `@uplift-io/rich` builders for PDF page/encryption checks and audio/video duration checks while keeping inspection dependencies out of core.
 
 9. **Package, release, and export setup** (#10)
    - Type: AFK
@@ -153,7 +153,7 @@ Provide `createUploadClient()` that exposes route-named upload methods inferred 
 - [ ] Client inputs and outputs reflect route multiplicity.
 - [ ] Upload failures are thrown as `UploadError` values.
 - [ ] The client works without React.
-- [ ] Progress reporting is available for consumers such as `uplift/react`.
+- [ ] Progress reporting is available for consumers such as `@uplift-io/uplift/react`.
 
 ## Blocked by
 
@@ -216,11 +216,11 @@ Blocked by issue 3.
 
 ## What to build
 
-Add `uplift/rich` builders for inspection-heavy validations while keeping those dependencies outside core. Rich PDF routes should support page count and encryption checks. Rich audio/video routes should support duration checks, with video clearly documenting ffprobe requirements.
+Add `@uplift-io/rich` builders for inspection-heavy validations while keeping those dependencies outside core. Rich PDF routes should support page count and encryption checks. Rich audio/video routes should support duration checks, with video clearly documenting ffprobe requirements.
 
 ## Acceptance criteria
 
-- [ ] `uplift/rich` exports rich PDF, audio, and video builders.
+- [ ] `@uplift-io/rich` exports rich PDF, audio, and video builders.
 - [ ] PDF page count and encryption checks are available only from rich PDF routes.
 - [ ] Audio duration validation is available only from rich audio routes.
 - [ ] Video duration validation is available only from rich video routes.
@@ -262,7 +262,7 @@ Add concise examples and documentation that show Uplift's intended mental model,
 - [ ] Docs show Next.js, Hono, and Express setup.
 - [ ] Docs show React hook usage and route state.
 - [ ] Docs show S3, R2, Bunny, Cloudinary, and local storage setup.
-- [ ] Docs clearly explain `uplift/rich` and ffprobe requirements.
+- [ ] Docs clearly explain `@uplift-io/rich` and ffprobe requirements.
 
 ## Blocked by
 

@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { StorageAdapter } from "../types";
+import type { StorageAdapter } from "@uplift-io/uplift";
 
 export function local(directory: string, options: { publicBaseUrl?: string } = {}): StorageAdapter {
   return {

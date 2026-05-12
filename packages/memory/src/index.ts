@@ -1,4 +1,4 @@
-import type { StorageAdapter } from "../types";
+import type { StorageAdapter } from "@uplift-io/uplift";
 
 export function createMemoryStorage(): StorageAdapter {
   const objects = new Map<string, File>();

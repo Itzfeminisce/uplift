@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { handleUploadRequest } from "./server";
-import type { UpliftApp } from "./types";
+import { handleUploadRequest } from "@uplift-io/uplift/server";
+import type { UpliftApp } from "@uplift-io/uplift";
 
 export function createHonoHandler(app: UpliftApp) {
   const router = new Hono();

@@ -10,7 +10,7 @@ This dogfoods Uplift before npm publishing with a real app-shaped setup:
 Run the type-level smoke check:
 
 ```bash
-pnpm --filter @uplift/example-next-local typecheck
+pnpm --filter @uplift-io/example-next-local typecheck
 ```
 
 Copy `.env.example` values into your app environment. Local storage is the default for development. Set `UPLIFT_STORAGE=s3` or `UPLIFT_STORAGE=r2` to test cloud storage with real credentials.

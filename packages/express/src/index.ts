@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
-import { handleUploadRequest } from "./server";
-import type { UpliftApp } from "./types";
+import { handleUploadRequest } from "@uplift-io/uplift/server";
+import type { UpliftApp } from "@uplift-io/uplift";
 
 type ExpressRequest = {
   method: string;

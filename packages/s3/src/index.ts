@@ -1,6 +1,5 @@
 import { PutObjectCommand, S3Client, type S3ClientConfig } from "@aws-sdk/client-s3";
-import { UploadError } from "../types";
-import type { StorageAdapter } from "../types";
+import { UploadError, type StorageAdapter } from "@uplift-io/uplift";
 
 export type S3Options = {
   bucket: string;

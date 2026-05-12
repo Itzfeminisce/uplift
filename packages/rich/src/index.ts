@@ -1,1 +1,1 @@
-export { audio, pdf, video } from "./builder";
+export { audio, pdf, video } from "@uplift-io/uplift";

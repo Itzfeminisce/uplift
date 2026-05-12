@@ -1,4 +1,4 @@
-import { UploadError, type StorageAdapter, type StoragePutInput, type UploadedFile } from "../types";
+import { UploadError, type StorageAdapter, type StoragePutInput, type UploadedFile } from "@uplift-io/uplift";
 
 export type UploadThingFileResult = {
   url?: string | null;

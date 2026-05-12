@@ -1,5 +1,4 @@
-import { UploadError } from "../types";
-import type { StorageAdapter } from "../types";
+import { UploadError, type StorageAdapter } from "@uplift-io/uplift";
 
 export type BunnyOptions = {
   apiKey: string;

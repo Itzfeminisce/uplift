@@ -30,6 +30,7 @@ export {
   type SizeValue,
   type StandardSchema,
   type StorageAdapter,
+  type StoragePutInput,
   type UploadedFile,
   type UploadErrorCode,
   type UploadInputFile,

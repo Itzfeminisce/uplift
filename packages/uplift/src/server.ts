@@ -1,5 +1,3 @@
-import { Readable } from "node:stream";
-import Busboy from "busboy";
 import { UploadError, type UpliftApp, type UploadedFile, type UploadInputFile } from "./types";
 import { defaultKey, readJsonFile, toInputFile } from "./utils";
 
@@ -108,46 +106,19 @@ async function filesFromRequest(req: Request): Promise<FileWithInput[]> {
     throw new UploadError("VALIDATION_FAILED", "Upload requests must be multipart/form-data.");
   }
 
-  if (!req.body) {
-    throw new UploadError("VALIDATION_FAILED", "Upload request body is empty.");
-  }
-
   try {
-    return await filesFromBusboy(req, contentType);
+    const form = await req.formData();
+    const files: FileWithInput[] = [];
+    for (const value of form.values()) {
+      if (!(value instanceof File)) continue;
+      files.push({ input: toInputFile(value), body: value });
+    }
+    return files;
   } catch (error) {
     if (error instanceof UploadError) throw error;
     const message = error instanceof Error ? error.message : "Upload request body could not be parsed.";
     throw new UploadError("VALIDATION_FAILED", message);
   }
-}
-
-async function filesFromBusboy(req: Request, contentType: string): Promise<FileWithInput[]> {
-  return new Promise((resolve, reject) => {
-    const files: Promise<FileWithInput>[] = [];
-    const parser = Busboy({ headers: { "content-type": contentType } });
-
-    parser.on("file", (_fieldName, stream, info) => {
-      const chunks: Buffer[] = [];
-      stream.on("data", (chunk: Buffer) => chunks.push(chunk));
-      files.push(new Promise((fileResolve, fileReject) => {
-        stream.on("error", fileReject);
-        stream.on("end", () => {
-          const bytes = Buffer.concat(chunks);
-          const body = new File([bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)], info.filename, {
-            type: info.mimeType
-          });
-          fileResolve({ input: toInputFile(body), body });
-        });
-      }));
-    });
-
-    parser.on("error", reject);
-    parser.on("close", () => {
-      Promise.all(files).then(resolve, reject);
-    });
-
-    Readable.fromWeb(req.body as never).pipe(parser);
-  });
 }
 
 async function deriveMeta(

@@ -1,11 +1,11 @@
 # Uplift
 
-[![npm version](https://img.shields.io/npm/v/uplift-io?color=0f766e)](https://www.npmjs.com/package/uplift-io)
-[![npm downloads](https://img.shields.io/npm/dm/uplift-io?color=2563eb)](https://www.npmjs.com/package/uplift-io)
-[![npm downloads total](https://img.shields.io/npm/dt/uplift-io?color=7c3aed)](https://www.npmjs.com/package/uplift-io)
+[![npm version](https://img.shields.io/npm/v/@uplift-io/uplift?color=0f766e)](https://www.npmjs.com/package/@uplift-io/uplift)
+[![npm downloads](https://img.shields.io/npm/dm/@uplift-io/uplift?color=2563eb)](https://www.npmjs.com/package/@uplift-io/uplift)
+[![npm downloads total](https://img.shields.io/npm/dt/@uplift-io/uplift?color=7c3aed)](https://www.npmjs.com/package/@uplift-io/uplift)
 [![CI](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml/badge.svg)](https://github.com/Itzfeminisce/uplift/actions/workflows/ci.yml)
 [![bundle size](https://img.shields.io/badge/bundle-measured%20locally-14b8a6)](https://github.com/Itzfeminisce/uplift/blob/main/docs/BUNDLE_SIZE.md)
-[![license](https://img.shields.io/npm/l/uplift)](https://github.com/Itzfeminisce/uplift/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/@uplift-io/uplift)](https://github.com/Itzfeminisce/uplift/blob/main/LICENSE)
 
 Dead-simple, type-safe file uploads for TypeScript applications.
 
@@ -18,15 +18,17 @@ await upload.gallery(files);
 
 ## Install
 
+Install core plus the adapters you use:
+
 ```bash
-pnpm add uplift-io
+pnpm add @uplift-io/uplift @uplift-io/next @uplift-io/s3
 ```
 
 ## Quick Start
 
 ```ts
-import { image, uplift } from "uplift";
-import { s3 } from "uplift/storage/s3";
+import { image, uplift } from "@uplift-io/uplift";
+import { s3 } from "@uplift-io/s3";
 
 export const uploads = uplift({
   storage: s3({
@@ -51,7 +53,7 @@ export type Uploads = typeof uploads;
 ```
 
 ```ts
-import { createUploadClient } from "uplift/client";
+import { createUploadClient } from "@uplift-io/uplift/client";
 import type { Uploads } from "./uploads";
 
 export const upload = createUploadClient<Uploads>("/api/upload");
@@ -70,10 +72,10 @@ const gallery = await upload.gallery(fileList);
 
 ## Storage
 
-Uplift includes S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible adapters. The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()` and keeps UploadThing optional:
+Uplift publishes S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible adapters as separate packages. The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()` and keeps UploadThing optional:
 
 ```ts
-import { uploadthing } from "uplift/storage/uploadthing";
+import { uploadthing } from "@uplift-io/uploadthing";
 import { UTApi } from "uploadthing/server";
 
 const utapi = new UTApi();

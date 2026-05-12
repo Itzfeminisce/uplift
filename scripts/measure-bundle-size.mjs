@@ -28,8 +28,8 @@ const entries = await Promise.all(files.map(async (file) => {
 
 const payload = {
   generatedAt: new Date().toISOString(),
-  package: "uplift",
-  version: "0.0.0",
+  package: "@uplift-io/uplift",
+  version: "1.0.0",
   entries,
   totalBytes: entries.reduce((sum, entry) => sum + entry.bytes, 0),
   totalGzipBytes: entries.reduce((sum, entry) => sum + entry.gzipBytes, 0)

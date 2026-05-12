@@ -1,7 +1,7 @@
-import { image, uplift } from "uplift-io";
-import { local } from "uplift-io/storage/local";
-import { r2 } from "uplift-io/storage/r2";
-import { s3 } from "uplift-io/storage/s3";
+import { image, uplift } from "@uplift-io/uplift";
+import { local } from "@uplift-io/local";
+import { r2 } from "@uplift-io/r2";
+import { s3 } from "@uplift-io/s3";
 
 const storage = (() => {
   if (process.env.UPLIFT_STORAGE === "s3") {

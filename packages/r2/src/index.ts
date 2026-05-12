@@ -1,4 +1,4 @@
-import { s3, type S3Options } from "./s3";
+import { s3, type S3Options } from "@uplift-io/s3";
 
 export type R2Options = Omit<S3Options, "region" | "endpoint"> & {
   accountId: string;

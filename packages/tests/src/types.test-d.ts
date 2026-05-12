@@ -1,5 +1,5 @@
-import { any, image, type UploadedFile, uplift } from "../../src";
-import { createUploadClient } from "../../src/client";
+import { any, image, type UploadedFile, uplift } from "@uplift-io/uplift";
+import { createUploadClient } from "@uplift-io/uplift/client";
 
 const app = uplift({
   storage: {

@@ -1,77 +1,24 @@
 {
-  "name": "@uplift-io-io/tests",
-  "version": "0.1.0",
-  "description": "Dead-simple, type-safe file handling for TypeScript applications.",
-  "license": "MIT",
-  "homepage": "https://itzfeminisce.github.io/uplift/",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Itzfeminisce/uplift.git",
-    "directory": "packages/uplift"
-  },
-  "bugs": {
-    "url": "https://github.com/Itzfeminisce/uplift/issues"
-  },
-  "keywords": [
-    "upload",
-    "file-upload",
-    "typescript",
-    "multipart",
-    "s3",
-    "r2",
-    "nextjs",
-    "hono",
-    "express",
-    "react"
-  ],
+  "name": "@uplift-io/tests",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./client": {
-      "types": "./dist/client.d.ts",
-      "import": "./dist/client.js",
-      "require": "./dist/client.cjs"
-    },
-    "./react": {
-      "types": "./dist/react.d.ts",
-      "import": "./dist/react.js",
-      "require": "./dist/react.cjs"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsup",
-    "prepack": "pnpm build",
-    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1045.0",
-    "busboy": "^1.6.0",
-    "hono": "^4.12.18"
-  },
-  "peerDependencies": {
-    "react": ">=18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "@types/busboy": "^1.5.4",
-    "react": "^19.0.0"
+    "@uplift-io/bunny": "workspace:*",
+    "@uplift-io/cloudinary": "workspace:*",
+    "@uplift-io/express": "workspace:*",
+    "@uplift-io/hono": "workspace:*",
+    "@uplift-io/local": "workspace:*",
+    "@uplift-io/memory": "workspace:*",
+    "@uplift-io/next": "workspace:*",
+    "@uplift-io/r2": "workspace:*",
+    "@uplift-io/rich": "workspace:*",
+    "@uplift-io/s3": "workspace:*",
+    "@uplift-io/uplift": "workspace:*",
+    "@uplift-io/uploadthing": "workspace:*"
   }
 }

@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { any, createMemoryStorage, uplift } from "../../src";
-import { createUploadClient } from "../../src/client";
-import { createNextHandler } from "../../src/next";
-import { createHonoHandler } from "../../src/hono";
-import { createExpressHandler } from "../../src/express";
+import { any, uplift } from "@uplift-io/uplift";
+import { createUploadClient } from "@uplift-io/uplift/client";
+import { createExpressHandler } from "@uplift-io/express";
+import { createHonoHandler } from "@uplift-io/hono";
+import { createMemoryStorage } from "@uplift-io/memory";
+import { createNextHandler } from "@uplift-io/next";
 
 describe("upload clients and adapters", () => {
   it("posts route-named multipart requests and returns uploaded results", async () => {

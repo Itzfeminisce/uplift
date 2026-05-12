@@ -1,6 +1,6 @@
 {
   "name": "@uplift-io/uplift",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Dead-simple, type-safe file handling for TypeScript applications.",
   "license": "MIT",
   "homepage": "https://itzfeminisce.github.io/uplift/",
@@ -43,6 +43,11 @@
       "types": "./dist/react.d.ts",
       "import": "./dist/react.js",
       "require": "./dist/react.cjs"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "require": "./dist/server.cjs"
     }
   },
   "files": [
@@ -57,11 +62,6 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.1045.0",
-    "busboy": "^1.6.0",
-    "hono": "^4.12.18"
-  },
   "peerDependencies": {
     "react": ">=18.0.0"
   },
@@ -71,7 +71,6 @@
     }
   },
   "devDependencies": {
-    "@types/busboy": "^1.5.4",
     "react": "^19.0.0"
   }
 }
