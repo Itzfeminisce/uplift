@@ -1,5 +1,5 @@
 {
-  "name": "@uplift/example-next-local",
+  "name": "@uplift-io/example-next-local",
   "private": true,
   "type": "module",
   "scripts": {

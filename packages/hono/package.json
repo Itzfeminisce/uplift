@@ -1,0 +1,15 @@
+{
+  "name": "@uplift-io/hono",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@uplift-io": "workspace:*",
+    "hono": "^4.0.0"
+  }
+}

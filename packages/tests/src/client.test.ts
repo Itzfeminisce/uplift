@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { any, createMemoryStorage, uplift } from "../src";
-import { createUploadClient } from "../src/client";
-import { createNextHandler } from "../src/next";
-import { createHonoHandler } from "../src/hono";
-import { createExpressHandler } from "../src/express";
+import { any, createMemoryStorage, uplift } from "../../src";
+import { createUploadClient } from "../../src/client";
+import { createNextHandler } from "../../src/next";
+import { createHonoHandler } from "../../src/hono";
+import { createExpressHandler } from "../../src/express";
 
 describe("upload clients and adapters", () => {
   it("posts route-named multipart requests and returns uploaded results", async () => {

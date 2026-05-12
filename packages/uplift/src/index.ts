@@ -19,7 +19,7 @@ export {
   type VideoExtension
 } from "./builder";
 export { createUploadClient } from "./client";
-export { createMemoryStorage } from "./storage/memory";
+// export { createMemoryStorage } from "./storage/memory";
 export {
   UploadError,
   type ClientInput,

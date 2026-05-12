@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { any, createMemoryStorage, image, json, uplift } from "../src";
-import { handleUploadRequest } from "../src/server";
+import { any, createMemoryStorage, image, json, uplift } from "../../src";
+import { handleUploadRequest } from "../../src/server";
 
 function file(name: string, type: string, body = "content") {
   return new File([body], name, { type });

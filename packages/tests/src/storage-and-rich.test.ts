@@ -2,13 +2,13 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
-import { audio, pdf, video } from "../src/rich";
-import { bunny } from "../src/storage/bunny";
-import { cloudinary } from "../src/storage/cloudinary";
-import { local } from "../src/storage/local";
-import { r2 } from "../src/storage/r2";
-import { s3 } from "../src/storage/s3";
-import { uploadthing } from "../src/storage/uploadthing";
+import { audio, pdf, video } from "../../src/rich";
+import { bunny } from "../../src/storage/bunny";
+import { cloudinary } from "../../src/storage/cloudinary";
+import { local } from "../../src/storage/local";
+import { r2 } from "../../src/storage/r2";
+import { s3 } from "../../src/storage/s3";
+import { uploadthing } from "../../src/storage/uploadthing";
 
 const body = new File(["hello"], "hello.txt", { type: "text/plain" });
 const file = {
