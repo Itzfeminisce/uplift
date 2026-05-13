@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { StorageAdapter } from "@uplift-io/uplift";
 
@@ -18,6 +18,9 @@ export function local(directory: string, options: { publicBaseUrl?: string } = {
         extension: file.extension,
         provider: "local"
       };
+    },
+    async delete(key) {
+      await rm(join(directory, key), { force: true });
     }
   };
 }

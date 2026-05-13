@@ -6,11 +6,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@uplift-io/image": "workspace:*",
     "@uplift-io/local": "workspace:*",
     "@uplift-io/next": "workspace:*",
     "@uplift-io/r2": "workspace:*",
     "@uplift-io/s3": "workspace:*",
-    "@uplift-io/uplift": "workspace:*"
+    "@uplift-io/uplift": "workspace:*",
+    "@uplift-io/video": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

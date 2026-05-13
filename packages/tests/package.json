@@ -12,6 +12,7 @@
     "@uplift-io/cloudinary": "workspace:*",
     "@uplift-io/express": "workspace:*",
     "@uplift-io/hono": "workspace:*",
+    "@uplift-io/image": "workspace:*",
     "@uplift-io/local": "workspace:*",
     "@uplift-io/memory": "workspace:*",
     "@uplift-io/next": "workspace:*",
@@ -19,6 +20,8 @@
     "@uplift-io/rich": "workspace:*",
     "@uplift-io/s3": "workspace:*",
     "@uplift-io/uplift": "workspace:*",
-    "@uplift-io/uploadthing": "workspace:*"
+    "@uplift-io/uploadthing": "workspace:*",
+    "@uplift-io/video": "workspace:*",
+    "sharp": "^0.34.5"
   }
 }

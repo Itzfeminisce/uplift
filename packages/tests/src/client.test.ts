@@ -29,6 +29,35 @@ describe("upload clients and adapters", () => {
     expect(result.key).toBe("file.txt");
   });
 
+  it("attaches non-serializable output getters to parsed upload results", async () => {
+    const upload = createUploadClient<typeof outputApp>("https://app.test/upload", {
+      fetch: async () => Response.json({
+        result: {
+          url: "https://cdn.example.com/avatar.webp",
+          key: "avatar.webp",
+          name: "avatar.webp",
+          type: "image/webp",
+          size: 10,
+          provider: "test",
+          outputs: {
+            thumb: {
+              url: "https://cdn.example.com/avatar.webp/outputs/thumb.webp",
+              key: "avatar.webp/outputs/thumb.webp",
+              name: "thumb.webp",
+              type: "image/webp",
+              size: 4,
+              provider: "test"
+            }
+          }
+        }
+      })
+    });
+
+    const result = await upload.avatar(new File(["test"], "avatar.png", { type: "image/png" }));
+    expect(result.output("thumb").key).toBe("avatar.webp/outputs/thumb.webp");
+    expect(Object.keys(result)).not.toContain("output");
+  });
+
   it("throws UploadError-shaped failures from the server", async () => {
     const upload = createUploadClient<typeof app>("https://app.test/upload", {
       fetch: async () => Response.json(
@@ -87,6 +116,16 @@ const app = uplift({
   storage: createMemoryStorage(),
   routes: {
     attachment: any()
+  }
+});
+
+const outputApp = uplift({
+  storage: createMemoryStorage(),
+  routes: {
+    avatar: any().outputs({
+      name: "thumb",
+      produce: async ({ body }) => new File([body], "thumb.webp", { type: "image/webp" })
+    })
   }
 });
 

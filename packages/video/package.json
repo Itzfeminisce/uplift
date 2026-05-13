@@ -1,0 +1,37 @@
+{
+  "name": "@uplift-io/video",
+  "version": "1.1.0",
+  "description": "Synchronous video transforms and derived outputs for Uplift upload routes.",
+  "license": "MIT",
+  "homepage": "https://itzfeminisce.github.io/uplift/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Itzfeminisce/uplift.git",
+    "directory": "packages/video"
+  },
+  "bugs": {
+    "url": "https://github.com/Itzfeminisce/uplift/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@uplift-io/uplift": "workspace:*"
+  }
+}

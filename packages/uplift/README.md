@@ -62,6 +62,23 @@ const avatar = await upload.avatar(file);
 const gallery = await upload.gallery(fileList);
 ```
 
+## Media Transforms
+
+Core exports the typed `.transform()` and `.outputs()` pipeline, while optional domain packages own media behavior and dependencies:
+
+```ts
+import { image } from "@uplift-io/uplift";
+import { resize, convert, variant } from "@uplift-io/image";
+
+const avatar = image()
+  .transform(resize({ width: 512, height: 512 }), convert("webp"))
+  .outputs(variant("thumb", resize({ width: 96 }), convert("webp")));
+```
+
+The frontend call remains `upload.avatar(file)`. Declared outputs are available with `uploaded.output("thumb")`.
+
+Core stays free of Sharp and ffmpeg. Media packages own those runtime dependencies, and storage adapters may implement `delete(key)` so core can roll back already-written files when a later derived output write fails.
+
 ## More
 
 - Full docs: [itzfeminisce.github.io/uplift](https://itzfeminisce.github.io/uplift/)

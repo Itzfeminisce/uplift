@@ -7,6 +7,7 @@ const dist = path.join(root, "packages", "uplift", "dist");
 const docsOut = path.join(root, "docs", "bundle-size.json");
 const siteOut = path.join(root, "site", "bundle-size.json");
 const mdOut = path.join(root, "docs", "BUNDLE_SIZE.md");
+const packageJson = JSON.parse(await readFile(path.join(root, "packages", "uplift", "package.json"), "utf8"));
 
 const files = (await readdir(dist, { recursive: true }))
   .filter((file) => file.endsWith(".js") && !file.endsWith(".d.ts"))
@@ -29,7 +30,7 @@ const entries = await Promise.all(files.map(async (file) => {
 const payload = {
   generatedAt: new Date().toISOString(),
   package: "@uplift-io/uplift",
-  version: "1.0.0",
+  version: packageJson.version,
   entries,
   totalBytes: entries.reduce((sum, entry) => sum + entry.bytes, 0),
   totalGzipBytes: entries.reduce((sum, entry) => sum + entry.gzipBytes, 0)

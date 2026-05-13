@@ -14,13 +14,15 @@
       "@uplift-io/cloudinary": ["packages/cloudinary/src/index.ts"],
       "@uplift-io/express": ["packages/express/src/index.ts"],
       "@uplift-io/hono": ["packages/hono/src/index.ts"],
+      "@uplift-io/image": ["packages/image/src/index.ts"],
       "@uplift-io/local": ["packages/local/src/index.ts"],
       "@uplift-io/memory": ["packages/memory/src/index.ts"],
       "@uplift-io/next": ["packages/next/src/index.ts"],
       "@uplift-io/r2": ["packages/r2/src/index.ts"],
       "@uplift-io/rich": ["packages/rich/src/index.ts"],
       "@uplift-io/s3": ["packages/s3/src/index.ts"],
-      "@uplift-io/uploadthing": ["packages/uploadthing/src/index.ts"]
+      "@uplift-io/uploadthing": ["packages/uploadthing/src/index.ts"],
+      "@uplift-io/video": ["packages/video/src/index.ts"]
     },
     "strict": true,
     "declaration": true,

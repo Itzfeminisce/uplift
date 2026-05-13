@@ -24,6 +24,7 @@ const packages = [
   "cloudinary",
   "express",
   "hono",
+  "image",
   "local",
   "memory",
   "next",
@@ -31,7 +32,8 @@ const packages = [
   "rich",
   "s3",
   "uplift",
-  "uploadthing"
+  "uploadthing",
+  "video"
 ];
 
 for (const packageName of packages) {
@@ -56,13 +58,15 @@ writeFileSync(path.join(tmp, "package.json"), JSON.stringify({
     "@uplift-io/cloudinary": tarballFor("cloudinary"),
     "@uplift-io/express": tarballFor("express"),
     "@uplift-io/hono": tarballFor("hono"),
+    "@uplift-io/image": tarballFor("image"),
     "@uplift-io/local": tarballFor("local"),
     "@uplift-io/memory": tarballFor("memory"),
     "@uplift-io/next": tarballFor("next"),
     "@uplift-io/r2": tarballFor("r2"),
     "@uplift-io/rich": tarballFor("rich"),
     "@uplift-io/s3": tarballFor("s3"),
-    "@uplift-io/uploadthing": tarballFor("uploadthing")
+    "@uplift-io/uploadthing": tarballFor("uploadthing"),
+    "@uplift-io/video": tarballFor("video")
   },
   devDependencies: {
     typescript: "^5.7.3"
@@ -70,29 +74,38 @@ writeFileSync(path.join(tmp, "package.json"), JSON.stringify({
 }, null, 2));
 
 writeFileSync(path.join(tmp, "index.mts"), `
-import { image, uplift } from "@uplift-io/uplift";
+import { image, uplift, video } from "@uplift-io/uplift";
 import { createUploadClient } from "@uplift-io/uplift/client";
 import { bunny } from "@uplift-io/bunny";
 import { cloudinary } from "@uplift-io/cloudinary";
 import { createExpressHandler } from "@uplift-io/express";
 import { createHonoHandler } from "@uplift-io/hono";
 import { local } from "@uplift-io/local";
+import { resize, variant } from "@uplift-io/image";
 import { createNextHandler } from "@uplift-io/next";
 import { createMemoryStorage } from "@uplift-io/memory";
-import { audio, pdf, video } from "@uplift-io/rich";
+import { audio, pdf, video as richVideo } from "@uplift-io/rich";
 import { r2 } from "@uplift-io/r2";
 import { s3 } from "@uplift-io/s3";
 import { uploadthing } from "@uplift-io/uploadthing";
+import { thumbnail, transcode, trim } from "@uplift-io/video";
 
 const app = uplift({
   storage: createMemoryStorage(),
   routes: {
-    avatar: image().max("2mb")
+    avatar: image()
+      .max("2mb")
+      .transform(resize({ width: 128 }))
+      .outputs(variant("thumb", resize({ width: 32 }))),
+    clip: video()
+      .transform(trim({ start: "00:00:01" }), transcode({ format: "mp4" }))
+      .outputs(thumbnail("thumb", { at: "25%" }))
   }
 });
 
 const client = createUploadClient<typeof app>("/api/upload");
 client.avatar satisfies (file: File) => Promise<unknown>;
+client.clip satisfies (file: File) => Promise<unknown>;
 createNextHandler(app);
 createHonoHandler(app);
 createExpressHandler(app);
@@ -104,7 +117,7 @@ r2({ bucket: "bucket", accountId: "account", client: { send: async () => {} } })
 uploadthing({ uploader: async () => ({ url: "https://utfs.io/f/demo", key: "demo" }) });
 audio();
 pdf();
-video();
+richVideo();
 `);
 
 writeFileSync(path.join(tmp, "tsconfig.json"), JSON.stringify({

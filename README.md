@@ -49,7 +49,9 @@ npm install @uplift-io/uplift @uplift-io/next @uplift-io/s3
 yarn add @uplift-io/uplift @uplift-io/next @uplift-io/s3
 ```
 
-Other adapters are available as separate packages: `@uplift-io/hono`, `@uplift-io/express`, `@uplift-io/local`, `@uplift-io/memory`, `@uplift-io/r2`, `@uplift-io/bunny`, `@uplift-io/cloudinary`, `@uplift-io/uploadthing`, and `@uplift-io/rich`.
+Other adapters are available as separate packages: `@uplift-io/hono`, `@uplift-io/express`, `@uplift-io/local`, `@uplift-io/memory`, `@uplift-io/r2`, `@uplift-io/bunny`, `@uplift-io/cloudinary`, and `@uplift-io/uploadthing`.
+
+Media capability packages are optional: add `@uplift-io/image` for image transforms and variants, and `@uplift-io/video` for synchronous video transforms and derived artifacts.
 
 ## Quick Start
 
@@ -229,6 +231,43 @@ json().schema(zodSchema);
 
 There is no hard dependency on Zod, Axios, an ORM, or a database client.
 
+## Media Processing
+
+Core Uplift owns the typed pipeline, but media packages own media dependencies and domain APIs. `.transform()` changes the primary uploaded file before key generation and storage. `.outputs()` creates named artifacts after primary transforms have finished.
+
+```ts
+import { image, video } from "@uplift-io/uplift";
+import { resize, convert, variant } from "@uplift-io/image";
+import { trim, transcode, thumbnail, poster } from "@uplift-io/video";
+
+const routes = {
+  avatar: image()
+    .transform(resize({ width: 512, height: 512, fit: "cover" }), convert("webp"))
+    .outputs(
+      variant("thumb", resize({ width: 96, height: 96 }), convert("webp")),
+      variant("preview", resize({ width: 320 }), convert("webp"))
+    ),
+
+  clip: video()
+    .transform(trim({ start: "00:00:01", end: "00:00:10" }), transcode({ format: "mp4", codec: "h264" }))
+    .outputs(thumbnail("thumb", { at: "25%" }), poster("poster", { at: "00:00:02" }))
+};
+```
+
+The frontend upload method shape is unchanged:
+
+```ts
+const avatar = await upload.avatar(file);
+avatar.output("thumb").url;
+
+const clip = await upload.clip(videoFile);
+clip.output("poster").url;
+```
+
+Output keys use the v1 convention `<primary-key>/outputs/<name>.<extension>`. Outputs derive from the transformed primary file, and any transform or output write failure fails the upload request. Storage adapters can implement `delete(key)` to let core roll back the already-written primary and any earlier outputs after a later output write fails.
+
+`@uplift-io/image` uses Sharp internally. `@uplift-io/video` shells out to ffmpeg/ffprobe during the upload request; production hosts should install those binaries or set `UPLIFT_FFMPEG_PATH` and `UPLIFT_FFPROBE_PATH`, and should keep request-time budgets appropriate for the selected work.
+
 ## Storage
 
 ```ts
@@ -277,9 +316,9 @@ pnpm bundle:size
 
 See [docs/BUNDLE_SIZE.md](./docs/BUNDLE_SIZE.md).
 
-## Rich Inspection
+## Legacy Rich Inspection
 
-Inspection-heavy routes are opt-in:
+`@uplift-io/rich` is legacy. Prefer `@uplift-io/image` and `@uplift-io/video` for media behavior. Existing inspection-heavy routes remain opt-in:
 
 ```ts
 import { audio, pdf, video } from "@uplift-io/rich";
@@ -289,14 +328,15 @@ video().duration({ max: "2m" });
 audio().duration({ max: "5m" });
 ```
 
-Rich inspection methods currently fail closed until an inspector is wired for the deployment. Video duration checks are designed around ffprobe; hosts using that feature must provide ffprobe and should verify availability in deployment.
+Rich inspection methods currently fail closed until an inspector is wired for the deployment. Video duration checks are designed around ffprobe; hosts using that legacy feature must provide ffprobe and should verify availability in deployment.
 
 ## Documentation
 
 - Docs site: [itzfeminisce.github.io/uplift](https://itzfeminisce.github.io/uplift/)
 - PRD: [docs/PRD.md](./docs/PRD.md)
+- Media transforms PRD: [docs/PRD_MEDIA_TRANSFORMS_AND_OUTPUTS.md](./docs/PRD_MEDIA_TRANSFORMS_AND_OUTPUTS.md)
 - Issue breakdown: [docs/ISSUE_BREAKDOWN.md](./docs/ISSUE_BREAKDOWN.md)
-- 1.0.0 checklist: [docs/releases/1.0.0-checklist.md](./docs/releases/1.0.0-checklist.md)
+- 1.1.0 checklist: [docs/releases/1.1.0-checklist.md](./docs/releases/1.1.0-checklist.md)
 - Changelog: [CHANGELOG.md](./CHANGELOG.md)
 
 ## Comparison

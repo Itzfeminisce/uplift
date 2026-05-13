@@ -15,6 +15,9 @@ export function createMemoryStorage(): StorageAdapter {
         extension: file.extension,
         provider: "memory"
       };
+    },
+    async delete(key) {
+      objects.delete(key);
     }
   };
 }

@@ -21,8 +21,34 @@ export function extensionFor(name: string): string | undefined {
   return name.slice(index + 1).toLowerCase();
 }
 
+export function extensionForType(type: string): string | undefined {
+  const normalized = type.toLowerCase().split(";")[0]?.trim();
+  if (!normalized) return undefined;
+  const known: Record<string, string> = {
+    "image/avif": "avif",
+    "image/gif": "gif",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "video/mp4": "mp4",
+    "video/quicktime": "mov",
+    "video/webm": "webm",
+    "audio/aac": "aac",
+    "audio/flac": "flac",
+    "audio/mpeg": "mp3",
+    "audio/mp4": "m4a",
+    "audio/ogg": "ogg",
+    "audio/wav": "wav",
+    "application/json": "json",
+    "application/pdf": "pdf",
+    "text/csv": "csv",
+    "text/plain": "txt"
+  };
+  return known[normalized];
+}
+
 export function toInputFile(file: File): UploadInputFile {
-  const extension = extensionFor(file.name);
+  const extension = extensionForType(file.type) ?? extensionFor(file.name);
   const input: UploadInputFile = {
     name: file.name,
     type: file.type,

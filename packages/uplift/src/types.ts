@@ -17,7 +17,16 @@ export type UploadedFile = {
   size: number;
   extension?: string | undefined;
   provider: string;
+  outputs?: Record<string, UploadedFile> | undefined;
 };
+
+export type ClientUploadedFile<TOutputNames extends string = never> = UploadedFile & (
+  [TOutputNames] extends [never]
+    ? object
+    : {
+        output<TName extends TOutputNames>(name: TName): UploadedFile;
+      }
+);
 
 export type UploadErrorCode =
   | "FILE_TOO_LARGE"
@@ -73,6 +82,7 @@ export type StoragePutInput = {
 export type StorageAdapter = {
   provider: string;
   put(input: StoragePutInput): Promise<UploadedFile>;
+  delete?(key: string): Promise<void>;
 };
 
 export type Middleware<TUser = unknown> = (ctx: { req: Request }) => TUser | Promise<TUser>;
@@ -87,6 +97,42 @@ export type UploadKind =
   | "json"
   | "csv"
   | "custom";
+
+export type PreparedUploadFile = {
+  file: UploadInputFile;
+  body: File;
+};
+
+export type TransformContext = PreparedUploadFile;
+
+export type UploadTransform<TKind extends UploadKind = UploadKind> = {
+  readonly __kind?: TKind | undefined;
+  transform(ctx: TransformContext): File | PreparedUploadFile | Promise<File | PreparedUploadFile>;
+};
+
+export type UploadTransformFunction<TKind extends UploadKind = UploadKind> = ((
+  ctx: TransformContext
+) => File | PreparedUploadFile | Promise<File | PreparedUploadFile>) & {
+  readonly __kind?: TKind | undefined;
+};
+
+export type CompatibleTransform<TKind extends UploadKind> = TKind extends "any" | "custom"
+  ? UploadTransform<UploadKind> | UploadTransformFunction<UploadKind>
+  : UploadTransform<TKind> | UploadTransform<"any"> | UploadTransformFunction<TKind> | UploadTransformFunction<"any">;
+
+export type OutputContext = PreparedUploadFile & {
+  primary: UploadedFile;
+};
+
+export type UploadOutput<TKind extends UploadKind = UploadKind, TName extends string = string> = {
+  readonly __kind?: TKind | undefined;
+  name: TName;
+  produce(ctx: OutputContext): File | PreparedUploadFile | Promise<File | PreparedUploadFile>;
+};
+
+export type CompatibleOutput<TKind extends UploadKind, TName extends string = string> = TKind extends "any" | "custom"
+  ? UploadOutput<UploadKind, TName>
+  : UploadOutput<TKind, TName> | UploadOutput<"any", TName>;
 
 export type UploadRouteDefinition = {
   kind: UploadKind;
@@ -117,6 +163,8 @@ export type UploadRouteDefinition = {
   pageRule?: { min?: number; max?: number };
   encrypted?: boolean;
   durationRule?: { min?: DurationValue; max?: DurationValue };
+  transforms?: Array<UploadTransform | UploadTransformFunction>;
+  outputs?: Array<UploadOutput>;
 };
 
 export type UploadRoutes = Record<string, { _def: UploadRouteDefinition }>;
@@ -138,8 +186,16 @@ export type IsMultiple<TRoute> = TRoute extends { __multiple?: infer TMultiple }
     : false
   : false;
 
+export type OutputNames<TRoute> = TRoute extends { __outputs?: infer TOutputNames }
+  ? TOutputNames extends string
+    ? TOutputNames
+    : never
+  : never;
+
 export type ClientInput<TRoute> = IsMultiple<TRoute> extends true ? File[] | FileList : File;
-export type ClientOutput<TRoute> = IsMultiple<TRoute> extends true ? UploadedFile[] : UploadedFile;
+export type ClientOutput<TRoute> = IsMultiple<TRoute> extends true
+  ? Array<ClientUploadedFile<OutputNames<TRoute>>>
+  : ClientUploadedFile<OutputNames<TRoute>>;
 
 export type UploadClient<TApp extends UpliftApp> = {
   [TRouteName in keyof TApp["routes"] & string]: (

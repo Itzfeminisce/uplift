@@ -3,10 +3,13 @@ import {
   type DurationValue,
   type KeyContext,
   type Middleware,
+  type CompatibleOutput,
+  type CompatibleTransform,
   type SizeValue,
   type StandardSchema,
   type UploadInputFile,
   type UploadKind,
+  type UploadOutput,
   type UploadRouteDefinition
 } from "./types";
 import { parseSize } from "./utils";
@@ -38,12 +41,14 @@ export class UploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TKind extends UploadKind = UploadKind
+  TKind extends UploadKind = UploadKind,
+  TOutputNames extends string = never
 > {
   readonly __auth?: TAuth;
   readonly __meta?: TMeta;
   readonly __multiple?: TMultiple;
   readonly __kind?: TKind;
+  readonly __outputs?: TOutputNames;
   readonly _def: UploadRouteDefinition;
 
   constructor(kind: TKind, mimeTypes: string[] = [], extensions: string[] = []) {
@@ -66,16 +71,16 @@ export class UploadBuilder<
     return this;
   }
 
-  multiple(count?: number): UploadBuilder<TAuth, TMeta, true, TKind> {
+  multiple(count?: number): UploadBuilder<TAuth, TMeta, true, TKind, TOutputNames> {
     this._def.multiple = true;
     if (count !== undefined) this._def.multipleLimit = count;
-    return this as unknown as UploadBuilder<TAuth, TMeta, true, TKind>;
+    return this as unknown as UploadBuilder<TAuth, TMeta, true, TKind, TOutputNames>;
   }
 
-  auth<TUser>(handler: Middleware<TUser>): UploadBuilder<TUser, TMeta, TMultiple, TKind> {
+  auth<TUser>(handler: Middleware<TUser>): UploadBuilder<TUser, TMeta, TMultiple, TKind, TOutputNames> {
     this._def.auth = handler as Middleware<unknown>;
     this._def.overrideAuth = false;
-    return this as unknown as UploadBuilder<TUser, TMeta, TMultiple, TKind>;
+    return this as unknown as UploadBuilder<TUser, TMeta, TMultiple, TKind, TOutputNames>;
   }
 
   overrideAuth(): this {
@@ -95,13 +100,13 @@ export class UploadBuilder<
       file: UploadInputFile;
       user: TAuth;
     }) => TNextMeta | Promise<TNextMeta>
-  ): UploadBuilder<TAuth, TNextMeta, TMultiple, TKind> {
+  ): UploadBuilder<TAuth, TNextMeta, TMultiple, TKind, TOutputNames> {
     this._def.meta = handler as (ctx: {
       req: Request;
       file: UploadInputFile;
       user: unknown;
     }) => unknown | Promise<unknown>;
-    return this as unknown as UploadBuilder<TAuth, TNextMeta, TMultiple, TKind>;
+    return this as unknown as UploadBuilder<TAuth, TNextMeta, TMultiple, TKind, TOutputNames>;
   }
 
   validate(
@@ -179,6 +184,18 @@ export class UploadBuilder<
   duration(rule: DurationRule): this {
     this._def.durationRule = rule;
     return this;
+  }
+
+  transform(...transforms: Array<CompatibleTransform<TKind>>): this {
+    this._def.transforms = [...(this._def.transforms ?? []), ...transforms];
+    return this;
+  }
+
+  outputs<const TName extends string>(
+    ...outputs: Array<CompatibleOutput<TKind, TName>>
+  ): UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName> {
+    this._def.outputs = [...(this._def.outputs ?? []), ...(outputs as UploadOutput[])];
+    return this as unknown as UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName>;
   }
 }
 

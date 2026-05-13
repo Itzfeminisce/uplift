@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0
+
+### Media Transforms And Outputs
+
+- Added core `.transform()` support for primary upload file transforms before key generation and storage.
+- Added core `.outputs()` support for named derived files, convention-based output keys, and typed client `uploaded.output("name")` access.
+- Added `@uplift-io/image` with typed image transforms: `resize`, `convert`, `compress`, `strip`, and `variant` outputs.
+- Added `@uplift-io/video` with typed synchronous video transforms and outputs: `trim`, `transcode`, `compress`, `resize`, `crop`, `watermark`, `mute`, `frameRate`, `thumbnail`, `poster`, `storyboard`, and `extractAudio`.
+- Kept media processing dependencies outside core; `@uplift-io/uplift` remains the small typed route and client package.
+- Updated docs snippets, package smoke checks, and the static site for media processing.
+- Repositioned `@uplift-io/rich` as legacy inspection surface; domain packages are the recommended path for image and video behavior.
+
 ## 1.0.0
 
 ### Package Split

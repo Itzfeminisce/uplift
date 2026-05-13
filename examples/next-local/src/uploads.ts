@@ -1,7 +1,9 @@
-import { image, uplift } from "@uplift-io/uplift";
+import { image, uplift, video } from "@uplift-io/uplift";
+import { convert, resize, variant } from "@uplift-io/image";
 import { local } from "@uplift-io/local";
 import { r2 } from "@uplift-io/r2";
 import { s3 } from "@uplift-io/s3";
+import { thumbnail, transcode, trim } from "@uplift-io/video";
 
 const storage = (() => {
   if (process.env.UPLIFT_STORAGE === "s3") {
@@ -22,7 +24,9 @@ const storage = (() => {
     });
   }
 
-  return local(process.env.UPLIFT_LOCAL_DIR ?? "./uploads");
+  return local(process.env.UPLIFT_LOCAL_DIR ?? "./public/uploads", {
+    publicBaseUrl: process.env.UPLIFT_PUBLIC_BASE_URL ?? "/uploads",
+  });
 })();
 
 export const uploads = uplift({
@@ -38,6 +42,19 @@ export const uploads = uplift({
       .max("8mb")
       .multiple(10)
       .key(({ file }) => `gallery/${Date.now()}-${file.name}`),
+    mediaPreview: image()
+      .max("4mb")
+      .transform(resize({ width: 512, fit: "inside" }), convert("webp"))
+      .outputs(
+        variant("thumb", resize({ width: 96, height: 96, fit: "cover" }), convert("webp")),
+        variant("preview", resize({ width: 320, fit: "inside" }), convert("webp")),
+      )
+      .key(({ file }) => `media/images/${Date.now()}-${file.name}`),
+    clip: video()
+      .max("25mb")
+      .transform(trim({ start: "00:00:00" }), transcode({ format: "mp4", codec: "h264" }))
+      .outputs(thumbnail("thumb", { at: "25%" }))
+      .key(({ file }) => `media/videos/${Date.now()}-${file.name}`),
   },
 });
 

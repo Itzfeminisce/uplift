@@ -29,7 +29,7 @@ export function createUploadClient<TApp extends UpliftApp>(
           throw new UploadError((body.error?.code ?? "UNKNOWN") as never, body.error?.message ?? "Upload failed.");
         }
         options.onProgress?.(property, 100);
-        return body.result;
+        return attachOutputGetters(body.result);
       };
     }
   }) as UploadClient<TApp>;
@@ -65,10 +65,36 @@ function uploadWithXhr(
         return;
       }
       onProgress?.(route, 100);
-      resolve(body.result);
+      resolve(attachOutputGetters(body.result));
     };
     xhr.onerror = () => reject(new UploadError("UPLOAD_FAILED", "Upload request failed."));
     onProgress?.(route, 0);
     xhr.send(form);
   });
+}
+
+function attachOutputGetters(result: unknown): unknown {
+  if (Array.isArray(result)) return result.map((item) => attachOutputGetters(item));
+  if (!isUploadedFileLike(result)) return result;
+  if (!Object.prototype.hasOwnProperty.call(result, "output")) {
+    Object.defineProperty(result, "output", {
+      enumerable: false,
+      value(name: string) {
+        const output = result.outputs?.[name];
+        if (!output) throw new UploadError("VALIDATION_FAILED", `Unknown output: ${name}`);
+        return attachOutputGetters(output);
+      }
+    });
+  }
+  if (result.outputs) {
+    for (const output of Object.values(result.outputs)) attachOutputGetters(output);
+  }
+  return result;
+}
+
+function isUploadedFileLike(value: unknown): value is {
+  outputs?: Record<string, unknown>;
+  output?: (name: string) => unknown;
+} {
+  return typeof value === "object" && value !== null;
 }

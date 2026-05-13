@@ -1,5 +1,11 @@
-import { UploadError, type UpliftApp, type UploadedFile, type UploadInputFile } from "./types";
-import { defaultKey, readJsonFile, toInputFile } from "./utils";
+import {
+  UploadError,
+  type PreparedUploadFile,
+  type UpliftApp,
+  type UploadedFile,
+  type UploadInputFile
+} from "./types";
+import { defaultKey, extensionForType, readJsonFile, toInputFile } from "./utils";
 
 type FileWithInput = {
   input: UploadInputFile;
@@ -35,10 +41,16 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
     for (const item of files) {
       const meta = await deriveMeta(route._def, req, item.input, user);
       await validateFile(route._def, req, item, user, meta);
-      const key = route._def.key ? await route._def.key({ req, file: item.input, user, meta }) : defaultKey(item.input);
+      const prepared = await applyTransforms(route._def, item);
+      const key = route._def.key
+        ? await route._def.key({ req, file: prepared.file, user, meta })
+        : defaultKey(prepared.file);
       assertSafeStorageKey(key);
+      const primary = await app.storage.put({ key, file: prepared.file, body: prepared.body });
+      const outputs = await writeOutputs(app, route._def, key, prepared, primary);
+      const file = Object.keys(outputs).length > 0 ? { ...primary, outputs } : primary;
       stored.push({
-        file: await app.storage.put({ key, file: item.input, body: item.body }),
+        file,
         meta
       });
     }
@@ -63,6 +75,64 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
     const uploadError = normalizeError(error);
     return json({ error: uploadError }, statusFor(uploadError));
   }
+}
+
+async function applyTransforms(
+  route: UpliftApp["routes"][string]["_def"],
+  item: FileWithInput
+): Promise<PreparedUploadFile> {
+  let prepared: PreparedUploadFile = { file: item.input, body: item.body };
+  for (const transform of route.transforms ?? []) {
+    const runner = typeof transform === "function" ? transform : transform.transform.bind(transform);
+    prepared = await normalizePrepared(await runner(prepared));
+  }
+  return prepared;
+}
+
+async function writeOutputs(
+  app: UpliftApp,
+  route: UpliftApp["routes"][string]["_def"],
+  primaryKey: string,
+  prepared: PreparedUploadFile,
+  primary: UploadedFile
+): Promise<Record<string, UploadedFile>> {
+  const written: Record<string, UploadedFile> = {};
+  try {
+    for (const output of route.outputs ?? []) {
+      const outputFile = await normalizePrepared(await output.produce({ ...prepared, primary }));
+      const key = outputKey(primaryKey, output.name, outputFile.file);
+      assertSafeStorageKey(key);
+      written[output.name] = await app.storage.put({ key, file: outputFile.file, body: outputFile.body });
+    }
+  } catch (error) {
+    await rollbackWrittenFiles(app, [primary.key, ...Object.values(written).map((file) => file.key)]);
+    throw error;
+  }
+  return written;
+}
+
+async function rollbackWrittenFiles(app: UpliftApp, keys: string[]): Promise<void> {
+  if (!app.storage.delete) return;
+  for (const key of [...keys].reverse()) {
+    try {
+      await app.storage.delete(key);
+    } catch {
+      // Preserve the original upload failure; cleanup is best-effort per adapter.
+    }
+  }
+}
+
+async function normalizePrepared(value: File | PreparedUploadFile): Promise<PreparedUploadFile> {
+  if (value instanceof File) return { file: toInputFile(value), body: value };
+  const extension = extensionForType(value.file.type) ?? value.file.extension;
+  const file = { ...value.file, size: value.body.size };
+  if (extension) file.extension = extension;
+  return { file, body: value.body };
+}
+
+function outputKey(primaryKey: string, name: string, file: UploadInputFile): string {
+  const extension = extensionForType(file.type) ?? file.extension;
+  return `${primaryKey}/outputs/${name}${extension ? `.${extension}` : ""}`;
 }
 
 function assertSafeStorageKey(key: string): void {
