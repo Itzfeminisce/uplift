@@ -29,6 +29,9 @@ importers:
 
   examples/next-local:
     dependencies:
+      '@uplift-io/image':
+        specifier: workspace:*
+        version: link:../../packages/image
       '@uplift-io/local':
         specifier: workspace:*
         version: link:../../packages/local
@@ -44,6 +47,9 @@ importers:
       '@uplift-io/uplift':
         specifier: workspace:*
         version: link:../../packages/uplift
+      '@uplift-io/video':
+        specifier: workspace:*
+        version: link:../../packages/video
     devDependencies:
       '@types/node':
         specifier: ^22.13.0
