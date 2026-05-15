@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-13T16:50:59.863Z",
+  "generatedAt": "2026-05-15T16:53:58.232Z",
   "package": "@uplift-io/uplift",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "entries": [
     {
       "file": "client.js",
@@ -10,8 +10,8 @@
     },
     {
       "file": "index.js",
-      "bytes": 6969,
-      "gzipBytes": 2248
+      "bytes": 7155,
+      "gzipBytes": 2289
     },
     {
       "file": "react.js",
@@ -20,10 +20,10 @@
     },
     {
       "file": "server.js",
-      "bytes": 11042,
-      "gzipBytes": 3324
+      "bytes": 11593,
+      "gzipBytes": 3428
     }
   ],
-  "totalBytes": 26218,
-  "totalGzipBytes": 8502
+  "totalBytes": 26955,
+  "totalGzipBytes": 8647
 }

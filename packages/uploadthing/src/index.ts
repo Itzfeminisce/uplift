@@ -24,6 +24,7 @@ export type UploadThingUploader = (
 
 export type UploadThingOptions = {
   uploader: UploadThingUploader;
+  deleter?: (key: string) => Promise<void>;
 };
 
 export function uploadthing(options: UploadThingOptions): StorageAdapter {
@@ -50,7 +51,14 @@ export function uploadthing(options: UploadThingOptions): StorageAdapter {
         extension: input.file.extension,
         provider: "uploadthing"
       } satisfies UploadedFile;
-    }
+    },
+    ...(options.deleter
+      ? {
+          async delete(key: string) {
+            await options.deleter?.(key);
+          }
+        }
+      : {})
   };
 }
 

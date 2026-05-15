@@ -7,6 +7,7 @@ import {
   type CompatibleTransform,
   type SizeValue,
   type StandardSchema,
+  type StorageHeadersConfig,
   type UploadInputFile,
   type UploadKind,
   type UploadOutput,
@@ -92,6 +93,7 @@ export interface SharedUploadBuilder<
       meta: TMeta;
     }) => true | string | Promise<true | string>
   ): this;
+  headers(headers: StorageHeadersConfig<TAuth, TMeta>): this;
   done(handler: (ctx: DoneContext<TAuth, TMeta, TMultiple>) => void | Promise<void>): this;
   types(types: string[]): this;
   transform(...transforms: Array<CompatibleTransform<TKind>>): this;
@@ -170,7 +172,7 @@ export interface CsvUploadBuilder<
   TMultiple extends boolean = false,
   TOutputNames extends string = never
 > extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "csv", TOutputNames> {
-  headers(headers: string[]): this;
+  columns(headers: string[], options?: { delimiter?: "," | ";" | "\t" | "|" }): this;
   delimiter(value: "," | ";" | "\t" | "|"): this;
 }
 
@@ -265,6 +267,11 @@ export class UploadBuilder<
     return this;
   }
 
+  headers(headers: StorageHeadersConfig<TAuth, TMeta>): this {
+    this._def.storageHeaders = headers as StorageHeadersConfig<unknown, unknown>;
+    return this;
+  }
+
   done(handler: (ctx: DoneContext<TAuth, TMeta, TMultiple>) => void | Promise<void>): this {
     this._def.done = handler as (ctx: DoneContext<unknown, unknown, boolean>) => void | Promise<void>;
     return this;
@@ -300,8 +307,9 @@ export class UploadBuilder<
     return this;
   }
 
-  headers(headers: string[]): this {
-    this._def.headers = headers;
+  columns(headers: string[], options?: { delimiter?: "," | ";" | "\t" | "|" }): this {
+    this._def.csvColumns = headers;
+    if (options?.delimiter) this._def.delimiter = options.delimiter;
     return this;
   }
 

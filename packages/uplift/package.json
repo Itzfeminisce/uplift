@@ -1,6 +1,6 @@
 {
   "name": "@uplift-io/uplift",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Dead-simple, type-safe file handling for TypeScript applications.",
   "license": "MIT",
   "homepage": "https://itzfeminisce.github.io/uplift/",

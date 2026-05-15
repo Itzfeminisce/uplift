@@ -124,6 +124,150 @@ describe("storage adapters", () => {
         message: "Rejected by UploadThing"
       });
   });
+
+  it("maps S3 storage headers and deletes objects by bucket and key", async () => {
+    const sent: Array<{ input?: Record<string, unknown> }> = [];
+    const adapter = s3({
+      bucket: "bucket",
+      region: "us-east-1",
+      client: { send: async (command) => { sent.push(command as unknown as { input?: Record<string, unknown> }); } }
+    });
+
+    await adapter.put({
+      key: "hello.txt",
+      file,
+      body,
+      headers: {
+        "Cache-Control": "public, max-age=60",
+        "Content-Disposition": "attachment",
+        "Content-Type": "application/ignored",
+        Authorization: "Bearer secret"
+      }
+    });
+    await adapter.delete?.("hello.txt");
+
+    expect(sent[0]?.input).toMatchObject({
+      Bucket: "bucket",
+      Key: "hello.txt",
+      ContentType: "text/plain",
+      CacheControl: "public, max-age=60",
+      ContentDisposition: "attachment"
+    });
+    expect(sent[0]?.input).not.toHaveProperty("Authorization");
+    expect(sent[1]?.input).toMatchObject({ Bucket: "bucket", Key: "hello.txt" });
+  });
+
+  it("lets R2 inherit S3-compatible put headers and delete behavior", async () => {
+    const sent: Array<{ input?: Record<string, unknown> }> = [];
+    const adapter = r2({
+      bucket: "bucket",
+      accountId: "abc",
+      client: { send: async (command) => { sent.push(command as unknown as { input?: Record<string, unknown> }); } }
+    });
+
+    await adapter.put({
+      key: "hello.txt",
+      file,
+      body,
+      headers: { "Cache-Control": "public, max-age=60" }
+    });
+    await adapter.delete?.("hello.txt");
+
+    expect(sent[0]?.input).toMatchObject({ CacheControl: "public, max-age=60" });
+    expect(sent[1]?.input).toMatchObject({ Bucket: "bucket", Key: "hello.txt" });
+  });
+
+  it("merges Bunny upload headers safely and deletes through storage credentials", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const adapter = bunny({
+      apiKey: "key",
+      zone: "zone",
+      storageHostname: "storage.example.com",
+      fetch: async (url, init) => {
+        calls.push({ url: String(url), ...(init ? { init } : {}) });
+        return new Response(null, { status: 201 });
+      }
+    });
+
+    await adapter.put({
+      key: "hello.txt",
+      file,
+      body,
+      headers: {
+        AccessKey: "route-key",
+        "Content-Type": "application/ignored",
+        "Cache-Control": "public, max-age=60"
+      }
+    });
+    await adapter.delete?.("hello.txt");
+
+    expect(calls[0]).toMatchObject({
+      url: "https://storage.example.com/zone/hello.txt",
+      init: {
+        method: "PUT",
+        headers: {
+          AccessKey: "key",
+          "Content-Type": "text/plain",
+          "Cache-Control": "public, max-age=60"
+        }
+      }
+    });
+    expect(calls[1]).toMatchObject({
+      url: "https://storage.example.com/zone/hello.txt",
+      init: {
+        method: "DELETE",
+        headers: { AccessKey: "key" }
+      }
+    });
+  });
+
+  it("deletes UploadThing files through the configured deletion boundary", async () => {
+    const uploadedInputs: unknown[] = [];
+    const deleted: string[] = [];
+    const adapter = uploadthing({
+      uploader: async (_fileToUpload, input) => {
+        uploadedInputs.push(input);
+        return { key: "utfs-key", url: "https://utfs.io/f/utfs-key" };
+      },
+      deleter: async (key: string) => {
+        deleted.push(key);
+      }
+    });
+
+    await adapter.put({ key: "hello.txt", file, body, headers: { "Cache-Control": "public" } });
+    await adapter.delete?.("utfs-key");
+
+    expect(uploadedInputs).toHaveLength(1);
+    expect(uploadedInputs[0]).toMatchObject({ key: "hello.txt", headers: { "Cache-Control": "public" } });
+    expect(deleted).toEqual(["utfs-key"]);
+  });
+
+  it("keeps unsigned Cloudinary uploads working and enables signed cleanup when configured", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const adapter = cloudinary({
+      cloudName: "demo",
+      uploadPreset: "unsigned",
+      apiKey: "api-key",
+      apiSecret: "api-secret",
+      invalidate: true,
+      fetch: async (url, init) => {
+        calls.push({ url: String(url), ...(init ? { init } : {}) });
+        if (String(url).endsWith("/destroy")) return Response.json({ result: "ok" });
+        return Response.json({ secure_url: "https://res.cloudinary.com/demo/hello.txt", public_id: "folder/hello", resource_type: "raw" });
+      }
+    });
+
+    const uploaded = await adapter.put({ key: "folder/hello", file, body });
+    await adapter.delete?.(uploaded.key);
+
+    expect(uploaded).toMatchObject({ provider: "cloudinary", key: "folder/hello" });
+    expect(calls[1]?.url).toBe("https://api.cloudinary.com/v1_1/demo/raw/destroy");
+    const destroyBody = calls[1]?.init?.body as FormData;
+    expect(destroyBody.get("public_id")).toBe("folder/hello");
+    expect(destroyBody.get("api_key")).toBe("api-key");
+    expect(destroyBody.get("invalidate")).toBe("true");
+    expect(destroyBody.get("signature")).toEqual(expect.any(String));
+  });
 });
 
 describe("rich exports", () => {

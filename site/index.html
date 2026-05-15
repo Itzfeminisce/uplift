@@ -6,7 +6,7 @@
 
   <!-- Primary Meta -->
   <title>Uplift — Type-safe file uploads for TypeScript</title>
-  <meta name="description" content="Define upload routes once on the server. Get a fully typed client on the frontend. Storage-swappable. Framework-agnostic. MIT licensed." />
+  <meta name="description" content="Define upload routes once on the server. Get a fully typed client on the frontend. Storage headers, rollback cleanup, framework adapters, and swappable storage." />
   <meta name="keywords" content="TypeScript file upload library, type-safe uploads, S3 upload TypeScript, Next.js file upload, Hono file upload, Express file upload, upload route builder, typed upload client, file upload middleware TypeScript, file upload library" />
   <meta name="author" content="Uplift" />
   <meta name="robots" content="index, follow" />
@@ -44,7 +44,7 @@
     "codeRepository": "https://github.com/Itzfeminisce/uplift",
     "license": "https://opensource.org/licenses/MIT",
     "programmingLanguage": "TypeScript",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
@@ -726,7 +726,7 @@
         </div>
         <div class="stat-item">
           <div>
-            <div class="stat-val">v1.1.0</div>
+            <div class="stat-val">v1.2.0</div>
             <div class="stat-lbl">current release</div>
           </div>
         </div>
@@ -752,7 +752,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
             </div>
             <h3>Storage adapters</h3>
-            <p>S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible. Swap without touching route logic.</p>
+            <p>S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible. Safe storage headers and rollback cleanup stay behind the same route contract.</p>
           </article>
           <article class="feat" style="--feat-accent: var(--violet)">
             <div class="feat-icon-wrap" style="background:var(--violet-dim)">
@@ -810,7 +810,7 @@
             <div class="cw">
               <div class="cw-bar"><div class="traff"><span class="tr"></span><span class="ty"></span><span class="tg"></span></div><span class="cw-name">uploads.ts</span><span></span></div>
               <div class="cw-body">
-<pre><span class="k">import</span> { <span class="n">image</span>, <span class="n">pdf</span>, <span class="n">uplift</span> } <span class="k">from</span> <span class="s">"@uplift-io/uplift"</span>;
+<pre><span class="k">import</span> { <span class="n">csv</span>, <span class="n">image</span>, <span class="n">pdf</span>, <span class="n">uplift</span> } <span class="k">from</span> <span class="s">"@uplift-io/uplift"</span>;
 <span class="k">import</span> { <span class="n">s3</span> } <span class="k">from</span> <span class="s">"@uplift-io/s3"</span>;
 
 <span class="k">export const</span> <span class="v">uploads</span> <span class="o">=</span> <span class="f">uplift</span>({
@@ -824,11 +824,13 @@
     <span class="p">avatar</span>: <span class="f">image</span>()
       .<span class="f">max</span>(<span class="s">"2mb"</span>)
       .<span class="f">auth</span>(<span class="k">async</span> ({ <span class="p">req</span> }) <span class="o">=&gt;</span> ({ <span class="p">id</span>: <span class="n">req</span>.<span class="p">headers</span>.<span class="f">get</span>(<span class="s">"x-user-id"</span>)<span class="o">!</span> }))
+      .<span class="f">headers</span>({ <span class="s">"Cache-Control"</span>: <span class="s">"public, max-age=31536000"</span> })
       .<span class="f">key</span>(({ <span class="p">user</span> }) <span class="o">=&gt;</span> <span class="s">`avatars/<span class="o">${</span><span class="p">user</span>.<span class="p">id</span><span class="o">}</span>.png`</span>)
       .<span class="f">done</span>(<span class="k">async</span> ({ <span class="p">file</span>, <span class="p">user</span> }) <span class="o">=&gt;</span> {
         <span class="n">console</span>.<span class="f">log</span>(<span class="s">"uploaded"</span>, <span class="p">user</span>.<span class="p">id</span>, <span class="p">file</span>.<span class="p">url</span>);
       }),
     <span class="p">resume</span>:  <span class="f">pdf</span>().<span class="f">max</span>(<span class="s">"5mb"</span>),
+    <span class="p">contacts</span>: <span class="f">csv</span>().<span class="f">columns</span>([<span class="s">"email"</span>, <span class="s">"name"</span>]),
     <span class="p">gallery</span>: <span class="f">image</span>().<span class="f">max</span>(<span class="s">"8mb"</span>).<span class="f">multiple</span>(<span class="m">10</span>),
   }
 });
@@ -1005,6 +1007,7 @@
   .<span class="f">key</span>(({ <span class="p">user</span>, <span class="p">file</span> }) <span class="o">=&gt;</span> <span class="s">`uploads/<span class="o">${</span><span class="p">file</span>.<span class="p">name</span><span class="o">}</span>`</span>)
   .<span class="f">meta</span>(({ <span class="p">user</span>, <span class="p">file</span> }) <span class="o">=&gt;</span> ({ <span class="p">owner</span>: <span class="p">user</span>.<span class="p">id</span> }))
   .<span class="f">validate</span>(({ <span class="p">file</span> }) <span class="o">=&gt;</span> <span class="k">true</span>)
+  .<span class="f">headers</span>({ <span class="s">"Cache-Control"</span>: <span class="s">"public, max-age=31536000"</span> })
   .<span class="f">done</span>(<span class="k">async</span> ({ <span class="p">file</span>, <span class="p">user</span>, <span class="p">meta</span> }) <span class="o">=&gt;</span> {})
 
 <span class="c">// image/video: add transforms and outputs</span>
@@ -1012,7 +1015,10 @@
   .<span class="f">outputs</span>(<span class="f">variant</span>(<span class="s">"thumb"</span>, <span class="f">resize</span>({ <span class="p">width</span>: <span class="m">96</span> })))
 
 <span class="c">// json: schema accepts any .parse() compatible</span>
-<span class="f">json</span>().<span class="f">schema</span>(<span class="v">zodSchema</span>);</pre>
+<span class="f">json</span>().<span class="f">schema</span>(<span class="v">zodSchema</span>);
+
+<span class="c">// csv: file structure uses columns(), not headers()</span>
+<span class="f">csv</span>().<span class="f">columns</span>([<span class="s">"email"</span>, <span class="s">"name"</span>], { <span class="p">delimiter</span>: <span class="s">","</span> });</pre>
             </div>
           </div>
         </div>
@@ -1026,6 +1032,7 @@
           <span class="sec-label" style="color:var(--teal)">Storage</span>
           <h2 id="storage-heading">Adapters stay thin.</h2>
           <p class="desc">Core routes don't care where the file lands. S3 and R2 use <span class="ic">@aws-sdk/client-s3</span>. Bunny and Cloudinary use <span class="ic">fetch</span>. UploadThing stays optional.</p>
+          <p class="desc">Failed requests attempt best-effort rollback through adapter <span class="ic">delete(key)</span>. Cloudinary cleanup needs signed server credentials; unsigned uploads still work without them.</p>
           <p class="desc" style="margin-top:6px">Click a provider to see its config.</p>
         </div>
         <div>
@@ -1128,7 +1135,7 @@
       <div class="ft-left">
         <span>MIT licensed</span>
         <span class="ft-sep">·</span>
-        <span>v1.1.0</span>
+        <span>v1.2.0</span>
         <span class="ft-sep">·</span>
         <a href="https://github.com/Itzfeminisce/uplift/blob/main/CONTRIBUTING.md" rel="noopener noreferrer">Contributing</a>
         <span class="ft-sep">·</span>
@@ -1216,10 +1223,13 @@
 <span class="p">storage</span>: <span class="f">cloudinary</span>({
   <span class="p">cloudName</span>:    <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_CLOUD_NAME</span><span class="o">!</span>,
   <span class="p">uploadPreset</span>: <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_UPLOAD_PRESET</span><span class="o">!</span>,
+  <span class="p">apiKey</span>:       <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_API_KEY</span>,    <span class="c">// cleanup</span>
+  <span class="p">apiSecret</span>:    <span class="n">process</span>.<span class="p">env</span>.<span class="n">CLOUDINARY_API_SECRET</span>, <span class="c">// cleanup</span>
   <span class="p">folder</span>:       <span class="s">"uploads"</span>, <span class="c">// optional</span>
 }),
 
-<span class="c">// uploads via Cloudinary Upload API (fetch, no SDK)</span></pre>`
+<span class="c">// unsigned upload works with uploadPreset</span>
+<span class="c">// signed credentials enable rollback cleanup</span></pre>`
       },
       local: {
         label: '@uplift-io/local',
@@ -1250,7 +1260,8 @@
 <span class="k">const</span> <span class="v">utapi</span> <span class="o">=</span> <span class="k">new</span> <span class="f">UTApi</span>();
 
 <span class="p">storage</span>: <span class="f">uploadthing</span>({
-  <span class="p">uploader</span>: (<span class="n">file</span>) <span class="o">=&gt;</span> <span class="v">utapi</span>.<span class="f">uploadFiles</span>(<span class="n">file</span>)
+  <span class="p">uploader</span>: (<span class="n">file</span>) <span class="o">=&gt;</span> <span class="v">utapi</span>.<span class="f">uploadFiles</span>(<span class="n">file</span>),
+  <span class="p">deleter</span>:  (<span class="n">key</span>) <span class="o">=&gt;</span> <span class="v">utapi</span>.<span class="f">deleteFiles</span>(<span class="n">key</span>)
 }),
 
 <span class="c">// use UploadThing as a storage boundary</span>

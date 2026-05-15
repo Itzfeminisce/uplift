@@ -65,6 +65,19 @@ export type KeyContext<TAuth = unknown, TMeta = unknown> = {
   meta: TMeta;
 };
 
+export type StorageHeaders = Record<string, string>;
+
+export type StorageHeadersContext<TAuth = unknown, TMeta = unknown> = {
+  req: Request;
+  file: UploadInputFile;
+  user: TAuth;
+  meta: TMeta;
+};
+
+export type StorageHeadersConfig<TAuth = unknown, TMeta = unknown> =
+  | StorageHeaders
+  | ((ctx: StorageHeadersContext<TAuth, TMeta>) => StorageHeaders | Promise<StorageHeaders>);
+
 export type DoneContext<
   TAuth = unknown,
   TMeta = unknown,
@@ -77,6 +90,7 @@ export type StoragePutInput = {
   key: string;
   file: UploadInputFile;
   body: File;
+  headers?: StorageHeaders;
 };
 
 export type StorageAdapter = {
@@ -176,7 +190,8 @@ export type UploadRouteDefinition = {
   aspectRatio?: `${number}:${number}`;
   encoding?: "utf-8" | "utf-16" | "ascii";
   schema?: StandardSchema;
-  headers?: string[];
+  storageHeaders?: StorageHeadersConfig<unknown, unknown>;
+  csvColumns?: string[];
   delimiter?: "," | ";" | "\t" | "|";
   pageRule?: { min?: number; max?: number };
   encrypted?: boolean;

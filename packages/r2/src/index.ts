@@ -16,6 +16,9 @@ export function r2(options: R2Options) {
     async put(input: Parameters<typeof adapter.put>[0]) {
       const result = await adapter.put(input);
       return { ...result, provider: "r2" };
+    },
+    async delete(key: string) {
+      await adapter.delete?.(key);
     }
   };
 }

@@ -1,5 +1,5 @@
-import { PutObjectCommand, S3Client, type S3ClientConfig } from "@aws-sdk/client-s3";
-import { UploadError, type StorageAdapter } from "@uplift-io/uplift";
+import { DeleteObjectCommand, PutObjectCommand, S3Client, type S3ClientConfig } from "@aws-sdk/client-s3";
+import { UploadError, type StorageAdapter, type StorageHeaders } from "@uplift-io/uplift";
 
 export type S3Options = {
   bucket: string;
@@ -16,12 +16,13 @@ export function s3(options: S3Options): StorageAdapter {
   const client = options.client ?? new S3Client(clientConfig(options));
   return {
     provider: "s3",
-    async put({ key, file, body }) {
+    async put({ key, file, body, headers }) {
       await client.send(new PutObjectCommand({
         Bucket: options.bucket,
         Key: key,
         Body: new Uint8Array(await body.arrayBuffer()),
-        ContentType: file.type
+        ContentType: file.type,
+        ...s3ObjectHeaders(headers)
       })).catch((error: unknown) => {
         const message = error instanceof Error ? error.message : "S3 upload failed.";
         throw new UploadError("UPLOAD_FAILED", message);
@@ -35,8 +36,49 @@ export function s3(options: S3Options): StorageAdapter {
         extension: file.extension,
         provider: "s3"
       };
+    },
+    async delete(key) {
+      await client.send(new DeleteObjectCommand({
+        Bucket: options.bucket,
+        Key: key
+      })).catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "S3 delete failed.";
+        throw new UploadError("UPLOAD_FAILED", message);
+      });
     }
   };
+}
+
+function s3ObjectHeaders(headers: StorageHeaders | undefined) {
+  const mapped: {
+    CacheControl?: string;
+    ContentDisposition?: string;
+    ContentEncoding?: string;
+    ContentLanguage?: string;
+    Expires?: Date;
+  } = {};
+  for (const [name, value] of Object.entries(headers ?? {})) {
+    switch (name.toLowerCase()) {
+      case "cache-control":
+        mapped.CacheControl = value;
+        break;
+      case "content-disposition":
+        mapped.ContentDisposition = value;
+        break;
+      case "content-encoding":
+        mapped.ContentEncoding = value;
+        break;
+      case "content-language":
+        mapped.ContentLanguage = value;
+        break;
+      case "expires": {
+        const date = new Date(value);
+        if (!Number.isNaN(date.valueOf())) mapped.Expires = date;
+        break;
+      }
+    }
+  }
+  return mapped;
 }
 
 function clientConfig(options: S3Options): S3ClientConfig {

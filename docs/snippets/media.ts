@@ -12,6 +12,7 @@ export const mediaUploads = uplift({
   }),
   routes: {
     avatar: image()
+      .headers({ "Cache-Control": "public, max-age=31536000" })
       .transform(resize({ width: 512, height: 512, fit: "cover" }), convert("webp"))
       .outputs(
         variant("thumb", resize({ width: 96, height: 96 }), convert("webp")),

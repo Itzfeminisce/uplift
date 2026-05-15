@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0
+
+### Storage Headers, CSV Columns, And Rollback
+
+- Added shared route `headers()` support for object-storage headers across upload builders, including dynamic headers from request, file, user, and metadata context.
+- Renamed CSV column validation from `csv().headers([...])` to `csv().columns([...])`; `headers()` now consistently means storage headers.
+- Added request rollback tracking so output, route `done()`, and global `onUploadComplete` failures attempt to delete every object written during the failed request.
+- Added S3, R2, Bunny, UploadThing, and Cloudinary cleanup support, with Cloudinary signed cleanup enabled by server-side API key and API secret.
+- Documented safe adapter header behavior, CSV migration, rollback limitations for custom adapters without `delete`, and Cloudinary unsigned upload versus signed cleanup credentials.
+
 ## 1.1.0
 
 ### Media Transforms And Outputs

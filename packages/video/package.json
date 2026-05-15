@@ -1,6 +1,6 @@
 {
   "name": "@uplift-io/video",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Synchronous video transforms and derived outputs for Uplift upload routes.",
   "license": "MIT",
   "homepage": "https://itzfeminisce.github.io/uplift/",

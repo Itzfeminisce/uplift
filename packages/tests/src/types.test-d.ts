@@ -1,4 +1,4 @@
-import { any, csv, image, pdf, type UploadedFile, uplift, video } from "@uplift-io/uplift";
+import { any, audio, csv, custom, image, json, pdf, text, type UploadedFile, uplift, video } from "@uplift-io/uplift";
 import { createUploadClient } from "@uplift-io/uplift/client";
 import { resize as resizeImage, variant } from "@uplift-io/image";
 import { thumbnail, trim } from "@uplift-io/video";
@@ -75,19 +75,36 @@ image()._def;
 // @ts-expect-error Internal type metadata is not exposed on public builders.
 image().__multiple;
 
-csv().headers(["email"]).delimiter(",");
+csv().columns(["email"]).delimiter(",");
+csv().columns(["email"], { delimiter: ";" });
 image().dimensions({ maxWidth: 100 }).square().aspectRatio("1:1");
 pdf().pages({ max: 10 }).encrypted(false);
 video().duration({ max: "2m" });
 
-// @ts-expect-error CSV-only header checks are not exposed on image routes.
-image().headers(["email"]);
+image().headers({ "Cache-Control": "public, max-age=31536000" });
+video().headers({ "Cache-Control": "public, max-age=31536000" });
+audio().headers({ "Cache-Control": "public, max-age=31536000" });
+pdf().headers({ "Content-Disposition": "attachment" });
+text().headers({ "Cache-Control": "no-store" });
+json().headers({ "Cache-Control": "no-store" });
+csv().headers({ "Cache-Control": "no-store" });
+custom("application/octet-stream").headers({ "Cache-Control": "no-store" });
+any().headers({ "Cache-Control": "no-store" });
 
-// @ts-expect-error CSV-only header checks are not exposed on video routes.
-video().headers(["email"]);
+image()
+  .auth(async () => ({ id: "user_1" }))
+  .meta(({ user }) => ({ owner: user.id }))
+  .headers(({ req, file, user, meta }) => {
+    req satisfies Request;
+    file.name satisfies string;
+    user.id satisfies string;
+    meta.owner satisfies string;
+    return { "Cache-Control": `private, max-age=60`, "X-Owner": meta.owner };
+  })
+  .dimensions({ maxWidth: 100 });
 
-// @ts-expect-error CSV-only header checks are not exposed on PDF routes.
-pdf().headers(["email"]);
+// @ts-expect-error CSV column validation moved to columns().
+csv().headers(["email"]);
 
 // @ts-expect-error Image-only dimension checks are not exposed on CSV routes.
 csv().dimensions({ maxWidth: 100 });
@@ -104,5 +121,5 @@ image().duration({ max: "2m" });
 image()
   .auth(async () => ({ id: "user_1" }))
   .meta(({ user }) => ({ owner: user.id }))
-  // @ts-expect-error Chaining must preserve the narrowed image builder API.
-  .headers(["email"]);
+  .headers({ "Cache-Control": "public, max-age=60" })
+  .dimensions({ maxWidth: 100 });

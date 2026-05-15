@@ -1,6 +1,7 @@
 import {
   UploadError,
   type PreparedUploadFile,
+  type StorageHeaders,
   type UpliftApp,
   type UploadedFile,
   type UploadInputFile
@@ -18,6 +19,7 @@ type StoredFile = {
 };
 
 export async function handleUploadRequest(app: UpliftApp, req: Request): Promise<Response> {
+  const writtenKeys: string[] = [];
   try {
     if (req.method !== "POST") {
       return json({ error: new UploadError("VALIDATION_FAILED", "Only POST upload requests are supported.") }, 405);
@@ -46,8 +48,15 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
         ? await route._def.key({ req, file: prepared.file, user, meta })
         : defaultKey(prepared.file);
       assertSafeStorageKey(key);
-      const primary = await app.storage.put({ key, file: prepared.file, body: prepared.body });
-      const outputs = await writeOutputs(app, route._def, key, prepared, primary);
+      const headers = await resolveStorageHeaders(route._def, req, prepared.file, user, meta);
+      const primary = await app.storage.put({
+        key,
+        file: prepared.file,
+        body: prepared.body,
+        ...(headers ? { headers } : {})
+      });
+      writtenKeys.push(primary.key);
+      const outputs = await writeOutputs(app, route._def, key, prepared, primary, headers, writtenKeys);
       const file = Object.keys(outputs).length > 0 ? { ...primary, outputs } : primary;
       stored.push({
         file,
@@ -72,6 +81,7 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
     if (app.onUploadComplete) await app.onUploadComplete({ route: routeName, result, user });
     return json({ result }, 200);
   } catch (error) {
+    await rollbackWrittenFiles(app, writtenKeys);
     const uploadError = normalizeError(error);
     return json({ error: uploadError }, statusFor(uploadError));
   }
@@ -94,21 +104,39 @@ async function writeOutputs(
   route: UpliftApp["routes"][string]["_def"],
   primaryKey: string,
   prepared: PreparedUploadFile,
-  primary: UploadedFile
+  primary: UploadedFile,
+  headers: StorageHeaders | undefined,
+  writtenKeys: string[]
 ): Promise<Record<string, UploadedFile>> {
   const written: Record<string, UploadedFile> = {};
-  try {
-    for (const output of route.outputs ?? []) {
-      const outputFile = await normalizePrepared(await output.produce({ ...prepared, primary }));
-      const key = outputKey(primaryKey, output.name, outputFile.file);
-      assertSafeStorageKey(key);
-      written[output.name] = await app.storage.put({ key, file: outputFile.file, body: outputFile.body });
-    }
-  } catch (error) {
-    await rollbackWrittenFiles(app, [primary.key, ...Object.values(written).map((file) => file.key)]);
-    throw error;
+  for (const output of route.outputs ?? []) {
+    const outputFile = await normalizePrepared(await output.produce({ ...prepared, primary }));
+    const key = outputKey(primaryKey, output.name, outputFile.file);
+    assertSafeStorageKey(key);
+    const uploaded = await app.storage.put({
+      key,
+      file: outputFile.file,
+      body: outputFile.body,
+      ...(headers ? { headers } : {})
+    });
+    written[output.name] = uploaded;
+    writtenKeys.push(uploaded.key);
   }
   return written;
+}
+
+async function resolveStorageHeaders(
+  route: UpliftApp["routes"][string]["_def"],
+  req: Request,
+  file: UploadInputFile,
+  user: unknown,
+  meta: unknown
+): Promise<StorageHeaders | undefined> {
+  if (!route.storageHeaders) return undefined;
+  if (typeof route.storageHeaders === "function") {
+    return route.storageHeaders({ req, file, user, meta });
+  }
+  return route.storageHeaders;
 }
 
 async function rollbackWrittenFiles(app: UpliftApp, keys: string[]): Promise<void> {
@@ -247,12 +275,12 @@ async function validateConfiguredInspection(route: UpliftApp["routes"][string]["
       throw new UploadError("VALIDATION_FAILED", "Text file is not ASCII encoded.");
     }
   }
-  if (route.headers) {
+  if (route.csvColumns) {
     const [headerLine = ""] = (await file.text()).split(/\r?\n/, 1);
     const delimiter = route.delimiter ?? ",";
     const actualHeaders = headerLine.split(delimiter).map((header) => header.trim());
-    if (route.headers.some((header, index) => actualHeaders[index] !== header)) {
-      throw new UploadError("VALIDATION_FAILED", "CSV headers do not match the route definition.");
+    if (route.csvColumns.some((header, index) => actualHeaders[index] !== header)) {
+      throw new UploadError("VALIDATION_FAILED", "CSV columns do not match the route definition.");
     }
   }
   if (route.pageRule || route.encrypted !== undefined || route.durationRule) {

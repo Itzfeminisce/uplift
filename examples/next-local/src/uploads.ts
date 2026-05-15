@@ -37,6 +37,7 @@ export const uploads = uplift({
       .auth(async ({ req }) => ({
         id: req.headers.get("x-user-id") ?? "demo-user",
       }))
+      .headers({ "Cache-Control": "public, max-age=31536000" })
       .key(({ user, file }) => `avatars/${user.id}/${file.name}`),
     gallery: image()
       .max("8mb")
@@ -44,6 +45,7 @@ export const uploads = uplift({
       .key(({ file }) => `gallery/${Date.now()}-${file.name}`),
     mediaPreview: image()
       .max("4mb")
+      .headers({ "Cache-Control": "public, max-age=31536000" })
       .transform(resize({ width: 512, fit: "inside" }), convert("webp"))
       .outputs(
         variant("thumb", resize({ width: 96, height: 96, fit: "cover" }), convert("webp")),

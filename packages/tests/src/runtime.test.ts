@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { any, image, json, uplift, video } from "@uplift-io/uplift";
+import { any, csv, image, json, uplift, video } from "@uplift-io/uplift";
 import { handleUploadRequest } from "@uplift-io/uplift/server";
 import { createMemoryStorage } from "@uplift-io/memory";
 import { compress, convert, resize, strip, variant } from "@uplift-io/image";
@@ -29,6 +29,157 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
 }
 
 describe("uplift runtime", () => {
+  it("passes static storage headers to primary and output writes", async () => {
+    const written: Array<{ key: string; headers?: Record<string, string> }> = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file, headers }) => {
+          written.push({ key, ...(headers ? { headers } : {}) });
+          return {
+            key,
+            url: `memory://${key}`,
+            provider: "memory",
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            extension: file.extension
+          };
+        }
+      },
+      routes: {
+        avatar: image()
+          .headers({ "Cache-Control": "public, max-age=31536000", "Content-Disposition": "inline" })
+          .outputs({
+            name: "thumb",
+            produce: async ({ body }) => new File([body], "thumb.webp", { type: "image/webp" })
+          })
+          .key(({ file }) => `avatars/${file.name}`)
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+    expect(written).toEqual([
+      {
+        key: "avatars/avatar.png",
+        headers: { "Cache-Control": "public, max-age=31536000", "Content-Disposition": "inline" }
+      },
+      {
+        key: "avatars/avatar.png/outputs/thumb.webp",
+        headers: { "Cache-Control": "public, max-age=31536000", "Content-Disposition": "inline" }
+      }
+    ]);
+  });
+
+  it("resolves dynamic storage headers with request, file, user, and metadata context", async () => {
+    const written: Array<{ key: string; headers?: Record<string, string> }> = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file, headers }) => {
+          written.push({ key, ...(headers ? { headers } : {}) });
+          return {
+            key,
+            url: `memory://${key}`,
+            provider: "memory",
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            extension: file.extension
+          };
+        }
+      },
+      routes: {
+        avatar: image()
+          .auth(async () => ({ id: "user_1" }))
+          .meta(({ file, user }) => ({ owner: user.id, original: file.name }))
+          .headers(({ req, file, user, meta }) => ({
+            "Cache-Control": req.headers.get("x-cache") ?? "no-store",
+            "X-File": file.name,
+            "X-User": user.id,
+            "X-Meta": `${meta.owner}:${meta.original}`
+          }))
+          .key(({ file }) => `avatars/${file.name}`)
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      headers: { "x-cache": "public, max-age=60" },
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+    expect(written).toEqual([
+      {
+        key: "avatars/avatar.png",
+        headers: {
+          "Cache-Control": "public, max-age=60",
+          "X-File": "avatar.png",
+          "X-User": "user_1",
+          "X-Meta": "user_1:avatar.png"
+        }
+      }
+    ]);
+  });
+
+  it("validates CSV columns and lets the last delimiter configuration win", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        semicolon: csv().columns(["email", "name"], { delimiter: "," }).delimiter(";"),
+        pipe: csv().delimiter(";").columns(["email", "name"], { delimiter: "|" })
+      }
+    });
+
+    const semicolonForm = new FormData();
+    semicolonForm.append("file", file("users.csv", "text/csv", "email;name\na@example.com;Ada"));
+    const semicolonResponse = await handleUploadRequest(app, new Request("https://app.test/upload/semicolon", {
+      method: "POST",
+      body: semicolonForm
+    }));
+
+    const pipeForm = new FormData();
+    pipeForm.append("file", file("users.csv", "text/csv", "email|name\na@example.com|Ada"));
+    const pipeResponse = await handleUploadRequest(app, new Request("https://app.test/upload/pipe", {
+      method: "POST",
+      body: pipeForm
+    }));
+
+    expect(semicolonResponse.status).toBe(200);
+    expect(pipeResponse.status).toBe(200);
+  });
+
+  it("rejects CSV files whose columns do not match the route definition", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        import: csv().columns(["email", "name"])
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("users.csv", "text/csv", "name,email\nAda,a@example.com"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/import", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "VALIDATION_FAILED", message: "CSV columns do not match the route definition." }
+    });
+  });
+
   it("transforms the primary file before key generation and storage", async () => {
     const written: Array<{ key: string; file: { name: string; type: string; size: number; extension?: string }; body: string }> = [];
     const app = uplift({
@@ -230,6 +381,238 @@ describe("uplift runtime", () => {
     });
     expect(written).toEqual(["avatars/avatar.png", "avatars/avatar.png/outputs/thumb.webp"]);
     expect(deleted).toEqual(["avatars/avatar.png"]);
+  });
+
+  it("rolls back primary and output objects when a route completion handler fails", async () => {
+    const deleted: string[] = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => ({
+          key,
+          url: `memory://${key}`,
+          provider: "memory",
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          extension: file.extension
+        }),
+        delete: async (key) => {
+          deleted.push(key);
+        }
+      },
+      routes: {
+        avatar: image()
+          .outputs({
+            name: "thumb",
+            produce: async ({ body }) => new File([body], "thumb.webp", { type: "image/webp" })
+          })
+          .key(({ file }) => `avatars/${file.name}`)
+          .done(() => {
+            throw new Error("database unavailable");
+          })
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "UNKNOWN", message: "database unavailable" }
+    });
+    expect(deleted).toEqual(["avatars/avatar.png/outputs/thumb.webp", "avatars/avatar.png"]);
+  });
+
+  it("rolls back written objects when the global completion handler fails", async () => {
+    const deleted: string[] = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => ({
+          key,
+          url: `memory://${key}`,
+          provider: "memory",
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          extension: file.extension
+        }),
+        delete: async (key) => {
+          deleted.push(key);
+        }
+      },
+      onUploadComplete: async () => {
+        throw new Error("audit log unavailable");
+      },
+      routes: {
+        avatar: image().key(({ file }) => `avatars/${file.name}`)
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "UNKNOWN", message: "audit log unavailable" }
+    });
+    expect(deleted).toEqual(["avatars/avatar.png"]);
+  });
+
+  it("rolls back all objects written before a multi-file route fails", async () => {
+    const deleted: string[] = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => ({
+          key,
+          url: `memory://${key}`,
+          provider: "memory",
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          extension: file.extension
+        }),
+        delete: async (key) => {
+          deleted.push(key);
+        }
+      },
+      routes: {
+        gallery: image()
+          .multiple(3)
+          .key(({ file }) => `gallery/${file.name}`)
+          .validate(({ file }) => file.name === "bad.png" ? "bad file" : true)
+      }
+    });
+
+    const form = new FormData();
+    form.append("files", file("one.png", "image/png"));
+    form.append("files", file("bad.png", "image/png"));
+    form.append("files", file("two.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/gallery", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "VALIDATION_FAILED", message: "bad file" }
+    });
+    expect(deleted).toEqual(["gallery/one.png"]);
+  });
+
+  it("does not roll back after a successful upload response", async () => {
+    const deleted: string[] = [];
+    const app = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => ({
+          key,
+          url: `memory://${key}`,
+          provider: "memory",
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          extension: file.extension
+        }),
+        delete: async (key) => {
+          deleted.push(key);
+        }
+      },
+      routes: {
+        avatar: image().key(({ file }) => `avatars/${file.name}`)
+      }
+    });
+
+    const form = new FormData();
+    form.append("file", file("avatar.png", "image/png"));
+    const response = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: form
+    }));
+
+    expect(response.status).toBe(200);
+    expect(deleted).toEqual([]);
+  });
+
+  it("preserves the original failure when rollback is unsupported or delete fails", async () => {
+    const withoutDelete = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => ({
+          key,
+          url: `memory://${key}`,
+          provider: "memory",
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          extension: file.extension
+        })
+      },
+      routes: {
+        avatar: image().done(() => {
+          throw new Error("database unavailable");
+        })
+      }
+    });
+
+    const missingDeleteForm = new FormData();
+    missingDeleteForm.append("file", file("avatar.png", "image/png"));
+    const missingDeleteResponse = await handleUploadRequest(withoutDelete, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: missingDeleteForm
+    }));
+
+    const deleteAttempts: string[] = [];
+    const failingDelete = uplift({
+      storage: {
+        provider: "memory",
+        put: async ({ key, file }) => ({
+          key,
+          url: `memory://${key}`,
+          provider: "memory",
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          extension: file.extension
+        }),
+        delete: async (key) => {
+          deleteAttempts.push(key);
+          throw new Error("delete unavailable");
+        }
+      },
+      routes: {
+        avatar: image().key(({ file }) => `avatars/${file.name}`).done(() => {
+          throw new Error("database unavailable");
+        })
+      }
+    });
+
+    const failingDeleteForm = new FormData();
+    failingDeleteForm.append("file", file("avatar.png", "image/png"));
+    const failingDeleteResponse = await handleUploadRequest(failingDelete, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: failingDeleteForm
+    }));
+
+    expect(missingDeleteResponse.status).toBe(500);
+    await expect(missingDeleteResponse.json()).resolves.toMatchObject({
+      error: { code: "UNKNOWN", message: "database unavailable" }
+    });
+    expect(failingDeleteResponse.status).toBe(500);
+    await expect(failingDeleteResponse.json()).resolves.toMatchObject({
+      error: { code: "UNKNOWN", message: "database unavailable" }
+    });
+    expect(deleteAttempts).toEqual(["avatars/avatar.png"]);
   });
 
   it("runs Sharp-backed image transforms and variants through storage", async () => {

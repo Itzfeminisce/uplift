@@ -59,7 +59,7 @@ Media capability packages are optional: add `@uplift-io/image` for image transfo
 
 ```ts
 // uploads.ts
-import { image, pdf, uplift } from "@uplift-io/uplift";
+import { csv, image, pdf, uplift } from "@uplift-io/uplift";
 import { s3 } from "@uplift-io/s3";
 
 export const uploads = uplift({
@@ -76,12 +76,18 @@ export const uploads = uplift({
       .auth(async ({ req }) => {
         return { id: req.headers.get("x-user-id")! };
       })
+      .headers(({ user }) => ({
+        "Cache-Control": "public, max-age=31536000",
+        "Content-Disposition": `inline; filename="${user.id}.png"`
+      }))
       .key(({ user }) => `avatars/${user.id}.png`)
       .done(async ({ file, user }) => {
         console.log("avatar uploaded", user.id, file.url);
       }),
 
     resume: pdf().max("5mb"),
+
+    contacts: csv().columns(["email", "name"], { delimiter: "," }),
 
     gallery: image()
       .max("8mb")
@@ -220,6 +226,7 @@ Shared methods:
 .key(({ user, file }) => `uploads/${file.name}`)
 .meta(({ user, file }) => ({ owner: user.id, name: file.name }))
 .validate(({ file }) => true)
+.headers({ "Cache-Control": "public, max-age=31536000" })
 .done(async ({ file, user, meta }) => {})
 ```
 
@@ -228,6 +235,17 @@ JSON schema validation accepts any object with a `.parse()` method:
 ```ts
 json().schema(zodSchema);
 ```
+
+`headers()` is shared by every route builder and means object-storage headers. It accepts a static object or a function that can read `req`, `file`, `user`, and `meta`.
+
+CSV file structure uses `columns()`:
+
+```ts
+csv().columns(["email", "name"], { delimiter: "," });
+csv().delimiter(";").columns(["email", "name"]);
+```
+
+If both `columns(..., { delimiter })` and `delimiter()` are used, the last delimiter call wins. Migrate old CSV column checks from `csv().headers([...])` to `csv().columns([...])`.
 
 There is no hard dependency on Zod, Axios, an ORM, or a database client.
 
@@ -264,7 +282,7 @@ const clip = await upload.clip(videoFile);
 clip.output("poster").url;
 ```
 
-Output keys use the v1 convention `<primary-key>/outputs/<name>.<extension>`. Outputs derive from the transformed primary file, and any transform or output write failure fails the upload request. Storage adapters can implement `delete(key)` to let core roll back the already-written primary and any earlier outputs after a later output write fails.
+Output keys use the v1 convention `<primary-key>/outputs/<name>.<extension>`. Outputs derive from the transformed primary file, and any transform, output, `done()`, or `onUploadComplete` failure fails the upload request. Storage adapters can implement `delete(key)` to let core roll back already-written objects during failed requests.
 
 `@uplift-io/image` uses Sharp internally. `@uplift-io/video` shells out to ffmpeg/ffprobe during the upload request; production hosts should install those binaries or set `UPLIFT_FFMPEG_PATH` and `UPLIFT_FFPROBE_PATH`, and should keep request-time budgets appropriate for the selected work.
 
@@ -279,7 +297,11 @@ import { s3 } from "@uplift-io/s3";
 import { uploadthing } from "@uplift-io/uploadthing";
 ```
 
-S3 and R2 use `@aws-sdk/client-s3`. Bunny and Cloudinary perform provider uploads with `fetch`. Local storage writes to disk. The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()`, keeping UploadThing as an optional integration rather than a core dependency.
+S3 and R2 use `@aws-sdk/client-s3` and support safe object headers plus rollback deletion. Bunny supports safe object headers and deletes through Bunny Storage. Local and memory storage implement cleanup. Custom adapters can omit `delete`, but rollback cannot remove files for adapters that do not expose it.
+
+Cloudinary unsigned uploads still work with `cloudName` and `uploadPreset`; rollback cleanup is enabled only when server-side `apiKey` and `apiSecret` are configured. Cloudinary does not provide generic object-storage header parity, so route headers are not mapped there.
+
+The UploadThing adapter accepts a server-side uploader compatible with `UTApi.uploadFiles()` and an optional deleter compatible with `UTApi.deleteFiles()`, keeping UploadThing as an optional integration rather than a core dependency.
 
 ```ts
 import { uploadthing } from "@uplift-io/uploadthing";
@@ -288,7 +310,8 @@ import { UTApi } from "uploadthing/server";
 const utapi = new UTApi();
 
 const storage = uploadthing({
-  uploader: (file) => utapi.uploadFiles(file)
+  uploader: (file) => utapi.uploadFiles(file),
+  deleter: (key) => utapi.deleteFiles(key)
 });
 ```
 
@@ -335,8 +358,9 @@ Rich inspection methods currently fail closed until an inspector is wired for th
 - Docs site: [itzfeminisce.github.io/uplift](https://itzfeminisce.github.io/uplift/)
 - PRD: [docs/PRD.md](./docs/PRD.md)
 - Media transforms PRD: [docs/PRD_MEDIA_TRANSFORMS_AND_OUTPUTS.md](./docs/PRD_MEDIA_TRANSFORMS_AND_OUTPUTS.md)
+- Storage headers and rollback: [docs/STORAGE_HEADERS_AND_ROLLBACK.md](./docs/STORAGE_HEADERS_AND_ROLLBACK.md)
 - Issue breakdown: [docs/ISSUE_BREAKDOWN.md](./docs/ISSUE_BREAKDOWN.md)
-- 1.1.0 checklist: [docs/releases/1.1.0-checklist.md](./docs/releases/1.1.0-checklist.md)
+- 1.2.0 checklist: [docs/releases/1.2.0-checklist.md](./docs/releases/1.2.0-checklist.md)
 - Changelog: [CHANGELOG.md](./CHANGELOG.md)
 
 ## Comparison

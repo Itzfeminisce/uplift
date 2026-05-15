@@ -27,7 +27,7 @@ pnpm add @uplift-io/uplift @uplift-io/next @uplift-io/s3
 ## Quick Start
 
 ```ts
-import { image, uplift } from "@uplift-io/uplift";
+import { csv, image, uplift } from "@uplift-io/uplift";
 import { s3 } from "@uplift-io/s3";
 
 export const uploads = uplift({
@@ -41,10 +41,12 @@ export const uploads = uplift({
     avatar: image()
       .max("2mb")
       .auth(async ({ req }) => ({ id: req.headers.get("x-user-id")! }))
+      .headers({ "Cache-Control": "public, max-age=31536000" })
       .key(({ user }) => `avatars/${user.id}.png`)
       .done(async ({ file }) => {
         console.log(file.url);
       }),
+    contacts: csv().columns(["email", "name"]),
     gallery: image().max("8mb").multiple(10)
   }
 });
@@ -77,7 +79,23 @@ const avatar = image()
 
 The frontend call remains `upload.avatar(file)`. Declared outputs are available with `uploaded.output("thumb")`.
 
-Core stays free of Sharp and ffmpeg. Media packages own those runtime dependencies, and storage adapters may implement `delete(key)` so core can roll back already-written files when a later derived output write fails.
+Core stays free of Sharp and ffmpeg. Media packages own those runtime dependencies, and storage adapters may implement `delete(key)` so core can roll back already-written files when a later request step fails.
+
+## Storage Headers, CSV Columns, And Rollback
+
+`headers()` is shared by every builder and means object-storage headers:
+
+```ts
+image().headers({ "Cache-Control": "public, max-age=31536000" });
+```
+
+CSV file validation uses `columns()`:
+
+```ts
+csv().columns(["email", "name"], { delimiter: "," });
+```
+
+Migrate old CSV `headers([...])` calls to `columns([...])`. If a request fails after writing storage objects, core attempts best-effort rollback through the adapter's optional `delete(key)`.
 
 ## More
 
@@ -97,6 +115,7 @@ import { UTApi } from "uploadthing/server";
 
 const utapi = new UTApi();
 const storage = uploadthing({
-  uploader: (file) => utapi.uploadFiles(file)
+  uploader: (file) => utapi.uploadFiles(file),
+  deleter: (key) => utapi.deleteFiles(key)
 });
 ```
