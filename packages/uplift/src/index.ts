@@ -9,13 +9,23 @@ export {
   text,
   UploadBuilder,
   video,
+  type AnyUploadBuilder,
   type AudioExtension,
+  type AudioUploadBuilder,
+  type CsvUploadBuilder,
   type DimensionRule,
   type DurationRule,
   type ImageExtension,
+  type ImageUploadBuilder,
+  type JsonUploadBuilder,
   type PageRule,
+  type PdfUploadBuilder,
+  type SharedUploadBuilder,
   type TextEncoding,
   type TextExtension,
+  type TextUploadBuilder,
+  type UploadBuilderForKind,
+  type VideoUploadBuilder,
   type VideoExtension
 } from "./builder";
 export { createUploadClient } from "./client";
@@ -56,5 +66,5 @@ export function uplift<TRoutes extends UploadRoutes>(config: {
   middleware?: Middleware<unknown>;
   onUploadComplete?: UpliftApp<TRoutes>["onUploadComplete"];
 }): UpliftApp<TRoutes> {
-  return config;
+  return config as unknown as UpliftApp<TRoutes>;
 }

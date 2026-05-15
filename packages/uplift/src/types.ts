@@ -87,6 +87,24 @@ export type StorageAdapter = {
 
 export type Middleware<TUser = unknown> = (ctx: { req: Request }) => TUser | Promise<TUser>;
 
+declare const uploadRouteConfig: unique symbol;
+
+export type UploadRouteConfig<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TKind extends UploadKind = UploadKind,
+  TOutputNames extends string = never
+> = {
+  readonly [uploadRouteConfig]?: {
+    auth: TAuth;
+    meta: TMeta;
+    multiple: TMultiple;
+    kind: TKind;
+    outputs: TOutputNames;
+  };
+};
+
 export type UploadKind =
   | "any"
   | "image"
@@ -167,11 +185,14 @@ export type UploadRouteDefinition = {
   outputs?: Array<UploadOutput>;
 };
 
-export type UploadRoutes = Record<string, { _def: UploadRouteDefinition }>;
+export type UploadRoutes = Record<string, UploadRouteConfig<unknown, unknown, boolean, UploadKind, string>>;
+export type UploadRouteDefinitions<TRoutes extends UploadRoutes = UploadRoutes> = {
+  [TRouteName in keyof TRoutes]: TRoutes[TRouteName] & { readonly _def: UploadRouteDefinition };
+};
 
 export type UpliftApp<TRoutes extends UploadRoutes = UploadRoutes> = {
   storage: StorageAdapter;
-  routes: TRoutes;
+  routes: UploadRouteDefinitions<TRoutes>;
   middleware?: Middleware<unknown> | undefined;
   onUploadComplete?: ((ctx: {
     route: keyof TRoutes & string;
@@ -180,13 +201,13 @@ export type UpliftApp<TRoutes extends UploadRoutes = UploadRoutes> = {
   }) => void | Promise<void>) | undefined;
 };
 
-export type IsMultiple<TRoute> = TRoute extends { __multiple?: infer TMultiple }
+export type IsMultiple<TRoute> = TRoute extends UploadRouteConfig<unknown, unknown, infer TMultiple>
   ? TMultiple extends true
     ? true
     : false
   : false;
 
-export type OutputNames<TRoute> = TRoute extends { __outputs?: infer TOutputNames }
+export type OutputNames<TRoute> = TRoute extends UploadRouteConfig<unknown, unknown, boolean, UploadKind, infer TOutputNames>
   ? TOutputNames extends string
     ? TOutputNames
     : never

@@ -1,4 +1,4 @@
-import { any, image, type UploadedFile, uplift, video } from "@uplift-io/uplift";
+import { any, csv, image, pdf, type UploadedFile, uplift, video } from "@uplift-io/uplift";
 import { createUploadClient } from "@uplift-io/uplift/client";
 import { resize as resizeImage, variant } from "@uplift-io/image";
 import { thumbnail, trim } from "@uplift-io/video";
@@ -68,3 +68,41 @@ image().transform(trim({ start: "00:00:01" }));
 // @ts-expect-error Image outputs are not accepted by video routes.
 video().outputs(variant("thumb", resizeImage({ width: 32 })));
 video().transform(trim({ start: "00:00:01" })).outputs(thumbnail("poster", { at: "25%" }));
+
+// @ts-expect-error Internal route definitions are not exposed on public builders.
+image()._def;
+
+// @ts-expect-error Internal type metadata is not exposed on public builders.
+image().__multiple;
+
+csv().headers(["email"]).delimiter(",");
+image().dimensions({ maxWidth: 100 }).square().aspectRatio("1:1");
+pdf().pages({ max: 10 }).encrypted(false);
+video().duration({ max: "2m" });
+
+// @ts-expect-error CSV-only header checks are not exposed on image routes.
+image().headers(["email"]);
+
+// @ts-expect-error CSV-only header checks are not exposed on video routes.
+video().headers(["email"]);
+
+// @ts-expect-error CSV-only header checks are not exposed on PDF routes.
+pdf().headers(["email"]);
+
+// @ts-expect-error Image-only dimension checks are not exposed on CSV routes.
+csv().dimensions({ maxWidth: 100 });
+
+// @ts-expect-error PDF-only page checks are not exposed on image routes.
+image().pages({ max: 10 });
+
+// @ts-expect-error Image-only dimension checks are not exposed on PDF routes.
+pdf().dimensions({ maxWidth: 100 });
+
+// @ts-expect-error Video-only duration checks are not exposed on image routes.
+image().duration({ max: "2m" });
+
+image()
+  .auth(async () => ({ id: "user_1" }))
+  .meta(({ user }) => ({ owner: user.id }))
+  // @ts-expect-error Chaining must preserve the narrowed image builder API.
+  .headers(["email"]);

@@ -128,11 +128,21 @@ describe("storage adapters", () => {
 
 describe("rich exports", () => {
   it("adds inspection-heavy methods behind the rich entrypoint", () => {
-    expect(pdf().pages({ max: 10 }).encrypted(false)._def).toMatchObject({
+    const pdfRoute = pdf().pages({ max: 10 }).encrypted(false) as unknown as {
+      _def: { pageRule?: { max?: number }; encrypted?: boolean };
+    };
+    const videoRoute = video().duration({ max: "2m" }) as unknown as {
+      _def: { durationRule?: { max?: "2m" } };
+    };
+    const audioRoute = audio().duration({ max: "5m" }) as unknown as {
+      _def: { durationRule?: { max?: "5m" } };
+    };
+
+    expect(pdfRoute._def).toMatchObject({
       pageRule: { max: 10 },
       encrypted: false
     });
-    expect(video().duration({ max: "2m" })._def.durationRule).toEqual({ max: "2m" });
-    expect(audio().duration({ max: "5m" })._def.durationRule).toEqual({ max: "5m" });
+    expect(videoRoute._def.durationRule).toEqual({ max: "2m" });
+    expect(audioRoute._def.durationRule).toEqual({ max: "5m" });
   });
 });

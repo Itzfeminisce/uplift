@@ -10,6 +10,7 @@ import {
   type UploadInputFile,
   type UploadKind,
   type UploadOutput,
+  type UploadRouteConfig,
   type UploadRouteDefinition
 } from "./types";
 import { parseSize } from "./utils";
@@ -37,6 +38,149 @@ export type DurationRule = {
   max?: DurationValue;
 };
 
+export type UploadBuilderForKind<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TKind extends UploadKind = UploadKind,
+  TOutputNames extends string = never
+> = TKind extends "image"
+  ? ImageUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+  : TKind extends "pdf"
+    ? PdfUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+    : TKind extends "video"
+      ? VideoUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+      : TKind extends "audio"
+        ? AudioUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+        : TKind extends "text"
+          ? TextUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+          : TKind extends "json"
+            ? JsonUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+            : TKind extends "csv"
+              ? CsvUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+              : TKind extends "custom"
+                ? CustomUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+                : TKind extends "any"
+                  ? AnyUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+                  : SharedUploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames>;
+
+export interface SharedUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TKind extends UploadKind = UploadKind,
+  TOutputNames extends string = never
+> extends UploadRouteConfig<TAuth, TMeta, TMultiple, TKind, TOutputNames> {
+  max(size: SizeValue): this;
+  min(size: SizeValue): this;
+  multiple(count?: number): UploadBuilderForKind<TAuth, TMeta, true, TKind, TOutputNames>;
+  auth<TUser>(handler: Middleware<TUser>): UploadBuilderForKind<TUser, TMeta, TMultiple, TKind, TOutputNames>;
+  overrideAuth(): this;
+  key(handler: (ctx: KeyContext<TAuth, TMeta>) => string | Promise<string>): this;
+  meta<TNextMeta>(
+    handler: (ctx: {
+      req: Request;
+      file: UploadInputFile;
+      user: TAuth;
+    }) => TNextMeta | Promise<TNextMeta>
+  ): UploadBuilderForKind<TAuth, TNextMeta, TMultiple, TKind, TOutputNames>;
+  validate(
+    handler: (ctx: {
+      req: Request;
+      file: UploadInputFile;
+      user: TAuth;
+      meta: TMeta;
+    }) => true | string | Promise<true | string>
+  ): this;
+  done(handler: (ctx: DoneContext<TAuth, TMeta, TMultiple>) => void | Promise<void>): this;
+  types(types: string[]): this;
+  transform(...transforms: Array<CompatibleTransform<TKind>>): this;
+  outputs<const TName extends string>(
+    ...outputs: Array<CompatibleOutput<TKind, TName>>
+  ): UploadBuilderForKind<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName>;
+}
+
+export interface AnyUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "any", TOutputNames> {}
+
+export interface ImageUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "image", TOutputNames> {
+  dimensions(rule: DimensionRule): this;
+  square(): this;
+  aspectRatio(value: `${number}:${number}`): this;
+}
+
+export interface PdfUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "pdf", TOutputNames> {
+  pages(rule: PageRule): this;
+  encrypted(value: boolean): this;
+}
+
+export interface VideoUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "video", TOutputNames> {
+  duration(rule: DurationRule): this;
+}
+
+export interface AudioUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "audio", TOutputNames> {
+  duration(rule: DurationRule): this;
+}
+
+export interface TextUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "text", TOutputNames> {
+  encoding(value: TextEncoding): this;
+}
+
+export interface JsonUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "json", TOutputNames> {
+  schema<TSchema extends StandardSchema>(schema: TSchema): this;
+}
+
+export interface CsvUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "csv", TOutputNames> {
+  headers(headers: string[]): this;
+  delimiter(value: "," | ";" | "\t" | "|"): this;
+}
+
+export interface CustomUploadBuilder<
+  TAuth = unknown,
+  TMeta = unknown,
+  TMultiple extends boolean = false,
+  TOutputNames extends string = never
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "custom", TOutputNames> {}
+
 export class UploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
@@ -44,11 +188,6 @@ export class UploadBuilder<
   TKind extends UploadKind = UploadKind,
   TOutputNames extends string = never
 > {
-  readonly __auth?: TAuth;
-  readonly __meta?: TMeta;
-  readonly __multiple?: TMultiple;
-  readonly __kind?: TKind;
-  readonly __outputs?: TOutputNames;
   readonly _def: UploadRouteDefinition;
 
   constructor(kind: TKind, mimeTypes: string[] = [], extensions: string[] = []) {
@@ -199,39 +338,59 @@ export class UploadBuilder<
   }
 }
 
-export function any(): UploadBuilder<unknown, unknown, false, "any"> {
-  return new UploadBuilder("any");
+export function any(): AnyUploadBuilder {
+  return new UploadBuilder("any") as unknown as AnyUploadBuilder;
 }
 
-export function image(): UploadBuilder<unknown, unknown, false, "image"> {
-  return new UploadBuilder("image", ["image/"], ["png", "jpg", "jpeg", "webp", "gif", "avif"]);
+export function image(): ImageUploadBuilder {
+  return new UploadBuilder("image", ["image/"], [
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "gif",
+    "avif"
+  ]) as unknown as ImageUploadBuilder;
 }
 
-export function pdf(): UploadBuilder<unknown, unknown, false, "pdf"> {
-  return new UploadBuilder("pdf", ["application/pdf"], ["pdf"]);
+export function pdf(): PdfUploadBuilder {
+  return new UploadBuilder("pdf", ["application/pdf"], ["pdf"]) as unknown as PdfUploadBuilder;
 }
 
-export function video(): UploadBuilder<unknown, unknown, false, "video"> {
-  return new UploadBuilder("video", ["video/"], ["mp4", "webm", "mov", "avi", "mkv"]);
+export function video(): VideoUploadBuilder {
+  return new UploadBuilder("video", ["video/"], [
+    "mp4",
+    "webm",
+    "mov",
+    "avi",
+    "mkv"
+  ]) as unknown as VideoUploadBuilder;
 }
 
-export function audio(): UploadBuilder<unknown, unknown, false, "audio"> {
-  return new UploadBuilder("audio", ["audio/"], ["mp3", "wav", "ogg", "m4a", "aac", "flac"]);
+export function audio(): AudioUploadBuilder {
+  return new UploadBuilder("audio", ["audio/"], [
+    "mp3",
+    "wav",
+    "ogg",
+    "m4a",
+    "aac",
+    "flac"
+  ]) as unknown as AudioUploadBuilder;
 }
 
-export function text(): UploadBuilder<unknown, unknown, false, "text"> {
-  return new UploadBuilder("text", ["text/"], ["txt", "md", "log"]);
+export function text(): TextUploadBuilder {
+  return new UploadBuilder("text", ["text/"], ["txt", "md", "log"]) as unknown as TextUploadBuilder;
 }
 
-export function json(): UploadBuilder<unknown, unknown, false, "json"> {
-  return new UploadBuilder("json", ["application/json"], ["json"]);
+export function json(): JsonUploadBuilder {
+  return new UploadBuilder("json", ["application/json"], ["json"]) as unknown as JsonUploadBuilder;
 }
 
-export function csv(): UploadBuilder<unknown, unknown, false, "csv"> {
-  return new UploadBuilder("csv", ["text/csv"], ["csv"]);
+export function csv(): CsvUploadBuilder {
+  return new UploadBuilder("csv", ["text/csv"], ["csv"]) as unknown as CsvUploadBuilder;
 }
 
-export function custom(type: string | string[]): UploadBuilder<unknown, unknown, false, "custom"> {
+export function custom(type: string | string[]): CustomUploadBuilder {
   const mimeTypes = Array.isArray(type) ? type : [type];
-  return new UploadBuilder("custom", mimeTypes);
+  return new UploadBuilder("custom", mimeTypes) as unknown as CustomUploadBuilder;
 }
