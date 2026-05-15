@@ -1,6 +1,7 @@
 import {
   UploadError,
   type PreparedUploadFile,
+  type RouteManifest,
   type StorageHeaders,
   type UpliftApp,
   type UploadedFile,
@@ -21,13 +22,22 @@ type StoredFile = {
 export async function handleUploadRequest(app: UpliftApp, req: Request): Promise<Response> {
   const writtenKeys: string[] = [];
   try {
+    if (req.method === "HEAD") {
+      return new Response(null, { status: 204 });
+    }
+    if (req.method === "GET") {
+      return json(createRouteManifest(app), 200);
+    }
     if (req.method !== "POST") {
-      return json({ error: new UploadError("VALIDATION_FAILED", "Only POST upload requests are supported.") }, 405);
+      return json({ error: new UploadError("METHOD_NOT_ALLOWED", "Only HEAD, GET, and POST upload requests are supported.") }, 405);
     }
 
     const routeName = routeNameFromRequest(req);
     const route = app.routes[routeName];
-    if (!route) throw new UploadError("VALIDATION_FAILED", `Unknown upload route: ${routeName}`);
+    if (!route) throw new UploadError("UNKNOWN_ROUTE", `Unknown upload route: ${routeName}`);
+    if (new URL(req.url).searchParams.get("preflight") === "1") {
+      return json(await handlePreflight(app, req, route._def), 200);
+    }
 
     const user = await resolveUser(app, route._def, req);
     const files = await filesFromRequest(req);
@@ -36,7 +46,7 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
       throw new UploadError("VALIDATION_FAILED", "This route accepts exactly one file.");
     }
     if (route._def.multipleLimit !== undefined && files.length > route._def.multipleLimit) {
-      throw new UploadError("VALIDATION_FAILED", `This route accepts at most ${route._def.multipleLimit} files.`);
+      throw new UploadError("TOO_MANY_FILES", `This route accepts at most ${route._def.multipleLimit} files.`);
     }
 
     const stored: StoredFile[] = [];
@@ -85,6 +95,58 @@ export async function handleUploadRequest(app: UpliftApp, req: Request): Promise
     const uploadError = normalizeError(error);
     return json({ error: uploadError }, statusFor(uploadError));
   }
+}
+
+async function handlePreflight(
+  app: UpliftApp,
+  req: Request,
+  route: UpliftApp["routes"][string]["_def"]
+): Promise<{ ok: true } | { ok: false; error: UploadError }> {
+  try {
+    const user = await resolveUser(app, route, req);
+    const files = await preflightFilesFromRequest(req);
+    if (files.length === 0) throw new UploadError("PREFLIGHT_FAILED", "No files were provided for preflight.");
+    if (!route.multiple && files.length !== 1) {
+      throw new UploadError("PREFLIGHT_FAILED", "This route accepts exactly one file.");
+    }
+    if (route.multipleLimit !== undefined && files.length > route.multipleLimit) {
+      throw new UploadError("PREFLIGHT_FAILED", `This route accepts at most ${route.multipleLimit} files.`);
+    }
+    for (const file of files) {
+      validateStaticFileConstraints(route, file, "PREFLIGHT_FAILED");
+      if (route.preflight) {
+        const result = await route.preflight({ req, file, user });
+        if (result !== true) throw new UploadError("PREFLIGHT_FAILED", result);
+      }
+    }
+    return { ok: true };
+  } catch (error) {
+    const uploadError = normalizeError(error);
+    return {
+      ok: false,
+      error: uploadError.code === "PREFLIGHT_FAILED"
+        ? uploadError
+        : new UploadError("PREFLIGHT_FAILED", uploadError.message)
+    };
+  }
+}
+
+export function createRouteManifest(app: UpliftApp): RouteManifest {
+  const routes: RouteManifest["routes"] = {};
+  for (const [name, route] of Object.entries(app.routes)) {
+    const def = route._def;
+    routes[name] = {
+      kind: def.kind,
+      multiple: def.multiple,
+      ...(def.multipleLimit !== undefined ? { multipleLimit: def.multipleLimit } : {}),
+      ...(def.maxBytes !== undefined ? { maxBytes: def.maxBytes } : {}),
+      ...(def.minBytes !== undefined ? { minBytes: def.minBytes } : {}),
+      ...(def.mimeTypes ? { mimeTypes: [...def.mimeTypes] } : {}),
+      ...(def.extensions ? { extensions: [...def.extensions] } : {}),
+      ...(def.outputs && def.outputs.length > 0 ? { outputs: def.outputs.map((output) => output.name) } : {})
+    };
+  }
+  return { routes };
 }
 
 async function applyTransforms(
@@ -165,7 +227,7 @@ function outputKey(primaryKey: string, name: string, file: UploadInputFile): str
 
 function assertSafeStorageKey(key: string): void {
   if (key.length === 0) {
-    throw new UploadError("VALIDATION_FAILED", "Storage key cannot be empty.");
+    throw new UploadError("UNSAFE_STORAGE_KEY", "Storage key cannot be empty.");
   }
   if (
     key.includes("\0") ||
@@ -174,7 +236,7 @@ function assertSafeStorageKey(key: string): void {
     key.split("/").includes("..") ||
     /^([a-zA-Z]:)?\//.test(key)
   ) {
-    throw new UploadError("VALIDATION_FAILED", "Storage key must be a relative object key.");
+    throw new UploadError("UNSAFE_STORAGE_KEY", "Storage key must be a relative object key.");
   }
 }
 
@@ -201,7 +263,7 @@ async function resolveUser(app: UpliftApp, route: UpliftApp["routes"][string]["_
 async function filesFromRequest(req: Request): Promise<FileWithInput[]> {
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.includes("multipart/form-data")) {
-    throw new UploadError("VALIDATION_FAILED", "Upload requests must be multipart/form-data.");
+    throw new UploadError("INVALID_REQUEST", "Upload requests must be multipart/form-data.");
   }
 
   try {
@@ -215,7 +277,7 @@ async function filesFromRequest(req: Request): Promise<FileWithInput[]> {
   } catch (error) {
     if (error instanceof UploadError) throw error;
     const message = error instanceof Error ? error.message : "Upload request body could not be parsed.";
-    throw new UploadError("VALIDATION_FAILED", message);
+    throw new UploadError("INVALID_REQUEST", message);
   }
 }
 
@@ -239,16 +301,7 @@ async function validateFile(
   if (route.maxBytes !== undefined && item.input.size > route.maxBytes) {
     throw new UploadError("FILE_TOO_LARGE", "File is larger than the route allows.");
   }
-  if (route.minBytes !== undefined && item.input.size < route.minBytes) {
-    throw new UploadError("FILE_TOO_SMALL", "File is smaller than the route allows.");
-  }
-  if (route.kind !== "any" && route.extensions && item.input.extension && !route.extensions.includes(item.input.extension)) {
-    throw new UploadError("INVALID_TYPE", "File type is not allowed.");
-  }
-  if (route.kind !== "any" && route.mimeTypes && route.mimeTypes.length > 0) {
-    const matches = route.mimeTypes.some((mime) => mime.endsWith("/") ? item.input.type.startsWith(mime) : item.input.type === mime);
-    if (!matches) throw new UploadError("INVALID_TYPE", "File MIME type is not allowed.");
-  }
+  validateStaticFileConstraints(route, item.input);
   if (route.schema) {
     try {
       route.schema.parse(await readJsonFile(item.body));
@@ -263,6 +316,44 @@ async function validateFile(
     const result = await route.validate({ req, file: item.input, user, meta });
     if (result !== true) throw new UploadError("VALIDATION_FAILED", result);
   }
+}
+
+function validateStaticFileConstraints(
+  route: UpliftApp["routes"][string]["_def"],
+  file: UploadInputFile,
+  overrideCode?: "PREFLIGHT_FAILED"
+): void {
+  if (route.maxBytes !== undefined && file.size > route.maxBytes) {
+    throw new UploadError(overrideCode ?? "FILE_TOO_LARGE", "File is larger than the route allows.");
+  }
+  if (route.minBytes !== undefined && file.size < route.minBytes) {
+    throw new UploadError(overrideCode ?? "FILE_TOO_SMALL", "File is smaller than the route allows.");
+  }
+  if (route.kind !== "any" && route.extensions && file.extension && !route.extensions.includes(file.extension)) {
+    throw new UploadError(overrideCode ?? "INVALID_TYPE", "File type is not allowed.");
+  }
+  if (route.kind !== "any" && route.mimeTypes && route.mimeTypes.length > 0) {
+    const matches = route.mimeTypes.some((mime) => mime.endsWith("/") ? file.type.startsWith(mime) : file.type === mime);
+    if (!matches) throw new UploadError(overrideCode ?? "INVALID_TYPE", "File MIME type is not allowed.");
+  }
+}
+
+async function preflightFilesFromRequest(req: Request): Promise<UploadInputFile[]> {
+  const contentType = req.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new UploadError("INVALID_REQUEST", "Preflight requests must be application/json.");
+  }
+  const body = await req.json() as { files?: Array<Partial<UploadInputFile>> };
+  return (body.files ?? []).map((file) => {
+    const type = String(file.type ?? "");
+    const extension = file.extension ? String(file.extension) : extensionForType(type);
+    return {
+      name: String(file.name ?? ""),
+      type,
+      size: Number(file.size ?? 0),
+      ...(extension ? { extension } : {})
+    };
+  });
 }
 
 async function validateConfiguredInspection(route: UpliftApp["routes"][string]["_def"], file: File): Promise<void> {

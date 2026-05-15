@@ -758,7 +758,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
             </div>
             <h3>Framework adapters</h3>
-            <p>First-class handlers for Next.js App Router, Hono, and Express. One endpoint, every route.</p>
+            <p>First-class handlers for Next.js App Router, Hono, Express, Fastify, Elysia, SvelteKit, Remix, TanStack Start, and Nuxt. One endpoint, every route.</p>
           </article>
           <article class="feat" style="--feat-accent: var(--amber)">
             <div class="feat-icon-wrap" style="background:var(--amber-dim)">
@@ -795,7 +795,7 @@
           <ol class="steps-list" aria-label="Setup steps">
             <li><span><strong>Install</strong> <span style="font-family:'Berkeley Mono',monospace;font-size:12px">@uplift-io/uplift</span> and your storage adapter.</span></li>
             <li><span><strong>Define routes</strong> with builders, auth, keys, and hooks.</span></li>
-            <li><span><strong>Mount a handler</strong> for Next.js, Hono, or Express.</span></li>
+            <li><span><strong>Mount a handler</strong> for your framework. Every handler supports HEAD, GET, and POST.</span></li>
             <li><span><strong>Create a typed client</strong> by passing your <span style="font-family:'Berkeley Mono',monospace;font-size:12px">Uploads</span> type.</span></li>
           </ol>
         </div>
@@ -845,7 +845,7 @@
 <pre><span class="c">// Next.js App Router — app/api/upload/route.ts</span>
 <span class="k">import</span> { <span class="n">createNextHandler</span> } <span class="k">from</span> <span class="s">"@uplift-io/next"</span>;
 <span class="k">import</span> { <span class="v">uploads</span> } <span class="k">from</span> <span class="s">"@/uploads"</span>;
-<span class="k">export const</span> { <span class="n">GET</span>, <span class="n">POST</span> } <span class="o">=</span> <span class="f">createNextHandler</span>(<span class="v">uploads</span>);
+<span class="k">export const</span> { <span class="n">HEAD</span>, <span class="n">GET</span>, <span class="n">POST</span> } <span class="o">=</span> <span class="f">createNextHandler</span>(<span class="v">uploads</span>);
 
 <span class="c">// Hono</span>
 <span class="k">import</span> { <span class="n">createHonoHandler</span> } <span class="k">from</span> <span class="s">"@uplift-io/hono"</span>;
@@ -1076,9 +1076,16 @@
               <tr class="group-row"><td colspan="2"><span class="pkg-group">Core</span></td></tr>
               <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/uplift" rel="noopener noreferrer">@uplift-io/uplift</a></td><td class="pkg-purpose">Core builders, server runtime, typed client, React hook</td></tr>
               <tr class="group-row"><td colspan="2"><span class="pkg-group">Framework Handlers</span></td></tr>
-              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/next" rel="noopener noreferrer">@uplift-io/next</a></td><td class="pkg-purpose">Next.js App Router handler (GET + POST export)</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/next" rel="noopener noreferrer">@uplift-io/next</a></td><td class="pkg-purpose">Next.js App Router handler (HEAD + GET + POST export)</td></tr>
               <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/hono" rel="noopener noreferrer">@uplift-io/hono</a></td><td class="pkg-purpose">Hono route handler</td></tr>
               <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/express" rel="noopener noreferrer">@uplift-io/express</a></td><td class="pkg-purpose">Express middleware handler</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/fastify" rel="noopener noreferrer">@uplift-io/fastify</a></td><td class="pkg-purpose">Fastify handler/plugin helpers</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/elysia" rel="noopener noreferrer">@uplift-io/elysia</a></td><td class="pkg-purpose">Elysia handler helpers</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/sveltekit" rel="noopener noreferrer">@uplift-io/sveltekit</a></td><td class="pkg-purpose">SvelteKit endpoint handlers</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/remix" rel="noopener noreferrer">@uplift-io/remix</a></td><td class="pkg-purpose">Remix loader/action helpers</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/tanstack-start" rel="noopener noreferrer">@uplift-io/tanstack-start</a></td><td class="pkg-purpose">TanStack Start route handlers</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/nuxt" rel="noopener noreferrer">@uplift-io/nuxt</a></td><td class="pkg-purpose">Nuxt/Nitro-style handler</td></tr>
+              <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/openapi" rel="noopener noreferrer">@uplift-io/openapi</a></td><td class="pkg-purpose">OpenAPI generation from Route Manifest</td></tr>
               <tr class="group-row"><td colspan="2"><span class="pkg-group">Storage Adapters</span></td></tr>
               <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/s3" rel="noopener noreferrer">@uplift-io/s3</a></td><td class="pkg-purpose">AWS S3 via <span class="ic">@aws-sdk/client-s3</span></td></tr>
               <tr><td class="pkg-name"><a class="pkg-name" href="https://www.npmjs.com/package/@uplift-io/r2" rel="noopener noreferrer">@uplift-io/r2</a></td><td class="pkg-purpose">Cloudflare R2 via S3-compatible API</td></tr>

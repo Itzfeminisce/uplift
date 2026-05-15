@@ -73,7 +73,19 @@ importers:
         specifier: workspace:*
         version: link:../uplift
 
+  packages/elysia:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
   packages/express:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
+  packages/fastify:
     dependencies:
       '@uplift-io/uplift':
         specifier: workspace:*
@@ -115,11 +127,29 @@ importers:
         specifier: workspace:*
         version: link:../uplift
 
+  packages/nuxt:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
+  packages/openapi:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
   packages/r2:
     dependencies:
       '@uplift-io/s3':
         specifier: workspace:*
         version: link:../s3
+
+  packages/remix:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
 
   packages/rich:
     dependencies:
@@ -132,6 +162,18 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.0.0
         version: 3.1045.0
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
+  packages/sveltekit:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
+  packages/tanstack-start:
+    dependencies:
       '@uplift-io/uplift':
         specifier: workspace:*
         version: link:../uplift

@@ -3,6 +3,7 @@ import {
   type DurationValue,
   type KeyContext,
   type Middleware,
+  type PreflightContext,
   type CompatibleOutput,
   type CompatibleTransform,
   type SizeValue,
@@ -93,6 +94,7 @@ export interface SharedUploadBuilder<
       meta: TMeta;
     }) => true | string | Promise<true | string>
   ): this;
+  preflight(handler: (ctx: PreflightContext<TAuth>) => true | string | Promise<true | string>): this;
   headers(headers: StorageHeadersConfig<TAuth, TMeta>): this;
   done(handler: (ctx: DoneContext<TAuth, TMeta, TMultiple>) => void | Promise<void>): this;
   types(types: string[]): this;
@@ -264,6 +266,11 @@ export class UploadBuilder<
       user: unknown;
       meta: unknown;
     }) => true | string | Promise<true | string>;
+    return this;
+  }
+
+  preflight(handler: (ctx: PreflightContext<TAuth>) => true | string | Promise<true | string>): this {
+    this._def.preflight = handler as (ctx: PreflightContext<unknown>) => true | string | Promise<true | string>;
     return this;
   }
 

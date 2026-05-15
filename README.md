@@ -27,7 +27,7 @@ Uplift is for people who want file uploads to feel like a TypeScript contract in
 - **Typed from server to client**: route names, file multiplicity, and return values are inferred.
 - **Fluent server API**: `image().max("2mb").auth(...).key(...).done(...)`.
 - **Single endpoint**: the client posts to one upload endpoint with a route query.
-- **Framework adapters**: Next.js, Hono, and Express entrypoints.
+- **Framework adapters**: Next.js, Hono, Express, Fastify, Elysia, SvelteKit, Remix, TanStack Start, and Nuxt entrypoints.
 - **Storage adapters**: S3, R2, Bunny, Cloudinary, local, memory, and UploadThing-compatible storage.
 - **No schema lock-in**: JSON validation accepts any `.parse()` schema.
 - **Small core**: framework and storage adapters live in separate packages, so users install only what they use.
@@ -49,7 +49,7 @@ npm install @uplift-io/uplift @uplift-io/next @uplift-io/s3
 yarn add @uplift-io/uplift @uplift-io/next @uplift-io/s3
 ```
 
-Other adapters are available as separate packages: `@uplift-io/hono`, `@uplift-io/express`, `@uplift-io/local`, `@uplift-io/memory`, `@uplift-io/r2`, `@uplift-io/bunny`, `@uplift-io/cloudinary`, and `@uplift-io/uploadthing`.
+Other adapters are available as separate packages: `@uplift-io/hono`, `@uplift-io/express`, `@uplift-io/fastify`, `@uplift-io/elysia`, `@uplift-io/sveltekit`, `@uplift-io/remix`, `@uplift-io/tanstack-start`, `@uplift-io/nuxt`, `@uplift-io/local`, `@uplift-io/memory`, `@uplift-io/r2`, `@uplift-io/bunny`, `@uplift-io/cloudinary`, and `@uplift-io/uploadthing`.
 
 Media capability packages are optional: add `@uplift-io/image` for image transforms and variants, and `@uplift-io/video` for synchronous video transforms and derived artifacts.
 
@@ -120,7 +120,7 @@ Next.js App Router:
 import { createNextHandler } from "@uplift-io/next";
 import { uploads } from "@/uploads";
 
-export const { GET, POST } = createNextHandler(uploads);
+export const { HEAD, GET, POST } = createNextHandler(uploads);
 ```
 
 Hono:
@@ -165,6 +165,37 @@ gallery[0].url;
 ```
 
 The client posts to the configured endpoint with `?route=<routeName>`, so one endpoint can host every route.
+
+Route methods also expose operation controls:
+
+```ts
+upload.avatar.abort();
+await upload.avatar.retry();
+
+const check = await upload.avatar.preflight(file);
+if (check.ok) {
+  await check.upload();
+}
+```
+
+`abort()` only cancels the active attempt for that route method. `retry()` reuses the most recent failed or aborted input while the client instance is alive. `preflight()` sends file facts only, then `check.upload()` uses the same upload machinery as a direct route call.
+
+Server handlers expose the standard HTTP surface:
+
+- `HEAD` returns a bodyless health response.
+- `GET` returns the public Route Manifest.
+- `POST` handles upload attempts and preflight checks.
+
+Generate OpenAPI from the public manifest with `@uplift-io/openapi`:
+
+```ts
+import { createRouteManifest } from "@uplift-io/uplift/server";
+import { createOpenApiDocument } from "@uplift-io/openapi";
+
+export const openapi = createOpenApiDocument(createRouteManifest(uploads), {
+  path: "/api/upload"
+});
+```
 
 ## React
 

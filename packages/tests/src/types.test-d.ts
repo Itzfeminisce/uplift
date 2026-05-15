@@ -47,6 +47,8 @@ const app = uplift({
 const upload = createUploadClient<typeof app>("/upload");
 
 upload.avatar(new File(["avatar"], "avatar.png")) satisfies Promise<UploadedFile>;
+upload.avatar.abort() satisfies void;
+upload.avatar.retry() satisfies Promise<UploadedFile>;
 upload.gallery([new File(["one"], "one.png")]) satisfies Promise<UploadedFile[]>;
 upload.gallery(new DataTransfer().files) satisfies Promise<UploadedFile[]>;
 upload.optimizedAvatar(new File(["avatar"], "avatar.png")).then((file) => {

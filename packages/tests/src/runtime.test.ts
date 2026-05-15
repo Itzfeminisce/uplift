@@ -819,6 +819,67 @@ describe("uplift runtime", () => {
     });
   });
 
+  it("uses stable provider-neutral codes for request and route failures", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      routes: {
+        avatar: image()
+      }
+    });
+
+    const methodResponse = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "PUT"
+    }));
+    const routeResponse = await handleUploadRequest(app, new Request("https://app.test/upload/missing", {
+      method: "POST",
+      body: new FormData()
+    }));
+    const requestResponse = await handleUploadRequest(app, new Request("https://app.test/upload/avatar", {
+      method: "POST",
+      body: "not multipart"
+    }));
+
+    await expect(methodResponse.json()).resolves.toMatchObject({ error: { code: "METHOD_NOT_ALLOWED" } });
+    await expect(routeResponse.json()).resolves.toMatchObject({ error: { code: "UNKNOWN_ROUTE" } });
+    await expect(requestResponse.json()).resolves.toMatchObject({ error: { code: "INVALID_REQUEST" } });
+  });
+
+  it("runs preflight checks with auth, static constraints, and route hooks without file bytes", async () => {
+    const app = uplift({
+      storage: createMemoryStorage(),
+      middleware: async () => ({ id: "user_1" }),
+      routes: {
+        avatar: image().max("4b").preflight(({ file, user }) => {
+          user satisfies unknown;
+          return file.name === "blocked.png" ? "blocked by policy" : true;
+        })
+      }
+    });
+
+    const ok = await handleUploadRequest(app, new Request("https://app.test/upload?route=avatar&preflight=1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ files: [{ name: "avatar.png", type: "image/png", size: 4 }] })
+    }));
+    const tooLarge = await handleUploadRequest(app, new Request("https://app.test/upload?route=avatar&preflight=1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ files: [{ name: "avatar.png", type: "image/png", size: 5 }] })
+    }));
+    const blocked = await handleUploadRequest(app, new Request("https://app.test/upload?route=avatar&preflight=1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ files: [{ name: "blocked.png", type: "image/png", size: 4 }] })
+    }));
+
+    await expect(ok.json()).resolves.toEqual({ ok: true });
+    await expect(tooLarge.json()).resolves.toMatchObject({ ok: false, error: { code: "PREFLIGHT_FAILED" } });
+    await expect(blocked.json()).resolves.toEqual({
+      ok: false,
+      error: { code: "PREFLIGHT_FAILED", message: "blocked by policy" }
+    });
+  });
+
   it("supports public routes that override router middleware", async () => {
     const app = uplift({
       storage: createMemoryStorage(),
@@ -975,7 +1036,7 @@ describe("uplift runtime", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
-      error: { code: "VALIDATION_FAILED" }
+      error: { code: "UNSAFE_STORAGE_KEY" }
     });
     expect(written).toEqual([]);
   });

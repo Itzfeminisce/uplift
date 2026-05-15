@@ -1,5 +1,11 @@
 # @uplift-io/uplift
 
+## 1.3.0
+
+### Minor Changes
+
+- Ship the next upload experience: public Route Manifest, standard `HEAD`/`GET`/`POST` handler surface, expanded provider-neutral error codes, client abort/retry/preflight controls, OpenAPI generation, and additional framework adapters.
+
 ## 1.2.0
 
 ### Minor Changes

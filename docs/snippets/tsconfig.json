@@ -7,8 +7,11 @@
     "paths": {
       "@uplift-io/uplift": ["packages/uplift/src/index.ts"],
       "@uplift-io/uplift/client": ["packages/uplift/src/client.ts"],
+      "@uplift-io/uplift/server": ["packages/uplift/src/server.ts"],
       "@uplift-io/uplift/react": ["packages/uplift/src/react.ts"],
       "@uplift-io/image": ["packages/image/src/index.ts"],
+      "@uplift-io/memory": ["packages/memory/src/index.ts"],
+      "@uplift-io/openapi": ["packages/openapi/src/index.ts"],
       "@uplift-io/s3": ["packages/s3/src/index.ts"],
       "@uplift-io/uploadthing": ["packages/uploadthing/src/index.ts"],
       "@uplift-io/video": ["packages/video/src/index.ts"],

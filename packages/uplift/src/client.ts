@@ -7,49 +7,130 @@ export function createUploadClient<TApp extends UpliftApp>(
   options: { fetch?: typeof fetch; onProgress?: (route: string, progress: number) => void } = {}
 ): UploadClient<TApp> {
   const fetcher = options.fetch ?? fetch;
+  const controls = new Map<string, {
+    controller: AbortController | undefined;
+    retryInput?: File | File[] | FileList;
+  }>();
 
   return new Proxy({}, {
     get(_target, property) {
       if (typeof property !== "string") return undefined;
-      return async (input: File | File[] | FileList) => {
+      const state = controls.get(property) ?? { controller: undefined };
+      controls.set(property, state);
+      const upload = async (input: File | File[] | FileList) => {
+        state.controller?.abort(new UploadError("ABORTED", "Upload attempt was aborted."));
+        const controller = new AbortController();
+        state.controller = controller;
         const files = input instanceof File ? [input] : Array.from(input);
         const form = new FormData();
         const field = files.length === 1 ? "file" : "files";
         for (const file of files) form.append(field, file);
 
         const url = routeUrl(baseUrl, property);
-        if (!options.fetch && typeof XMLHttpRequest !== "undefined") {
-          return uploadWithXhr(url, form, property, options.onProgress);
-        }
+        try {
+          if (!options.fetch && typeof XMLHttpRequest !== "undefined") {
+            const result = await uploadWithXhr(url, form, property, controller.signal, options.onProgress);
+            delete state.retryInput;
+            return result;
+          }
 
-        options.onProgress?.(property, 0);
-        const response = await fetcher(url, { method: "POST", body: form });
-        const body = await response.json() as { result?: unknown; error?: { code: string; message: string } };
-        if (!response.ok) {
-          throw new UploadError((body.error?.code ?? "UNKNOWN") as never, body.error?.message ?? "Upload failed.");
+          options.onProgress?.(property, 0);
+          const response = await fetcher(url, { method: "POST", body: form, signal: controller.signal });
+          const body = await response.json() as { result?: unknown; error?: { code: string; message: string } };
+          if (!response.ok) {
+            throw new UploadError((body.error?.code ?? "UNKNOWN") as never, body.error?.message ?? "Upload failed.");
+          }
+          options.onProgress?.(property, 100);
+          delete state.retryInput;
+          return attachOutputGetters(body.result);
+        } catch (error) {
+          state.retryInput = input;
+          if (controller.signal.aborted) throw abortError(controller.signal.reason);
+          throw error;
+        } finally {
+          if (state.controller === controller) state.controller = undefined;
         }
-        options.onProgress?.(property, 100);
-        return attachOutputGetters(body.result);
       };
+      Object.defineProperties(upload, {
+        abort: {
+          value() {
+            state.controller?.abort(new UploadError("ABORTED", "Upload attempt was aborted."));
+          }
+        },
+        retry: {
+          value() {
+            if (!state.retryInput) {
+              return Promise.reject(new UploadError("VALIDATION_FAILED", `No retryable upload attempt exists for route: ${property}`));
+            }
+            return upload(state.retryInput);
+          }
+        },
+        preflight: {
+          async value(input: File | File[] | FileList) {
+            const files = input instanceof File ? [input] : Array.from(input);
+            const response = await fetcher(routeUrl(baseUrl, property, { preflight: "1" }), {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                files: files.map((file) => ({
+                  name: file.name,
+                  type: file.type,
+                  size: file.size,
+                  extension: extensionFromName(file.name)
+                }))
+              })
+            });
+            const body = await response.json() as {
+              ok: boolean;
+              error?: { code: string; message: string };
+            };
+            if (!body.ok) {
+              return {
+                ok: false as const,
+                error: {
+                  code: (body.error?.code ?? "PREFLIGHT_FAILED") as never,
+                  message: body.error?.message ?? "Preflight check failed."
+                }
+              };
+            }
+            return {
+              ok: true as const,
+              upload: () => upload(input)
+            };
+          }
+        }
+      });
+      return upload;
     }
   }) as UploadClient<TApp>;
 }
 
-function routeUrl(baseUrl: string, route: string): string {
+function routeUrl(baseUrl: string, route: string, params: Record<string, string> = {}): string {
   const url = new URL(baseUrl, globalThis.location?.href ?? "http://localhost");
   url.searchParams.set("route", route);
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   const value = url.toString();
   return baseUrl.startsWith("/") ? `${url.pathname}${url.search}` : value;
+}
+
+function extensionFromName(name: string): string | undefined {
+  const index = name.lastIndexOf(".");
+  return index === -1 ? undefined : name.slice(index + 1).toLowerCase();
 }
 
 function uploadWithXhr(
   url: string,
   form: FormData,
   route: string,
+  signal: AbortSignal,
   onProgress?: (route: string, progress: number) => void
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    signal.addEventListener("abort", () => {
+      xhr.abort();
+      reject(abortError(signal.reason));
+    }, { once: true });
     xhr.open("POST", url);
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
@@ -67,10 +148,16 @@ function uploadWithXhr(
       onProgress?.(route, 100);
       resolve(attachOutputGetters(body.result));
     };
+    xhr.onabort = () => reject(abortError(signal.reason));
     xhr.onerror = () => reject(new UploadError("UPLOAD_FAILED", "Upload request failed."));
     onProgress?.(route, 0);
     xhr.send(form);
   });
+}
+
+function abortError(reason: unknown): UploadError {
+  if (reason instanceof UploadError) return reason;
+  return new UploadError("ABORTED", "Upload attempt was aborted.");
 }
 
 function attachOutputGetters(result: unknown): unknown {

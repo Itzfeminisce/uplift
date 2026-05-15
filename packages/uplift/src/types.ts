@@ -29,6 +29,16 @@ export type ClientUploadedFile<TOutputNames extends string = never> = UploadedFi
 );
 
 export type UploadErrorCode =
+  | "ABORTED"
+  | "UNKNOWN_ROUTE"
+  | "METHOD_NOT_ALLOWED"
+  | "INVALID_REQUEST"
+  | "TOO_MANY_FILES"
+  | "UNSAFE_STORAGE_KEY"
+  | "PREFLIGHT_FAILED"
+  | "TRANSFORM_FAILED"
+  | "OUTPUT_FAILED"
+  | "STORAGE_FAILED"
   | "FILE_TOO_LARGE"
   | "FILE_TOO_SMALL"
   | "INVALID_TYPE"
@@ -36,6 +46,21 @@ export type UploadErrorCode =
   | "VALIDATION_FAILED"
   | "UPLOAD_FAILED"
   | "UNKNOWN";
+
+export type RouteManifestRoute = {
+  kind: UploadKind;
+  multiple: boolean;
+  multipleLimit?: number;
+  maxBytes?: number;
+  minBytes?: number;
+  mimeTypes?: string[];
+  extensions?: string[];
+  outputs?: string[];
+};
+
+export type RouteManifest = {
+  routes: Record<string, RouteManifestRoute>;
+};
 
 export class UploadError extends Error {
   readonly code: UploadErrorCode;
@@ -100,6 +125,16 @@ export type StorageAdapter = {
 };
 
 export type Middleware<TUser = unknown> = (ctx: { req: Request }) => TUser | Promise<TUser>;
+
+export type PreflightContext<TAuth = unknown> = {
+  req: Request;
+  file: UploadInputFile;
+  user: TAuth;
+};
+
+export type PreflightResult =
+  | { ok: true }
+  | { ok: false; error: { code: UploadErrorCode; message: string } };
 
 declare const uploadRouteConfig: unique symbol;
 
@@ -182,6 +217,7 @@ export type UploadRouteDefinition = {
     user: unknown;
     meta: unknown;
   }) => true | string | Promise<true | string>;
+  preflight?: (ctx: PreflightContext<unknown>) => true | string | Promise<true | string>;
   done?: (ctx: DoneContext<unknown, unknown, boolean>) => void | Promise<void>;
   extensions?: string[];
   mimeTypes?: string[];
@@ -233,8 +269,17 @@ export type ClientOutput<TRoute> = IsMultiple<TRoute> extends true
   ? Array<ClientUploadedFile<OutputNames<TRoute>>>
   : ClientUploadedFile<OutputNames<TRoute>>;
 
+export type UploadRouteClientMethod<TRoute> = ((
+  input: ClientInput<TRoute>
+) => Promise<ClientOutput<TRoute>>) & {
+  abort(): void;
+  retry(): Promise<ClientOutput<TRoute>>;
+  preflight(input: ClientInput<TRoute>): Promise<
+    | ({ ok: true; upload(): Promise<ClientOutput<TRoute>> })
+    | { ok: false; error: { code: UploadErrorCode; message: string } }
+  >;
+};
+
 export type UploadClient<TApp extends UpliftApp> = {
-  [TRouteName in keyof TApp["routes"] & string]: (
-    input: ClientInput<TApp["routes"][TRouteName]>
-  ) => Promise<ClientOutput<TApp["routes"][TRouteName]>>;
+  [TRouteName in keyof TApp["routes"] & string]: UploadRouteClientMethod<TApp["routes"][TRouteName]>;
 };
