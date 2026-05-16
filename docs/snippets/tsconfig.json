@@ -12,6 +12,7 @@
       "@uplift-io/image": ["packages/image/src/index.ts"],
       "@uplift-io/memory": ["packages/memory/src/index.ts"],
       "@uplift-io/openapi": ["packages/openapi/src/index.ts"],
+      "@uplift-io/redis": ["packages/redis/src/index.ts"],
       "@uplift-io/s3": ["packages/s3/src/index.ts"],
       "@uplift-io/uploadthing": ["packages/uploadthing/src/index.ts"],
       "@uplift-io/video": ["packages/video/src/index.ts"],

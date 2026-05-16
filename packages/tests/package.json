@@ -1,6 +1,6 @@
 {
   "name": "@uplift-io/tests",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
     "@uplift-io/memory": "workspace:*",
     "@uplift-io/next": "workspace:*",
     "@uplift-io/r2": "workspace:*",
+    "@uplift-io/redis": "workspace:*",
     "@uplift-io/rich": "workspace:*",
     "@uplift-io/s3": "workspace:*",
     "@uplift-io/uplift": "workspace:*",

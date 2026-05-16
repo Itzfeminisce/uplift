@@ -16,6 +16,9 @@ export function createMemoryStorage(): StorageAdapter {
         provider: "memory"
       };
     },
+    async get(key) {
+      return objects.get(key);
+    },
     async delete(key) {
       objects.delete(key);
     }

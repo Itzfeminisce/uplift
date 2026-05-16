@@ -1,5 +1,11 @@
 # @uplift-io/uplift
 
+## 1.4.0
+
+### Minor Changes
+
+- Add async transform routes with `transformAsync`, Transform Job handles, polling completion, worker/status exports, React route status, best-effort lifecycle listeners, and a Redis-backed `asyncTransforms(redis, options)` helper. Document async ffmpeg-backed transform guidance for video routes.
+
 ## 1.3.0
 
 ### Minor Changes

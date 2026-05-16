@@ -3,10 +3,14 @@
 import { useUploads } from "@uplift-io/uplift/react";
 import type { UploadedFile } from "@uplift-io/uplift";
 import type { CSSProperties, ChangeEvent, ReactNode } from "react";
+import { useState } from "react";
 import type { Uploads } from "../src/uploads";
+
+type ClipResult = UploadedFile & { output(name: "thumb"): UploadedFile };
 
 export default function Page() {
   const uploads = useUploads<Uploads>("/api/upload");
+  const [clipResult, setClipResult] = useState<ClipResult | null>(null);
 
   return (
     <main style={styles.shell}>
@@ -92,13 +96,16 @@ export default function Page() {
           error={uploads.clip.error?.message}
           onFiles={(files) => {
             const file = files[0];
-            if (file) void uploads.clip(file).catch(() => undefined);
+            if (file) void uploads.clip(file)
+              .then((transform) => transform.done())
+              .then((completed) => setClipResult(completed as ClipResult))
+              .catch(() => undefined);
           }}
         >
-          {uploads.clip.data ? (
+          {clipResult ? (
             <div style={styles.stack}>
-              <VideoResult file={uploads.clip.data} />
-              <ImageResult file={uploads.clip.data.output("thumb")} label="thumbnail output" compact />
+              <VideoResult file={clipResult} />
+              <ImageResult file={clipResult.output("thumb")} label="thumbnail output" compact />
             </div>
           ) : null}
         </UploadPanel>
@@ -113,7 +120,7 @@ function UploadPanel(props: {
   accept: string;
   multiple: boolean;
   isUploading: boolean;
-  progress: number;
+  progress: number | null;
   error?: string | undefined;
   onFiles(files: File[]): void;
   children: ReactNode;
@@ -186,8 +193,15 @@ function FileDetails(props: { file: UploadedFile; label: string }) {
   );
 }
 
-function Progress(props: { uploading: boolean; progress: number }) {
+function Progress(props: { uploading: boolean; progress: number | null }) {
   if (!props.uploading && props.progress === 0) return null;
+  if (props.progress === null) {
+    return (
+      <div style={styles.progressTrack} aria-label="Upload progress">
+        <div style={{ ...styles.progressBar, width: "100%" }} />
+      </div>
+    );
+  }
   return (
     <div style={styles.progressTrack} aria-label="Upload progress">
       <div style={{ ...styles.progressBar, width: `${props.progress}%` }} />

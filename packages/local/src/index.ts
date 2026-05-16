@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { StorageAdapter } from "@uplift-io/uplift";
 
@@ -21,6 +21,14 @@ export function local(directory: string, options: { publicBaseUrl?: string } = {
     },
     async delete(key) {
       await rm(join(directory, key), { force: true });
+    },
+    async get(key) {
+      const bytes = await readFile(join(directory, key)).catch((error: unknown) => {
+        if (isNotFoundError(error)) return undefined;
+        throw error;
+      });
+      if (!bytes) return undefined;
+      return new File([bytes], key.split("/").pop() ?? "upload", { type: "application/octet-stream" });
     }
   };
 }
@@ -28,4 +36,8 @@ export function local(directory: string, options: { publicBaseUrl?: string } = {
 function joinUrl(baseUrl: string | undefined, key: string): string {
   if (!baseUrl) return `/${key}`;
   return `${baseUrl.replace(/\/+$/, "")}/${key.replace(/^\/+/, "")}`;
+}
+
+function isNotFoundError(error: unknown): boolean {
+  return typeof error === "object" && error !== null && (error as { code?: unknown }).code === "ENOENT";
 }

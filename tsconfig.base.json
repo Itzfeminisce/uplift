@@ -23,6 +23,7 @@
       "@uplift-io/nuxt": ["packages/nuxt/src/index.ts"],
       "@uplift-io/openapi": ["packages/openapi/src/index.ts"],
       "@uplift-io/r2": ["packages/r2/src/index.ts"],
+      "@uplift-io/redis": ["packages/redis/src/index.ts"],
       "@uplift-io/remix": ["packages/remix/src/index.ts"],
       "@uplift-io/rich": ["packages/rich/src/index.ts"],
       "@uplift-io/s3": ["packages/s3/src/index.ts"],

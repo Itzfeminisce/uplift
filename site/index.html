@@ -944,7 +944,7 @@
           <span class="sec-label" style="color:var(--teal)">Media</span>
           <h2 id="media-heading">Transformations</h2>
           <p class="desc">Primary transforms run before key generation and storage. Derived outputs run after the transformed primary file, use convention-based keys, and come back through typed <span class="ic">uploaded.output("name")</span> access.</p>
-          <p class="desc">Image and video processing live in optional domain packages. Video work is synchronous during the upload request in v1, so hosts should have the expected ffmpeg capability and request budget.</p>
+          <p class="desc">Image and video processing live in optional domain packages. Use <span class="ic">.transform(...)</span> for request-time work or <span class="ic">.transformAsync(...)</span> for background Transform Jobs with polling, typed outputs, listeners, and Original Upload cleanup.</p>
         </div>
         <div class="cw">
           <div class="cw-bar"><div class="traff"><span class="tr"></span><span class="ty"></span><span class="tg"></span></div><span class="cw-name">media routes</span><span></span></div>
@@ -959,16 +959,18 @@
     .<span class="f">outputs</span>(<span class="f">variant</span>(<span class="s">"thumb"</span>, <span class="f">resize</span>({ <span class="p">width</span>: <span class="m">96</span> }))),
 
   <span class="p">clip</span>: <span class="f">video</span>()
-    .<span class="f">transform</span>(<span class="f">trim</span>({ <span class="p">start</span>: <span class="s">"00:00:01"</span> }), <span class="f">transcode</span>({ <span class="p">format</span>: <span class="s">"mp4"</span> }))
-    .<span class="f">outputs</span>(<span class="f">thumbnail</span>(<span class="s">"thumb"</span>, { <span class="p">at</span>: <span class="s">"25%"</span> }))
+    .<span class="f">transformAsync</span>(<span class="f">trim</span>({ <span class="p">start</span>: <span class="s">"00:00:01"</span> }), <span class="f">transcode</span>({ <span class="p">format</span>: <span class="s">"mp4"</span> }), { <span class="p">timeout</span>: <span class="s">"10m"</span> })
+    .<span class="f">outputs</span>(<span class="f">thumbnail</span>(<span class="s">"poster"</span>, { <span class="p">at</span>: <span class="s">"25%"</span> }))
+    .<span class="f">listeners</span>({ <span class="p">queued</span>: ({ <span class="p">id</span> }) <span class="o">=&gt;</span> <span class="p">console</span>.<span class="f">log</span>(<span class="p">id</span>) })
 }
 
 <span class="c">// client — typed output access</span>
 <span class="k">const</span> <span class="v">avatar</span> <span class="o">=</span> <span class="k">await</span> <span class="v">upload</span>.<span class="f">avatar</span>(<span class="v">file</span>);
 <span class="v">avatar</span>.<span class="f">output</span>(<span class="s">"thumb"</span>).<span class="p">url</span>;   <span class="c">// string</span>
 
-<span class="k">const</span> <span class="v">clip</span> <span class="o">=</span> <span class="k">await</span> <span class="v">upload</span>.<span class="f">clip</span>(<span class="v">videoFile</span>);
-<span class="v">clip</span>.<span class="f">output</span>(<span class="s">"thumb"</span>).<span class="p">url</span>;    <span class="c">// string</span></pre>
+<span class="k">const</span> <span class="v">transform</span> <span class="o">=</span> <span class="k">await</span> <span class="v">upload</span>.<span class="f">clip</span>(<span class="v">videoFile</span>);
+<span class="k">const</span> <span class="v">clip</span> <span class="o">=</span> <span class="k">await</span> <span class="v">transform</span>.<span class="f">done</span>(); <span class="c">// polling fallback</span>
+<span class="v">clip</span>.<span class="f">output</span>(<span class="s">"poster"</span>).<span class="p">url</span>;   <span class="c">// string</span></pre>
           </div>
         </div>
       </section>

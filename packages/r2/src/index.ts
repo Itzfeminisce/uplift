@@ -19,6 +19,9 @@ export function r2(options: R2Options) {
     },
     async delete(key: string) {
       await adapter.delete?.(key);
+    },
+    async get(key: string) {
+      return adapter.get?.(key);
     }
   };
 }

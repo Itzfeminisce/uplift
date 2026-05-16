@@ -37,6 +37,7 @@ const packages = [
   "nuxt",
   "openapi",
   "r2",
+  "redis",
   "remix",
   "rich",
   "s3",
@@ -84,6 +85,7 @@ writeFileSync(path.join(tmp, "package.json"), JSON.stringify({
     "@uplift-io/nuxt": tarballFor("nuxt"),
     "@uplift-io/openapi": tarballFor("openapi"),
     "@uplift-io/r2": tarballFor("r2"),
+    "@uplift-io/redis": tarballFor("redis"),
     "@uplift-io/remix": tarballFor("remix"),
     "@uplift-io/rich": tarballFor("rich"),
     "@uplift-io/s3": tarballFor("s3"),
@@ -98,8 +100,9 @@ writeFileSync(path.join(tmp, "package.json"), JSON.stringify({
 }, null, 2));
 
 writeFileSync(path.join(tmp, "index.mts"), `
-import { image, uplift, video } from "@uplift-io/uplift";
+import { image, uplift, video, type UploadedFile } from "@uplift-io/uplift";
 import { createUploadClient } from "@uplift-io/uplift/client";
+import { runNextTransformJob, runTransformJob, readTransformJobStatus } from "@uplift-io/uplift/server";
 import { bunny } from "@uplift-io/bunny";
 import { cloudinary } from "@uplift-io/cloudinary";
 import { createElysiaHandler, upliftElysia } from "@uplift-io/elysia";
@@ -113,6 +116,7 @@ import { createNuxtHandler } from "@uplift-io/nuxt";
 import { createOpenApiDocument } from "@uplift-io/openapi";
 import { createMemoryStorage } from "@uplift-io/memory";
 import { createRemixHandler } from "@uplift-io/remix";
+import { asyncTransforms, type RedisLike } from "@uplift-io/redis";
 import { audio, pdf, video as richVideo } from "@uplift-io/rich";
 import { r2 } from "@uplift-io/r2";
 import { s3 } from "@uplift-io/s3";
@@ -123,6 +127,7 @@ import { thumbnail, transcode, trim } from "@uplift-io/video";
 
 const app = uplift({
   storage: createMemoryStorage(),
+  asyncTransforms: { keepOriginal: false },
   routes: {
     avatar: image()
       .max("2mb")
@@ -130,13 +135,32 @@ const app = uplift({
       .outputs(variant("thumb", resize({ width: 32 }))),
     clip: video()
       .transform(trim({ start: "00:00:01" }), transcode({ format: "mp4" }))
+      .outputs(thumbnail("thumb", { at: "25%" })),
+    asyncClip: video()
+      .transformAsync(trim({ start: "00:00:01" }), transcode({ format: "mp4" }), { timeout: "10m" })
       .outputs(thumbnail("thumb", { at: "25%" }))
+      .listeners({
+        queued: ({ id }) => {
+          id satisfies string;
+        },
+        completed: ({ result }) => {
+          result.outputs?.thumb;
+        }
+      })
   }
 });
 
 const client = createUploadClient<typeof app>("/api/upload");
 client.avatar satisfies (file: File) => Promise<unknown>;
 client.clip satisfies (file: File) => Promise<unknown>;
+client.asyncClip(new File(["clip"], "clip.mp4", { type: "video/mp4" })).then(async (transform) => {
+  transform.id satisfies string;
+  const completed = await transform.done();
+  (completed as UploadedFile & { output(name: "thumb"): UploadedFile }).output("thumb");
+});
+runNextTransformJob(app);
+runTransformJob(app, "job_1");
+readTransformJobStatus(app, "job_1");
 createNextHandler(app);
 createHonoHandler(app);
 createExpressHandler(app);
@@ -159,6 +183,7 @@ uploadthing({ uploader: async () => ({ url: "https://utfs.io/f/demo", key: "demo
 audio();
 pdf();
 richVideo();
+asyncTransforms({} as RedisLike, { queueName: "uplift:smoke" });
 `);
 
 writeFileSync(path.join(tmp, "tsconfig.json"), JSON.stringify({

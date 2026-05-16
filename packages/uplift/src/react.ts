@@ -1,9 +1,12 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { createUploadClient } from "./client";
 import type { ClientInput, ClientOutput, UpliftApp, UploadError } from "./types";
 
+type ReactRouteStatus = "idle" | "uploading" | "queued" | "processing" | "completed" | "failed";
+
 type RouteState<TData> = {
-  progress: number;
+  status: ReactRouteStatus;
+  progress: number | null;
   isUploading: boolean;
   error: UploadError | null;
   data: TData | null;
@@ -34,7 +37,7 @@ export function useUploads<TApp extends UpliftApp>(baseUrl: string): ReactUpload
       onProgress(route, progress) {
         setStates((current) => ({
           ...current,
-          [route]: { ...(current[route] ?? emptyState()), progress }
+          [route]: { ...(current[route] ?? emptyState()), status: "uploading", progress }
         }));
       }
     });
@@ -46,21 +49,25 @@ export function useUploads<TApp extends UpliftApp>(baseUrl: string): ReactUpload
         const method = async (input: never) => {
           setStates((current) => ({
             ...current,
-            [property]: { ...(current[property] ?? emptyState()), isUploading: true, error: null }
+            [property]: { ...(current[property] ?? emptyState()), status: "uploading", isUploading: true, error: null }
           }));
           try {
             const upload = (client as Record<string, ((value: never) => Promise<unknown>) | undefined>)[property];
             if (!upload) throw new Error(`Unknown upload route: ${property}`);
             const data = await upload(input);
+            if (isAsyncTransformHandleLike(data)) {
+              followAsyncTransform(property, data, setStates);
+              return data;
+            }
             setStates((current) => ({
               ...current,
-              [property]: { progress: 100, isUploading: false, error: null, data }
+              [property]: { progress: 100, status: "completed", isUploading: false, error: null, data }
             }));
             return data;
           } catch (error) {
             setStates((current) => ({
               ...current,
-              [property]: { ...(current[property] ?? emptyState()), isUploading: false, error: error as UploadError }
+              [property]: { ...(current[property] ?? emptyState()), status: "failed", isUploading: false, error: error as UploadError }
             }));
             throw error;
           }
@@ -74,21 +81,25 @@ export function useUploads<TApp extends UpliftApp>(baseUrl: string): ReactUpload
           async retry() {
             setStates((current) => ({
               ...current,
-              [property]: { ...(current[property] ?? emptyState()), isUploading: true, error: null }
+              [property]: { ...(current[property] ?? emptyState()), status: "uploading", isUploading: true, error: null }
             }));
             try {
               const upload = (client as Record<string, { retry?: () => Promise<unknown> } | undefined>)[property];
               if (!upload?.retry) throw new Error(`Unknown upload route: ${property}`);
               const data = await upload.retry();
+              if (isAsyncTransformHandleLike(data)) {
+                followAsyncTransform(property, data, setStates);
+                return data;
+              }
               setStates((current) => ({
                 ...current,
-                [property]: { progress: 100, isUploading: false, error: null, data }
+                [property]: { progress: 100, status: "completed", isUploading: false, error: null, data }
               }));
               return data;
             } catch (error) {
               setStates((current) => ({
                 ...current,
-                [property]: { ...(current[property] ?? emptyState()), isUploading: false, error: error as UploadError }
+                [property]: { ...(current[property] ?? emptyState()), status: "failed", isUploading: false, error: error as UploadError }
               }));
               throw error;
             }
@@ -106,9 +117,54 @@ export function useUploads<TApp extends UpliftApp>(baseUrl: string): ReactUpload
 
 function emptyState(): RouteState<unknown> {
   return {
+    status: "idle",
     progress: 0,
     isUploading: false,
     error: null,
     data: null
   };
+}
+
+function followAsyncTransform(
+  route: string,
+  handle: {
+    status: "queued" | "processing" | "completed" | "failed";
+    done(): Promise<unknown>;
+  },
+  setStates: Dispatch<SetStateAction<Record<string, RouteState<unknown>>>>
+): void {
+  setStates((current) => ({
+    ...current,
+    [route]: {
+      progress: null,
+      status: handle.status === "processing" ? "processing" : "queued",
+      isUploading: false,
+      error: null,
+      data: null
+    }
+  }));
+  void handle.done().then((completed) => {
+    setStates((current) => ({
+      ...current,
+      [route]: { progress: 100, status: "completed", isUploading: false, error: null, data: completed }
+    }));
+  }, (error) => {
+    setStates((current) => ({
+      ...current,
+      [route]: { ...(current[route] ?? emptyState()), status: "failed", isUploading: false, error: error as UploadError }
+    }));
+  });
+}
+
+function isAsyncTransformHandleLike(value: unknown): value is {
+  status: "queued" | "processing" | "completed" | "failed";
+  done(): Promise<unknown>;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "status" in value &&
+    "done" in value &&
+    typeof (value as { done?: unknown }).done === "function"
+  );
 }

@@ -81,6 +81,50 @@ The frontend call remains `upload.avatar(file)`. Declared outputs are available 
 
 Core stays free of Sharp and ffmpeg. Media packages own those runtime dependencies, and storage adapters may implement `delete(key)` so core can roll back already-written files when a later request step fails.
 
+## Async Transforms
+
+Use `.transformAsync(...)` for background Transform Jobs. The upload request stores the Original Upload, returns an `AsyncTransformHandle`, and `transform.done()` polls until the worker marks the job completed or failed. Job ids are bearer tokens for status reads, so treat them as sensitive.
+
+```ts
+import { asyncTransforms, type RedisLike } from "@uplift-io/redis";
+import { video, uplift } from "@uplift-io/uplift";
+import { createUploadClient } from "@uplift-io/uplift/client";
+import { runNextTransformJob } from "@uplift-io/uplift/server";
+import { thumbnail, transcode, trim } from "@uplift-io/video";
+
+declare const redis: RedisLike;
+
+export const uploads = uplift({
+  storage,
+  asyncTransforms: asyncTransforms(redis, {
+    queueName: "uplift:async-transforms",
+    keepOriginal: "failed",
+    timeout: "10m"
+  }),
+  routes: {
+    clip: video()
+      .transformAsync(trim({ start: "00:00:01" }), transcode({ format: "mp4" }), { timeout: "10m" })
+      .outputs(thumbnail("poster", { at: "25%" }))
+      .listeners({
+        queued: ({ id }) => console.log("queued", id),
+        completed: ({ result }) => result.outputs?.poster,
+        failed: ({ error }) => console.error(error.message)
+      })
+  }
+});
+
+const upload = createUploadClient<typeof uploads>("/api/upload");
+const transform = await upload.clip(file);
+const completed = await transform.done({ timeoutMs: 60_000 });
+completed.output("poster");
+
+await runNextTransformJob(uploads);
+```
+
+Core owns the queue contract but does not bundle a Redis client. Use `@uplift-io/redis` with a `RedisLike` object from your app, and provide a required `queueName` so web requests, status reads, and workers share one namespace for one compatible Upload Contract. Redis claims are leased and recoverable, and workers reject queued work when the route contract no longer matches the current route definitions.
+
+Async Transform Jobs are single-file routes. Durable queues require storage adapters that can read Original Upload bytes; Local, S3, and R2 adapters support this. Do not combine `.transform(...)` and `.transformAsync(...)` on the same route. `keepOriginal` accepts `false`, `"failed"`, or `true` and defaults to `"failed"`. Listeners are best-effort lifecycle diagnostics; `.done(...)` is still the strict success hook and can fail the workflow.
+
 ## Storage Headers, CSV Columns, And Rollback
 
 `headers()` is shared by every builder and means object-storage headers:

@@ -4,6 +4,8 @@ import {
   type KeyContext,
   type Middleware,
   type PreflightContext,
+  type AsyncTransformRouteOptions,
+  type AsyncTransformListeners,
   type CompatibleOutput,
   type CompatibleTransform,
   type SizeValue,
@@ -45,38 +47,40 @@ export type UploadBuilderForKind<
   TMeta = unknown,
   TMultiple extends boolean = false,
   TKind extends UploadKind = UploadKind,
-  TOutputNames extends string = never
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
 > = TKind extends "image"
-  ? ImageUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+  ? ImageUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
   : TKind extends "pdf"
-    ? PdfUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+    ? PdfUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
     : TKind extends "video"
-      ? VideoUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+      ? VideoUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
       : TKind extends "audio"
-        ? AudioUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+        ? AudioUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
         : TKind extends "text"
-          ? TextUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+          ? TextUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
           : TKind extends "json"
-            ? JsonUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+            ? JsonUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
             : TKind extends "csv"
-              ? CsvUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+              ? CsvUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
               : TKind extends "custom"
-                ? CustomUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
+                ? CustomUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
                 : TKind extends "any"
-                  ? AnyUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames>
-                  : SharedUploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames>;
+                  ? AnyUploadBuilder<TAuth, TMeta, TMultiple, TOutputNames, TAsync>
+                  : SharedUploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames, TAsync>;
 
 export interface SharedUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
   TKind extends UploadKind = UploadKind,
-  TOutputNames extends string = never
-> extends UploadRouteConfig<TAuth, TMeta, TMultiple, TKind, TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends UploadRouteConfig<TAuth, TMeta, TMultiple, TKind, TOutputNames, TAsync> {
   max(size: SizeValue): this;
   min(size: SizeValue): this;
-  multiple(count?: number): UploadBuilderForKind<TAuth, TMeta, true, TKind, TOutputNames>;
-  auth<TUser>(handler: Middleware<TUser>): UploadBuilderForKind<TUser, TMeta, TMultiple, TKind, TOutputNames>;
+  multiple(count?: number): UploadBuilderForKind<TAuth, TMeta, true, TKind, TOutputNames, TAsync>;
+  auth<TUser>(handler: Middleware<TUser>): UploadBuilderForKind<TUser, TMeta, TMultiple, TKind, TOutputNames, TAsync>;
   overrideAuth(): this;
   key(handler: (ctx: KeyContext<TAuth, TMeta>) => string | Promise<string>): this;
   meta<TNextMeta>(
@@ -85,7 +89,7 @@ export interface SharedUploadBuilder<
       file: UploadInputFile;
       user: TAuth;
     }) => TNextMeta | Promise<TNextMeta>
-  ): UploadBuilderForKind<TAuth, TNextMeta, TMultiple, TKind, TOutputNames>;
+  ): UploadBuilderForKind<TAuth, TNextMeta, TMultiple, TKind, TOutputNames, TAsync>;
   validate(
     handler: (ctx: {
       req: Request;
@@ -97,26 +101,35 @@ export interface SharedUploadBuilder<
   preflight(handler: (ctx: PreflightContext<TAuth>) => true | string | Promise<true | string>): this;
   headers(headers: StorageHeadersConfig<TAuth, TMeta>): this;
   done(handler: (ctx: DoneContext<TAuth, TMeta, TMultiple>) => void | Promise<void>): this;
+  listeners(listeners: AsyncTransformListeners<TAuth, TMeta, TOutputNames>): this;
   types(types: string[]): this;
   transform(...transforms: Array<CompatibleTransform<TKind>>): this;
+  transformAsync(
+    ...transforms: Array<CompatibleTransform<TKind>>
+  ): UploadBuilderForKind<TAuth, TMeta, TMultiple, TKind, TOutputNames, true>;
+  transformAsync(
+    ...transformsAndOptions: [...Array<CompatibleTransform<TKind>>, AsyncTransformRouteOptions]
+  ): UploadBuilderForKind<TAuth, TMeta, TMultiple, TKind, TOutputNames, true>;
   outputs<const TName extends string>(
     ...outputs: Array<CompatibleOutput<TKind, TName>>
-  ): UploadBuilderForKind<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName>;
+  ): UploadBuilderForKind<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName, TAsync>;
 }
 
 export interface AnyUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "any", TOutputNames> {}
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "any", TOutputNames, TAsync> {}
 
 export interface ImageUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "image", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "image", TOutputNames, TAsync> {
   dimensions(rule: DimensionRule): this;
   square(): this;
   aspectRatio(value: `${number}:${number}`): this;
@@ -126,8 +139,9 @@ export interface PdfUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "pdf", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "pdf", TOutputNames, TAsync> {
   pages(rule: PageRule): this;
   encrypted(value: boolean): this;
 }
@@ -136,8 +150,9 @@ export interface VideoUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "video", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "video", TOutputNames, TAsync> {
   duration(rule: DurationRule): this;
 }
 
@@ -145,8 +160,9 @@ export interface AudioUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "audio", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "audio", TOutputNames, TAsync> {
   duration(rule: DurationRule): this;
 }
 
@@ -154,8 +170,9 @@ export interface TextUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "text", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "text", TOutputNames, TAsync> {
   encoding(value: TextEncoding): this;
 }
 
@@ -163,8 +180,9 @@ export interface JsonUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "json", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "json", TOutputNames, TAsync> {
   schema<TSchema extends StandardSchema>(schema: TSchema): this;
 }
 
@@ -172,8 +190,9 @@ export interface CsvUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "csv", TOutputNames> {
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "csv", TOutputNames, TAsync> {
   columns(headers: string[], options?: { delimiter?: "," | ";" | "\t" | "|" }): this;
   delimiter(value: "," | ";" | "\t" | "|"): this;
 }
@@ -182,15 +201,17 @@ export interface CustomUploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
-  TOutputNames extends string = never
-> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "custom", TOutputNames> {}
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
+> extends SharedUploadBuilder<TAuth, TMeta, TMultiple, "custom", TOutputNames, TAsync> {}
 
 export class UploadBuilder<
   TAuth = unknown,
   TMeta = unknown,
   TMultiple extends boolean = false,
   TKind extends UploadKind = UploadKind,
-  TOutputNames extends string = never
+  TOutputNames extends string = never,
+  TAsync extends boolean = false
 > {
   readonly _def: UploadRouteDefinition;
 
@@ -217,13 +238,13 @@ export class UploadBuilder<
   multiple(count?: number): UploadBuilder<TAuth, TMeta, true, TKind, TOutputNames> {
     this._def.multiple = true;
     if (count !== undefined) this._def.multipleLimit = count;
-    return this as unknown as UploadBuilder<TAuth, TMeta, true, TKind, TOutputNames>;
+    return this as unknown as UploadBuilder<TAuth, TMeta, true, TKind, TOutputNames, TAsync>;
   }
 
-  auth<TUser>(handler: Middleware<TUser>): UploadBuilder<TUser, TMeta, TMultiple, TKind, TOutputNames> {
+  auth<TUser>(handler: Middleware<TUser>): UploadBuilder<TUser, TMeta, TMultiple, TKind, TOutputNames, TAsync> {
     this._def.auth = handler as Middleware<unknown>;
     this._def.overrideAuth = false;
-    return this as unknown as UploadBuilder<TUser, TMeta, TMultiple, TKind, TOutputNames>;
+    return this as unknown as UploadBuilder<TUser, TMeta, TMultiple, TKind, TOutputNames, TAsync>;
   }
 
   overrideAuth(): this {
@@ -243,13 +264,13 @@ export class UploadBuilder<
       file: UploadInputFile;
       user: TAuth;
     }) => TNextMeta | Promise<TNextMeta>
-  ): UploadBuilder<TAuth, TNextMeta, TMultiple, TKind, TOutputNames> {
+  ): UploadBuilder<TAuth, TNextMeta, TMultiple, TKind, TOutputNames, TAsync> {
     this._def.meta = handler as (ctx: {
       req: Request;
       file: UploadInputFile;
       user: unknown;
     }) => unknown | Promise<unknown>;
-    return this as unknown as UploadBuilder<TAuth, TNextMeta, TMultiple, TKind, TOutputNames>;
+    return this as unknown as UploadBuilder<TAuth, TNextMeta, TMultiple, TKind, TOutputNames, TAsync>;
   }
 
   validate(
@@ -281,6 +302,11 @@ export class UploadBuilder<
 
   done(handler: (ctx: DoneContext<TAuth, TMeta, TMultiple>) => void | Promise<void>): this {
     this._def.done = handler as (ctx: DoneContext<unknown, unknown, boolean>) => void | Promise<void>;
+    return this;
+  }
+
+  listeners(listeners: AsyncTransformListeners<TAuth, TMeta, TOutputNames>): this {
+    this._def.listeners = listeners as AsyncTransformListeners;
     return this;
   }
 
@@ -345,12 +371,44 @@ export class UploadBuilder<
     return this;
   }
 
+  transformAsync(
+    ...transformsAndOptions: Array<CompatibleTransform<TKind> | AsyncTransformRouteOptions>
+  ): UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames, true> {
+    const values = [...transformsAndOptions];
+    const last = values.at(-1);
+    const options = isAsyncTransformRouteOptions(last) ? last : undefined;
+    const transforms = (options ? values.slice(0, -1) : values) as Array<CompatibleTransform<TKind>>;
+    for (const transform of transforms) assertUploadTransform(transform);
+    this._def.asyncTransforms = [...(this._def.asyncTransforms ?? []), ...transforms];
+    if (options) this._def.asyncTransformOptions = options;
+    return this as unknown as UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames, true>;
+  }
+
   outputs<const TName extends string>(
     ...outputs: Array<CompatibleOutput<TKind, TName>>
-  ): UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName> {
+  ): UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName, TAsync> {
     this._def.outputs = [...(this._def.outputs ?? []), ...(outputs as UploadOutput[])];
-    return this as unknown as UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName>;
+    return this as unknown as UploadBuilder<TAuth, TMeta, TMultiple, TKind, TOutputNames | TName, TAsync>;
   }
+}
+
+function isAsyncTransformRouteOptions(value: unknown): value is AsyncTransformRouteOptions {
+  if (!value || typeof value !== "object") return false;
+  const keys = Object.keys(value);
+  return keys.length === 0 || keys.every((key) => key === "timeout");
+}
+
+function assertUploadTransform(value: unknown): void {
+  if (typeof value === "function") return;
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "transform" in value &&
+    typeof (value as { transform?: unknown }).transform === "function"
+  ) {
+    return;
+  }
+  throw new TypeError(".transformAsync(...) expects transform functions or transform objects before the route options object.");
 }
 
 export function any(): AnyUploadBuilder {

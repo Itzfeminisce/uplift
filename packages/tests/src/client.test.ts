@@ -1,8 +1,8 @@
 import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
-import { any, image, uplift } from "@uplift-io/uplift";
+import { any, image, uplift, video } from "@uplift-io/uplift";
 import { createUploadClient } from "@uplift-io/uplift/client";
-import { createRouteManifest } from "@uplift-io/uplift/server";
+import { createRouteManifest, handleUploadRequest, runTransformJob } from "@uplift-io/uplift/server";
 import { createExpressHandler } from "@uplift-io/express";
 import { createHonoHandler } from "@uplift-io/hono";
 import { createMemoryStorage } from "@uplift-io/memory";
@@ -94,6 +94,60 @@ describe("upload clients and adapters", () => {
     expect(await honoManifest.json()).toEqual(createRouteManifest(app));
     expect(nextResponse.status).toBe(200);
     expect(honoResponse.status).toBe(200);
+  });
+
+  it("routes async Transform Job status polling through Next.js and Hono GET handlers", async () => {
+    const asyncApp = uplift({
+      storage: createMemoryStorage(),
+      asyncTransforms: { keepOriginal: false },
+      routes: {
+        clip: video().transformAsync(async ({ body }) => body)
+      }
+    });
+    const next = createNextHandler(asyncApp);
+    const hono = createHonoHandler(asyncApp);
+    const accepted = await handleUploadRequest(asyncApp, asyncUploadRequest("https://app.test/upload?route=clip"));
+    const { result } = await accepted.json() as { result: { id: string } };
+    await runTransformJob(asyncApp, result.id);
+
+    const nextStatus = await next.GET(new Request(`https://app.test/upload?job=${result.id}`));
+    const honoStatus = await hono.fetch(new Request(`https://app.test/upload?job=${result.id}`));
+    const nextManifest = await next.GET(new Request("https://app.test/upload"));
+    const honoManifest = await hono.fetch(new Request("https://app.test/upload"));
+
+    expect(await nextStatus.json()).toMatchObject({ id: result.id, status: "completed", result: { type: "video/mp4" } });
+    expect(await honoStatus.json()).toMatchObject({ id: result.id, status: "completed", result: { type: "video/mp4" } });
+    expect(await nextManifest.json()).toEqual(createRouteManifest(asyncApp));
+    expect(await honoManifest.json()).toEqual(createRouteManifest(asyncApp));
+  });
+
+  it("rejects malformed and stale async Transform Job status polling", async () => {
+    const malformedUpload = createUploadClient<typeof asyncClientApp>("https://app.test/upload", {
+      fetch: async (url, init) => {
+        if (init?.method === "POST") return Response.json({ result: { id: "job_bad", route: "clip", status: "queued" } });
+        expect(String(url)).toBe("https://app.test/upload?job=job_bad");
+        return Response.json({ routes: {} });
+      }
+    });
+    const staleUpload = createUploadClient<typeof asyncClientApp>("https://app.test/upload", {
+      fetch: async (_url, init) => {
+        if (init?.method === "POST") return Response.json({ result: { id: "job_stale", route: "clip", status: "queued" } });
+        return Response.json({ id: "job_stale", route: "clip", status: "queued" });
+      }
+    });
+
+    const malformed = await malformedUpload.clip(new File(["clip"], "clip.mp4", { type: "video/mp4" }));
+    const stale = await staleUpload.clip(new File(["clip"], "clip.mp4", { type: "video/mp4" }));
+
+    await expect(malformed.done()).rejects.toMatchObject({
+      code: "INVALID_REQUEST",
+      message: "Transform Job status response was malformed."
+    });
+    await expect(stale.done({ timeoutMs: 1 })).rejects.toMatchObject({
+      code: "ABORTED",
+      message: "Transform Job polling timed out."
+    });
+    await expect(stale.done({ timeoutMs: 1 })).rejects.toMatchObject({ code: "ABORTED" });
   });
 
   it("supports route-scoped abort and same-route replacement controls", async () => {
@@ -413,9 +467,23 @@ const outputApp = uplift({
   }
 });
 
+const asyncClientApp = uplift({
+  storage: createMemoryStorage(),
+  asyncTransforms: { keepOriginal: false },
+  routes: {
+    clip: video().transformAsync(async ({ body }) => body)
+  }
+});
+
 function uploadRequest(url: string) {
   const form = new FormData();
   form.append("file", new File(["test"], "file.txt", { type: "text/plain" }));
+  return new Request(url, { method: "POST", body: form });
+}
+
+function asyncUploadRequest(url: string) {
+  const form = new FormData();
+  form.append("file", new File(["test"], "clip.mp4", { type: "video/mp4" }));
   return new Request(url, { method: "POST", body: form });
 }
 

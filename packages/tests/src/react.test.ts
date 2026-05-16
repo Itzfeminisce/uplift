@@ -134,6 +134,45 @@ describe("React upload hook", () => {
 
     vi.unstubAllGlobals();
   });
+
+  it("keeps retried async transforms in lifecycle state until done resolves", async () => {
+    const { useUploads } = await import("@uplift-io/uplift/react");
+    const completed = deferred<Response>();
+    let call = 0;
+    vi.stubGlobal("fetch", async (url: string | URL | Request) => {
+      call += 1;
+      if (call === 1) {
+        return Response.json({ error: { code: "UPLOAD_FAILED", message: "Try again." } }, { status: 500 });
+      }
+      if (String(url).includes("job=job_1")) return completed.promise;
+      return Response.json({ result: { id: "job_1", route: "attachment", status: "queued" } });
+    });
+
+    const first = renderHook(useUploads);
+    await expect(attachment(first)(new File(["bad"], "failed.txt"))).rejects.toMatchObject({ code: "UPLOAD_FAILED" });
+
+    const second = renderHook(useUploads);
+    await expect(attachment(second).retry()).resolves.toMatchObject({ id: "job_1", status: "queued" });
+
+    const queued = renderHook(useUploads);
+    expect(attachment(queued).status).toBe("queued");
+    expect(attachment(queued).progress).toBeNull();
+    expect(attachment(queued).data).toBeNull();
+
+    completed.resolve(Response.json({
+      id: "job_1",
+      route: "attachment",
+      status: "completed",
+      result: uploadResult("completed.txt")
+    }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const final = renderHook(useUploads);
+    expect(attachment(final).status).toBe("completed");
+    expect(attachment(final).data).toMatchObject({ key: "completed.txt" });
+
+    vi.unstubAllGlobals();
+  });
 });
 
 function renderHook(useUploads: <TApp extends UpliftApp>(baseUrl: string) => ReactUploadClient<TApp>) {
@@ -156,4 +195,14 @@ function uploadResult(name: string) {
     size: 4,
     provider: "test"
   };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0
+
+### Async Transforms
+
+- Added async transform routes with `.transformAsync(...)`, root `asyncTransforms` guardrails, `AsyncTransformHandle`, polling `transform.done()`, and worker/status exports.
+- Added Transform Job lifecycle state, Original Upload cleanup policy via `keepOriginal`, typed completed outputs, best-effort route listeners, and React route `status` support.
+- Documented request-time transforms versus background Transform Jobs across docs snippets, package docs, and the static site.
+
 ## 1.2.0
 
 ### Storage Headers, CSV Columns, And Rollback

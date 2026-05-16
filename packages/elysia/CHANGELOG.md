@@ -1,5 +1,12 @@
 # @uplift-io/elysia
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @uplift-io/uplift@1.4.0
+
 ## 0.2.0
 
 ### Minor Changes

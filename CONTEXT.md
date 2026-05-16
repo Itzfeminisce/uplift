@@ -20,6 +20,34 @@ _Avoid_: Route builder method, server control
 A single client-side execution of a route-named upload method with a specific file input.
 _Avoid_: Upload route, upload contract
 
+**Transform Job**:
+Server-side background work created by an async transform route to produce the final stored primary file and declared outputs.
+_Avoid_: Ticket, processing task
+
+**Transform Job Queue**:
+The durable work and status boundary used by async transform workers to persist, claim, and complete Transform Jobs.
+_Avoid_: Async store, Redis store
+
+**Queue Name**:
+The Redis namespace for one Transform Job Queue, Upload Contract, and worker pool.
+_Avoid_: Topic, channel, list name
+
+**RedisLike**:
+The Redis-compatible command surface accepted by Redis-backed Transform Job Queue helpers, including string, list, and sorted-set commands used for durable jobs and recoverable claims.
+_Avoid_: Redis client, Redis dependency
+
+**Original Upload**:
+The untransformed file stored so a background transform job can read the user-provided bytes.
+_Avoid_: Staged file, source blob
+
+**Upload Status**:
+The client-visible lifecycle state for an upload attempt and any async transform work it starts.
+_Avoid_: Phase, processingStatus, uploadProgress
+
+**Completed Async Transform Result**:
+The final uploaded file result produced after an async transform route's transform job completes.
+_Avoid_: Awaited result, wait result, ticket result
+
 **Route Manifest**:
 A static, serializable description of route capabilities that clients and documentation generators can read.
 _Avoid_: Runtime validation result, live route state
@@ -44,6 +72,17 @@ _Avoid_: Provider error code, raw exception name
 - `retry()` repeats only the most recent failed or aborted **Upload Attempt** for that route method, using the original file input.
 - `retry()` remembers the original file input only for the lifetime of the client or React hook instance.
 - Only one **Upload Attempt** may be active for a route method at a time; starting a new attempt for the same route aborts the previous one.
+- An async transform route creates a **Transform Job** after the upload request is accepted.
+- An async transform route stores an **Original Upload** before the **Transform Job** starts.
+- A **Transform Job** produces the final stored primary file and any declared outputs.
+- A **Transform Job Queue** persists Transform Jobs, exposes status reads, and atomically claims work for async transform workers.
+- A **Queue Name** must identify one compatible Upload Contract and worker pool; incompatible Upload Contracts should not share a Queue Name.
+- A Redis-backed **Transform Job Queue** accepts a **RedisLike** object supplied by the application; Uplift does not own the Redis connection or depend on a specific Redis package.
+- Redis-backed claims are leased; workers may recover stale processing claims after the visibility timeout.
+- Redis-backed terminal writes are fenced by the active claim so stale workers cannot complete, fail, or clear a newer worker's claim after recovery.
+- A **Transform Job** carries an Upload Contract compatibility marker so workers can reject removed routes or changed async transform/output semantics before processing.
+- An async **Upload Attempt** may expose `done()` to resolve a **Completed Async Transform Result** once its **Transform Job** completes.
+- The client should describe upload and transform lifecycle with a single **Upload Status** field, not separate upload and processing status fields.
 - A **Preflight Check** runs auth, static route constraints, and explicit preflight hooks; the later **Upload Attempt** must still validate again.
 - A route builder may define an explicit `.preflight(handler)` hook for app-specific **Preflight Check** eligibility.
 - A `.preflight(handler)` hook returns `true` for eligibility or a string message for ineligibility.
@@ -73,6 +112,15 @@ _Avoid_: Provider error code, raw exception name
 
 > **Dev:** "Should retry survive a page reload?"
 > **Domain expert:** "No. `retry()` is an ephemeral **Client Operation Control**, not resumable upload storage."
+
+> **Dev:** "Should an async transform return a ticket that callers exchange for the final result?"
+> **Domain expert:** "No. The route method starts an **Upload Attempt** that may create a **Transform Job**; clients observe one **Upload Status** lifecycle for that route."
+
+> **Dev:** "Should the object returned by an async upload expose `wait()` or `await()`?"
+> **Domain expert:** "No. Use `done()` so callers wait for the **Completed Async Transform Result** without leaning on a language keyword."
+
+> **Dev:** "Should failed async transforms keep original uploads forever?"
+> **Domain expert:** "No. They are **Original Uploads**, and `keepOriginal` controls whether they remain after the transform reaches a terminal state."
 
 > **Dev:** "Can `upload.avatar(fileA)` and `upload.avatar(fileB)` run at the same time?"
 > **Domain expert:** "No. A route method has at most one active **Upload Attempt**, so the newer attempt replaces the older one."
@@ -105,3 +153,5 @@ _Avoid_: Provider error code, raw exception name
 
 - "adapter" can mean a **Framework Adapter** or a storage adapter; use the fuller term when the boundary matters.
 - "preflight" is advisory and point-in-time; it is not realtime validation and does not guarantee a future upload attempt will succeed.
+- "ticket" implies a separate queue API; use **Upload Attempt** for the client-side operation and **Transform Job** for the server-side background work.
+- "staged file" describes implementation mechanics; use **Original Upload** in developer-facing docs and hover text.
