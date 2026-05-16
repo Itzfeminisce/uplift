@@ -13,6 +13,8 @@
     "bundle:size": "node scripts/measure-bundle-size.mjs",
     "docs:check": "tsc -p docs/snippets/tsconfig.json --noEmit",
     "examples:check": "pnpm --filter \"@uplift-io/example-*\" typecheck",
+    "marketing:video:preview": "pnpm --filter @uplift-io/marketing-video preview",
+    "marketing:video:render": "pnpm --filter @uplift-io/marketing-video render",
     "smoke:pack": "node scripts/smoke-pack.mjs",
     "test": "pnpm build && pnpm --filter @uplift-io/tests test",
     "typecheck": "pnpm --filter \"@uplift-io/*\" typecheck",

@@ -3,6 +3,7 @@ dist
 coverage
 .turbo
 .tmp
+generations/*/out
 .env
 .env.*
 !.env.example

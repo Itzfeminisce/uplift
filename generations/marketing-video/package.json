@@ -1,0 +1,21 @@
+{
+  "name": "@uplift-io/marketing-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preview": "remotion preview src/index.ts",
+    "render": "remotion render src/index.ts UpliftAsyncTransforms out/uplift-async-transforms.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.462",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.462"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.3"
+  }
+}
