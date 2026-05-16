@@ -31,6 +31,7 @@ const storage = (() => {
 
 export const uploads = uplift({
   storage,
+  asyncTransforms: { keepOriginal: "failed" },
   routes: {
     avatar: image()
       .max("2mb")
@@ -54,7 +55,7 @@ export const uploads = uplift({
       .key(({ file }) => `media/images/${Date.now()}-${file.name}`),
     clip: video()
       .max("25mb")
-      .transform(trim({ start: "00:00:00" }), transcode({ format: "mp4", codec: "h264" }))
+      .transformAsync(trim({ start: "00:00:00" }), transcode({ format: "mp4", codec: "h264" }), { timeout: "10m" })
       .outputs(thumbnail("thumb", { at: "25%" }))
       .key(({ file }) => `media/videos/${Date.now()}-${file.name}`),
   },

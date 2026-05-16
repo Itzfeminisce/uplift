@@ -145,6 +145,12 @@ importers:
         specifier: workspace:*
         version: link:../s3
 
+  packages/redis:
+    dependencies:
+      '@uplift-io/uplift':
+        specifier: workspace:*
+        version: link:../uplift
+
   packages/remix:
     dependencies:
       '@uplift-io/uplift':
@@ -207,6 +213,9 @@ importers:
       '@uplift-io/r2':
         specifier: workspace:*
         version: link:../r2
+      '@uplift-io/redis':
+        specifier: workspace:*
+        version: link:../redis
       '@uplift-io/rich':
         specifier: workspace:*
         version: link:../rich

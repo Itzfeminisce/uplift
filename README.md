@@ -53,6 +53,8 @@ Other adapters are available as separate packages: `@uplift-io/hono`, `@uplift-i
 
 Media capability packages are optional: add `@uplift-io/image` for image transforms and variants, and `@uplift-io/video` for synchronous video transforms and derived artifacts.
 
+Async transforms are available for background media work. Use `.transform(...)` when work should finish during the upload request, and `.transformAsync(...)` when the request should accept the Original Upload, create a Transform Job, and let a worker produce the final result later.
+
 ## Quick Start
 
 ### 1. Define server routes
@@ -177,6 +179,50 @@ if (check.ok) {
   await check.upload();
 }
 ```
+
+## Async Transforms
+
+Async transform routes return an `AsyncTransformHandle` with `id`, `route`, `status`, and `done()`. The correctness baseline is polling through the upload endpoint; realtime transports can layer on top without changing terminal behavior. Job ids are bearer tokens for status reads, so treat them as sensitive.
+
+```ts
+import { asyncTransforms, type RedisLike } from "@uplift-io/redis";
+import { uplift, video } from "@uplift-io/uplift";
+import { createUploadClient } from "@uplift-io/uplift/client";
+import { runNextTransformJob } from "@uplift-io/uplift/server";
+import { thumbnail, transcode, trim } from "@uplift-io/video";
+
+declare const redis: RedisLike;
+
+export const uploads = uplift({
+  storage,
+  asyncTransforms: asyncTransforms(redis, {
+    queueName: "uplift:async-transforms",
+    keepOriginal: "failed",
+    timeout: "10m"
+  }),
+  routes: {
+    clip: video()
+      .transformAsync(trim({ start: "00:00:01" }), transcode({ format: "mp4" }), { timeout: "10m" })
+      .outputs(thumbnail("poster", { at: "25%" }))
+      .listeners({
+        queued: ({ id }) => console.log("queued", id),
+        completed: ({ result }) => result.outputs?.poster,
+        failed: ({ error }) => console.error(error.message)
+      })
+  }
+});
+
+const upload = createUploadClient<typeof uploads>("/api/upload");
+const transform = await upload.clip(file);
+const completed = await transform.done({ timeoutMs: 60_000 });
+completed.output("poster");
+
+await runNextTransformJob(uploads);
+```
+
+`@uplift-io/redis` accepts a `RedisLike` object instead of depending on a specific Redis client package. `queueName` is required because it is the Redis namespace shared by the web app, status reads, and workers for one compatible Upload Contract; do not reuse a queue name across incompatible route definitions or environments. Redis claims are leased and recoverable, with `claimVisibilityTimeoutMs` defaulting to five minutes. Workers validate the queued route contract before running so removed routes or changed transform/output semantics fail clearly instead of silently processing with the wrong code.
+
+Async Transform Jobs are single-file routes. Durable queues require storage adapters that can read Original Upload bytes; Local, S3, and R2 adapters support this. Do not combine `.transform(...)` and `.transformAsync(...)` on the same route. `keepOriginal` controls Original Upload retention after terminal states: `false` deletes after success or failure, `"failed"` keeps failed originals only, and `true` keeps originals after every terminal state. It defaults to `"failed"`. Route listeners are best-effort diagnostics; `.done(...)` remains the strict completion hook and can fail the Transform Job.
 
 `abort()` only cancels the active attempt for that route method. `retry()` reuses the most recent failed or aborted input while the client instance is alive. `preflight()` sends file facts only, then `check.upload()` uses the same upload machinery as a direct route call.
 

@@ -1,5 +1,12 @@
 # @uplift-io/s3
 
+## 1.2.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @uplift-io/uplift@1.4.0
+
 ## 1.2.1
 
 ### Patch Changes

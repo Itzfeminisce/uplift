@@ -1,6 +1,6 @@
 # @uplift-io/video
 
-Optional ffmpeg-backed synchronous video transforms and derived outputs for Uplift routes.
+Optional ffmpeg-backed video transforms and derived outputs for Uplift routes.
 
 ```ts
 import { video } from "@uplift-io/uplift";
@@ -12,6 +12,14 @@ export const clip = video()
 ```
 
 Video work runs during the upload request in v1. Production deployments should provide ffmpeg/ffprobe-capable hosts or set `UPLIFT_FFMPEG_PATH` and `UPLIFT_FFPROBE_PATH`.
+
+For larger clips, prefer Uplift async transforms so ffmpeg work runs as a background Transform Job instead of blocking the upload request:
+
+```ts
+export const clip = video()
+  .transformAsync(trim({ start: "00:00:01" }), transcode({ format: "mp4" }), { timeout: "10m" })
+  .outputs(thumbnail("poster", { at: "25%" }));
+```
 
 The default processor shells out to the host binaries and creates real media artifacts for trim, transcode, compression, resize, crop, watermark, mute, frame-rate changes, thumbnails, posters, storyboards, and extracted audio. Tests or advanced deployments can inject a custom processor with `setVideoProcessor()` and restore the default with `resetVideoProcessor()`.
 

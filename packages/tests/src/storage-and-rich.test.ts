@@ -125,6 +125,19 @@ describe("storage adapters", () => {
       });
   });
 
+  it("reads stored Original Upload bytes from local storage", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "uplift-local-"));
+    try {
+      const adapter = local(directory);
+      await adapter.put({ key: "originals/hello.txt", file, body });
+
+      await expect(adapter.get?.("originals/hello.txt").then((stored) => stored?.text()))
+        .resolves.toBe("hello");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it("maps S3 storage headers and deletes objects by bucket and key", async () => {
     const sent: Array<{ input?: Record<string, unknown> }> = [];
     const adapter = s3({
@@ -157,6 +170,31 @@ describe("storage adapters", () => {
     expect(sent[1]?.input).toMatchObject({ Bucket: "bucket", Key: "hello.txt" });
   });
 
+  it("reads stored Original Upload bytes from S3-compatible storage", async () => {
+    const sent: Array<{ input?: Record<string, unknown>; constructor: { name: string } }> = [];
+    const adapter = s3({
+      bucket: "bucket",
+      region: "us-east-1",
+      client: {
+        send: async (command) => {
+          sent.push(command as unknown as { input?: Record<string, unknown>; constructor: { name: string } });
+          return {
+            Body: {
+              transformToByteArray: async () => new TextEncoder().encode("hello")
+            },
+            ContentType: "text/plain",
+            ContentLength: 5
+          };
+        }
+      }
+    });
+
+    await expect(adapter.get?.("originals/hello.txt").then((stored) => stored?.text()))
+      .resolves.toBe("hello");
+    expect(sent[0]?.constructor.name).toBe("GetObjectCommand");
+    expect(sent[0]?.input).toMatchObject({ Bucket: "bucket", Key: "originals/hello.txt" });
+  });
+
   it("lets R2 inherit S3-compatible put headers and delete behavior", async () => {
     const sent: Array<{ input?: Record<string, unknown> }> = [];
     const adapter = r2({
@@ -175,6 +213,25 @@ describe("storage adapters", () => {
 
     expect(sent[0]?.input).toMatchObject({ CacheControl: "public, max-age=60" });
     expect(sent[1]?.input).toMatchObject({ Bucket: "bucket", Key: "hello.txt" });
+  });
+
+  it("reads stored Original Upload bytes from R2 storage", async () => {
+    const adapter = r2({
+      bucket: "bucket",
+      accountId: "abc",
+      client: {
+        send: async () => ({
+          Body: {
+            transformToByteArray: async () => new TextEncoder().encode("hello")
+          },
+          ContentType: "text/plain",
+          ContentLength: 5
+        })
+      }
+    });
+
+    await expect(adapter.get?.("originals/hello.txt").then((stored) => stored?.text()))
+      .resolves.toBe("hello");
   });
 
   it("merges Bunny upload headers safely and deletes through storage credentials", async () => {

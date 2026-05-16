@@ -32,12 +32,20 @@ export { createUploadClient } from "./client";
 // export { createMemoryStorage } from "./storage/memory";
 export {
   UploadError,
+  type AsyncTransformHandle,
+  type AsyncTransformKeepOriginal,
+  type AsyncTransformListenerContext,
+  type AsyncTransformListeners,
+  type AsyncTransformQueue,
+  type AsyncTransformRouteOptions,
+  type AsyncTransformsConfig,
   type ClientUploadedFile,
   type ClientInput,
   type ClientOutput,
   type CompatibleOutput,
   type CompatibleTransform,
   type DoneContext,
+  type DurationValue,
   type KeyContext,
   type Middleware,
   type OutputContext,
@@ -62,16 +70,17 @@ export {
   type UploadTransform,
   type UploadTransformFunction,
   type UploadClient,
-  type UpliftApp
+  type UpliftApp,
+  type UpliftConfigAsyncGuard
 } from "./types";
 
-import type { Middleware, StorageAdapter, UpliftApp, UploadRoutes } from "./types";
+import type { Middleware, StorageAdapter, UpliftApp, UploadRoutes, UpliftConfigAsyncGuard } from "./types";
 
 export function uplift<TRoutes extends UploadRoutes>(config: {
   storage: StorageAdapter;
   routes: TRoutes;
   middleware?: Middleware<unknown>;
   onUploadComplete?: UpliftApp<TRoutes>["onUploadComplete"];
-}): UpliftApp<TRoutes> {
+} & UpliftConfigAsyncGuard<TRoutes>): UpliftApp<TRoutes> {
   return config as unknown as UpliftApp<TRoutes>;
 }

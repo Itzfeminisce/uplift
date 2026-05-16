@@ -6,7 +6,7 @@ This dogfoods Uplift before npm publishing with a real app-shaped setup:
 - a Next App Router handler at `app/api/upload/route.ts`
 - browser uploads from `app/page.tsx` using `useUploads`
 - image transforms with typed `thumb` and `preview` outputs
-- video transforms with typed `thumb` output
+- async video transforms with typed `thumb` output
 - local, S3, and R2 configuration paths
 
 ## Local Development
@@ -18,7 +18,7 @@ The example routes:
 - `avatar`: single image upload with auth-derived key generation
 - `gallery`: multi-image upload returning `UploadedFile[]`
 - `mediaPreview`: image transform pipeline with `uploaded.output("thumb")` and `uploaded.output("preview")`
-- `clip`: video transform pipeline with `uploaded.output("thumb")`
+- `clip`: async video transform pipeline with `transform.done()` and `uploaded.output("thumb")`
 
 Run the type-level smoke check:
 
